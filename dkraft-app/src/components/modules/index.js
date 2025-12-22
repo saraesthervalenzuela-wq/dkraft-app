@@ -1,0 +1,17 @@
+export { default as Dashboard } from './Dashboard';
+export { default as StaffModule } from './Staff';
+export { default as StaffDutyModule } from './StaffDuty';
+export { default as ClientsModule } from './Clients';
+export { default as TopClientsModule } from './TopClients';
+export { default as SuppliersModule } from './Suppliers';
+export { default as MaterialsModule } from './Materials';
+export { default as ProductsModule } from './Products';
+export { default as ProjectsModule } from './Projects';
+export { default as OperationsModule } from './Operations';
+export { default as ReportsModule } from './Reports';
+export { default as QualityModule } from './Quality';
+export { default as PerformanceModule } from './Performance';
+export { default as ProjectAnalysis } from './ProjectAnalysis';
+export { default as ActivityLogModule } from './ActivityLog';
+export { default as CategoriesModule } from './Categories';
+export { default as UnitsModule } from './Units';
