@@ -25,6 +25,7 @@ export const navItems = [
     { id: 'qb-health', label: 'QB Health', icon: 'favorite' },
     { id: 'activity-log', label: 'Activity Log', icon: 'history' },
     { id: 'project-analysis', label: 'Project Analysis', icon: 'science' },
+    { id: 'firebase-test', label: '🔥 Firebase Test', icon: 'bolt' },
 ];
 
 // Stats data

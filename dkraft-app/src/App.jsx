@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthLayout } from './components/auth';
 import { Sidebar } from './components/layout';
 import {
     Dashboard,
@@ -19,9 +21,25 @@ import {
     CategoriesModule,
     UnitsModule
 } from './components/modules';
+import FirebaseTest from './components/FirebaseTest';
 import './styles/main.css';
 
-function App() {
+// Loading spinner component
+const LoadingScreen = () => (
+    <div className="loading-screen">
+        <div className="loading-content">
+            <div className="loading-logo">
+                <span className="logo-icon">D</span>
+            </div>
+            <div className="loading-spinner"></div>
+            <p>Cargando...</p>
+        </div>
+    </div>
+);
+
+// Main app content (when authenticated)
+const AppContent = () => {
+    const { logout, user } = useAuth();
     const [activeNav, setActiveNav] = useState('dashboard');
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('dkraft-theme');
@@ -66,6 +84,8 @@ function App() {
                 return <CategoriesModule />;
             case 'units':
                 return <UnitsModule />;
+            case 'firebase-test':
+                return <FirebaseTest />;
             case 'dashboard':
             default:
                 return <Dashboard />;
@@ -79,11 +99,37 @@ function App() {
                 setActiveNav={setActiveNav}
                 theme={theme}
                 setTheme={setTheme}
+                user={user}
+                onLogout={logout}
             />
             <main className="main-content">
                 {renderContent()}
             </main>
         </div>
+    );
+};
+
+// Auth wrapper component
+const AuthWrapper = () => {
+    const { isAuthenticated, loading } = useAuth();
+
+    if (loading) {
+        return <LoadingScreen />;
+    }
+
+    if (!isAuthenticated) {
+        return <AuthLayout />;
+    }
+
+    return <AppContent />;
+};
+
+// Main App component
+function App() {
+    return (
+        <AuthProvider>
+            <AuthWrapper />
+        </AuthProvider>
     );
 }
 

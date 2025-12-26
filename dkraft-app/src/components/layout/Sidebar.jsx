@@ -6,9 +6,33 @@ import { navItems } from '../../data/initialData';
  * Sidebar Component
  * Main navigation sidebar with theme toggle and user menu
  */
-const Sidebar = ({ activeNav, setActiveNav, theme, setTheme }) => {
+const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [expandedMenus, setExpandedMenus] = useState({});
+
+    // Get user initials from display name or email
+    const getUserInitials = () => {
+        if (user?.displayName) {
+            return user.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        }
+        if (user?.email) {
+            return user.email.slice(0, 2).toUpperCase();
+        }
+        return 'U';
+    };
+
+    // Get display name
+    const getDisplayName = () => {
+        return user?.displayName || user?.email?.split('@')[0] || 'Usuario';
+    };
+
+    // Handle logout
+    const handleLogout = async () => {
+        setShowDropdown(false);
+        if (onLogout) {
+            await onLogout();
+        }
+    };
 
     const toggleTheme = () => {
         const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -101,16 +125,16 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme }) => {
                         <Icon name="settings" />
                         <span>Settings</span>
                     </div>
-                    <div className="dropdown-item danger">
+                    <div className="dropdown-item danger" onClick={handleLogout}>
                         <Icon name="logout" />
                         <span>Log Out</span>
                     </div>
                 </div>
                 <div className="user-menu-trigger" onClick={() => setShowDropdown(!showDropdown)}>
-                    <div className="user-avatar">CA</div>
+                    <div className="user-avatar">{getUserInitials()}</div>
                     <div className="user-info">
-                        <div className="user-name">Carlos Admin</div>
-                        <div className="user-role">Administrator</div>
+                        <div className="user-name">{getDisplayName()}</div>
+                        <div className="user-role">{user?.email || 'Usuario'}</div>
                     </div>
                     <Icon name="expand_more" />
                 </div>
