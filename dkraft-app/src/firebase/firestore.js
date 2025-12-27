@@ -246,7 +246,8 @@ export const COLLECTIONS = {
   UNITS: 'units',
   ACTIVITY_LOG: 'activityLog',
   ATTENDANCE: 'attendance',
-  QUALITY: 'quality'
+  QUALITY: 'quality',
+  BOM: 'bom'
 };
 
 // Staff Service
@@ -350,4 +351,22 @@ export const activityLogService = {
     { orderByField: 'createdAt', orderDirection: 'desc', limitCount }
   ),
   subscribe: (callback) => subscribeToCollection(COLLECTIONS.ACTIVITY_LOG, callback)
+};
+
+// BOM (Bill of Materials) Service
+export const bomService = {
+  getAll: () => getAll(COLLECTIONS.BOM),
+  getById: (id) => getById(COLLECTIONS.BOM, id),
+  create: (data) => create(COLLECTIONS.BOM, data),
+  update: (id, data) => update(COLLECTIONS.BOM, id, data),
+  delete: (id) => remove(COLLECTIONS.BOM, id),
+  subscribe: (callback) => subscribeToCollection(COLLECTIONS.BOM, callback),
+  getByProduct: (productId) => queryDocuments(
+    COLLECTIONS.BOM,
+    [{ field: 'productId', operator: '==', value: productId }]
+  ),
+  getActive: () => queryDocuments(
+    COLLECTIONS.BOM,
+    [{ field: 'status', operator: '==', value: 'Active' }]
+  )
 };

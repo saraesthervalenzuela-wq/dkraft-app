@@ -6,6 +6,7 @@ export { default as TopClientsModule } from './TopClients';
 export { default as SuppliersModule } from './Suppliers';
 export { default as MaterialsModule } from './Materials';
 export { default as ProductsModule } from './Products';
+export { default as BOMModule } from './BOM';
 export { default as ProjectsModule } from './Projects';
 export { default as OperationsModule } from './Operations';
 export { default as ReportsModule } from './Reports';

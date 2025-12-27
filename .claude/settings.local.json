@@ -16,7 +16,8 @@
       "Bash(npm run dev:*)",
       "Bash(head:*)",
       "Bash(\"/Users/concepcion/Library/CloudStorage/Dropbox/My Mac \\(Carloss-MacBook-Pro.local\\)/Downloads/D-Kraft/dkraft-app/src/styles/main.css.tmp\")",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npx vite:*)"
     ]
   }
 }

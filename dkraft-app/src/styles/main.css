@@ -13482,3 +13482,516 @@ button {
         width: 100%;
     }
 }
+
+/* ============================================
+   BOM (Bill of Materials) Module Styles
+   ============================================ */
+
+.bom-page {
+    padding: 2rem;
+}
+
+/* BOM Table Styles */
+.bom-table .col-expand {
+    width: 40px;
+    min-width: 40px;
+}
+
+.bom-table .col-code {
+    width: 100px;
+    min-width: 100px;
+}
+
+.bom-table .col-name {
+    flex: 2;
+    min-width: 180px;
+}
+
+.bom-table .col-product {
+    flex: 1.5;
+    min-width: 150px;
+}
+
+.bom-table .col-components {
+    width: 100px;
+    min-width: 100px;
+    text-align: center;
+}
+
+.bom-table .col-cost {
+    width: 120px;
+    min-width: 120px;
+    text-align: right;
+}
+
+.bom-table .col-stock-status {
+    width: 60px;
+    min-width: 60px;
+    text-align: center;
+}
+
+.btn-expand {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.btn-expand:hover {
+    background: var(--bg-tertiary);
+    color: var(--accent-primary);
+}
+
+.bom-row-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.materials-table-row.expanded {
+    background: var(--bg-tertiary);
+    border-bottom: none;
+}
+
+/* BOM Components Expanded View */
+.bom-components-expanded {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(139, 92, 246, 0.02) 100%);
+    border-left: 3px solid var(--accent-primary);
+    margin-left: 60px;
+    margin-bottom: 0.5rem;
+    border-radius: 0 8px 8px 0;
+    overflow: hidden;
+}
+
+.components-header {
+    display: grid;
+    grid-template-columns: 50px 80px 1fr 60px 70px 100px 100px 80px;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(139, 92, 246, 0.1);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.component-row {
+    display: grid;
+    grid-template-columns: 50px 80px 1fr 60px 70px 100px 100px 80px;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    align-items: center;
+}
+
+.component-row:last-child {
+    border-bottom: none;
+}
+
+.component-row:hover {
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.comp-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comp-type .material-symbols-rounded {
+    font-size: 18px;
+    color: var(--accent-primary);
+}
+
+.comp-qty,
+.comp-unit-cost,
+.comp-total {
+    text-align: right;
+}
+
+.comp-stock {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.comp-stock .material-symbols-rounded {
+    font-size: 16px;
+}
+
+.components-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: rgba(139, 92, 246, 0.08);
+    font-size: 0.875rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.components-footer .footer-label {
+    color: var(--text-muted);
+}
+
+.components-footer .footer-value {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-right: 1rem;
+}
+
+.components-footer .footer-label.total,
+.components-footer .footer-value.total {
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+/* BOM Form Styles */
+.bom-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.bom-form textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.bom-form textarea:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.bom-form textarea:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Form Section */
+.form-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.form-section h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h3 {
+    margin-bottom: 0;
+}
+
+.btn-add-component {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-component:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--accent-glow);
+}
+
+.btn-add-component .material-symbols-rounded {
+    font-size: 16px;
+}
+
+/* Components List in Modal */
+.components-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.component-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+}
+
+.component-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.component-info > .material-symbols-rounded {
+    font-size: 20px;
+    color: var(--accent-primary);
+}
+
+.component-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.component-name {
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.component-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.component-stock {
+    margin-left: auto;
+}
+
+.component-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.no-components {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    gap: 0.5rem;
+}
+
+.no-components .material-symbols-rounded {
+    font-size: 32px;
+    opacity: 0.5;
+}
+
+.no-components p {
+    font-size: 0.875rem;
+}
+
+/* Costs Section */
+.costs-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.03) 100%);
+}
+
+.costs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.cost-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.cost-item label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.cost-item .cost-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.cost-item.editable input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.cost-item.editable input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+}
+
+.cost-item.total .cost-value {
+    color: var(--accent-primary);
+    font-size: 1.125rem;
+}
+
+.cost-item.suggested .cost-value {
+    color: var(--success);
+    font-size: 1.25rem;
+}
+
+/* Component Form Modal */
+.component-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.component-type-toggle {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.type-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.type-btn:hover {
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.type-btn.active {
+    background: var(--accent-gradient);
+    border-color: transparent;
+    color: white;
+}
+
+.type-btn .material-symbols-rounded {
+    font-size: 20px;
+}
+
+.stock-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--bg-tertiary);
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.stock-info .stock-status {
+    margin-left: auto;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.stock-info .stock-status.sufficient {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+}
+
+.stock-info .stock-status.low {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--warning);
+}
+
+.stock-info .stock-status.insufficient {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+}
+
+/* Stock Alert Badge */
+.stock-alert-badge {
+    display: flex;
+    align-items: center;
+}
+
+.stock-alert-badge .material-symbols-rounded {
+    font-size: 18px;
+}
+
+/* Responsive BOM */
+@media (max-width: 1024px) {
+    .costs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .components-header,
+    .component-row {
+        grid-template-columns: 40px 70px 1fr 50px 60px 80px 80px 60px;
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .bom-components-expanded {
+        margin-left: 20px;
+    }
+
+    .components-header,
+    .component-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
+    .components-header {
+        display: none;
+    }
+
+    .component-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .costs-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .component-type-toggle {
+        flex-direction: column;
+    }
+}

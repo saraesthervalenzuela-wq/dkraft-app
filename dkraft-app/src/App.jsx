@@ -11,6 +11,7 @@ import {
     SuppliersModule,
     MaterialsModule,
     ProductsModule,
+    BOMModule,
     ProjectsModule,
     OperationsModule,
     ReportsModule,
@@ -66,6 +67,8 @@ const AppContent = () => {
                 return <MaterialsModule />;
             case 'products':
                 return <ProductsModule />;
+            case 'bom':
+                return <BOMModule />;
             case 'projects':
                 return <ProjectsModule />;
             case 'operations':

@@ -25,7 +25,8 @@ export {
   operationsService,
   categoriesService,
   unitsService,
-  activityLogService
+  activityLogService,
+  bomService
 } from './firestore';
 
 // Auth Services
