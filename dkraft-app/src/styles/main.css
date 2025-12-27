@@ -14718,23 +14718,59 @@ button {
    QUALITY MODULE RESPONSIVE
    ============================================ */
 
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
     .quality-page {
-        padding: 1.5rem;
+        padding: 24px;
     }
 
-    .quality-page .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .qa-metrics-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
 
-    .findings-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .qa-metric-card {
+        padding: 16px;
+    }
+
+    .qa-metric-card .metric-value {
+        font-size: 24px;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
     .quality-page {
-        padding: 1rem;
+        padding: 20px;
+    }
+
+    .qa-tabs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .qa-metric-card .metric-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .qa-metric-card .metric-icon .nav-icon {
+        font-size: 20px;
+    }
+
+    /* QA Table responsive */
+    .qa-table-header,
+    .qa-table-row {
+        grid-template-columns: 1fr 1fr 100px 100px 80px;
+        font-size: 12px;
+    }
+
+    /* Hide some columns */
+    .qa-table-header > span:nth-child(3),
+    .qa-table-row > div:nth-child(3) {
+        display: none;
+    }
+}
+
+@media (max-width: 1024px) {
+    .quality-page {
+        padding: 16px;
     }
 
     .quality-page .page-header {
@@ -14743,82 +14779,395 @@ button {
         gap: 1rem;
     }
 
-    .quality-page .stats-grid {
-        grid-template-columns: 1fr;
+    .quality-page .page-header-left {
+        width: 100%;
     }
 
-    .findings-grid {
-        grid-template-columns: 1fr;
+    .btn-new-inspection {
+        width: 100%;
+        justify-content: center;
     }
 
-    .quality-page .section-header {
+    .qa-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .qa-metric-card {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .qa-metric-card .metric-value {
+        font-size: 20px;
+    }
+
+    .qa-metric-card .metric-label {
+        font-size: 11px;
+    }
+
+    /* QA Toolbar */
+    .qa-toolbar {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+        gap: 12px;
+        align-items: stretch;
     }
 
-    .quality-page .section-header h3 {
-        font-size: 1rem;
+    .qa-toolbar .search-box {
+        width: 100%;
     }
 
-    .finding-card {
-        padding: 1rem;
+    .qa-filter-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
     }
 
-    .finding-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .finding-meta {
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .audit-timeline {
-        padding-left: 1rem;
-    }
-
-    .timeline-item {
-        padding-left: 1.5rem;
-    }
-
-    .timeline-item::before {
-        left: 0;
+    .qa-filter-tabs::-webkit-scrollbar {
+        height: 4px;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .quality-page {
-        padding: 0.5rem;
+        padding: 12px;
     }
 
     .quality-page .page-header h2 {
         font-size: 1.25rem;
     }
 
+    .quality-page .page-header p {
+        font-size: 12px;
+    }
+
     .quality-page .page-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+
+    .qa-tabs-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .qa-tab-card {
+        padding: 16px;
+    }
+
+    .qa-tab-icon {
         width: 40px;
         height: 40px;
     }
 
-    .finding-card {
-        padding: 0.75rem;
+    .qa-tab-icon .nav-icon {
+        font-size: 20px;
     }
 
-    .finding-title {
-        font-size: 0.9rem;
+    .qa-tab-label {
+        font-size: 14px;
+    }
+
+    .qa-tab-desc {
+        font-size: 12px;
+    }
+
+    .qa-metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .qa-metric-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 12px;
+    }
+
+    .qa-metric-card .metric-icon {
+        margin: 0 auto;
+    }
+
+    /* QA Table to Cards */
+    .qa-table-header {
+        display: none;
+    }
+
+    .qa-table-row {
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        border-radius: 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-subtle);
+        gap: 0.5rem;
+    }
+
+    .qa-table-row > div {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* Findings cards */
+    .findings-list {
+        gap: 12px;
+    }
+
+    .finding-card {
+        padding: 14px;
+        border-radius: 10px;
+    }
+
+    .finding-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .finding-meta {
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .finding-status {
+        padding: 4px 10px;
+        font-size: 11px;
+    }
+
+    .severity-badge {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+
+    .finding-body {
+        margin-bottom: 10px;
+    }
+
+    .finding-description {
+        font-size: 13px;
+    }
+
+    .finding-details {
+        gap: 10px;
+        font-size: 12px;
+    }
+
+    .finding-details span {
+        flex: 1 1 45%;
+    }
+
+    .finding-actions {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding-top: 10px;
+    }
+
+    .finding-actions .status-select {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .finding-actions .btn-icon {
+        flex-shrink: 0;
+    }
+
+    /* Inspection cards */
+    .inspection-card {
+        padding: 14px;
+    }
+
+    .inspection-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .inspection-info {
+        width: 100%;
+    }
+
+    .inspection-badges {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    /* Checklist responsive */
+    .checklist-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .checklist-item {
+        padding: 12px;
+    }
+
+    /* Timeline responsive */
+    .audit-timeline {
+        padding-left: 16px;
+    }
+
+    .timeline-item {
+        padding-left: 20px;
+        padding-bottom: 16px;
+    }
+
+    .timeline-item::before {
+        left: -16px;
+        width: 10px;
+        height: 10px;
+    }
+
+    .timeline-item::after {
+        left: -12px;
+    }
+
+    /* Modal responsive */
+    .qa-modal .modal-content {
+        max-width: 100%;
+        margin: 0.5rem;
+        max-height: 95vh;
+    }
+
+    .qa-modal .modal-body {
+        padding: 16px;
+    }
+
+    .qa-modal .form-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .qa-modal .form-row .form-group {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .quality-page {
+        padding: 8px;
+    }
+
+    .quality-page .page-header {
+        gap: 0.75rem;
+    }
+
+    .quality-page .page-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .quality-page .page-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+    }
+
+    .btn-new-inspection {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+
+    .btn-new-inspection .nav-icon {
+        font-size: 18px;
+    }
+
+    .qa-metrics-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .qa-metric-card {
+        padding: 10px;
+    }
+
+    .qa-metric-card .metric-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .qa-metric-card .metric-icon .nav-icon {
+        font-size: 16px;
+    }
+
+    .qa-metric-card .metric-value {
+        font-size: 18px;
+    }
+
+    .qa-metric-card .metric-label {
+        font-size: 10px;
+    }
+
+    .qa-tab-card {
+        padding: 12px;
+    }
+
+    .qa-tab-icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .qa-tab-arrow {
+        width: 28px;
+        height: 28px;
+    }
+
+    .qa-tab-label {
+        font-size: 13px;
+    }
+
+    .qa-tab-desc {
+        display: none;
+    }
+
+    .qa-tab-stat {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+
+    .finding-card {
+        padding: 12px;
+    }
+
+    .finding-type {
+        font-size: 13px;
+    }
+
+    .finding-description {
+        font-size: 12px;
+    }
+
+    .finding-details {
+        font-size: 11px;
+        gap: 8px;
+    }
+
+    .finding-details span {
+        flex: 1 1 100%;
     }
 
     .finding-actions {
         flex-direction: column;
-        gap: 0.5rem;
+    }
+
+    .finding-actions .status-select {
+        width: 100%;
     }
 
     .finding-actions .btn-icon {
         width: 100%;
         justify-content: center;
+    }
+
+    /* QA Filter tabs scroll */
+    .qa-filter-tabs {
+        gap: 4px;
+    }
+
+    .qa-filter-tabs .tab-btn {
+        padding: 8px 12px;
+        font-size: 11px;
+        white-space: nowrap;
     }
 }
 
