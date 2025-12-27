@@ -3,31 +3,73 @@
  * All application data constants
  */
 
-// Navigation items
-export const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'staff', label: 'Staff', icon: 'badge' },
-    { id: 'staff-duty', label: 'Staff on Duty', icon: 'work_history' },
-    { id: 'clients', label: 'Clients', icon: 'group' },
-    { id: 'top-clients', label: 'Top Clients', icon: 'star' },
-    { id: 'suppliers', label: 'Suppliers', icon: 'local_shipping' },
-    { id: 'materials', label: 'Materials', icon: 'inventory_2' },
-    { id: 'products', label: 'Products', icon: 'category' },
-    { id: 'bom', label: 'Bill of Materials', icon: 'receipt_long' },
-    { id: 'projects', label: 'Projects', icon: 'assignment' },
-    { id: 'operations', label: 'Operations', icon: 'engineering' },
-    { id: 'reports', label: 'Reports', icon: 'analytics' },
-    { id: 'quality', label: 'Quality', icon: 'verified' },
-    { id: 'performance', label: 'Performance', icon: 'trending_up' },
-    { id: 'catalogs', label: 'Catalogs', icon: 'widgets', hasSubmenu: true, submenu: [
-        { id: 'categories', label: 'Categories', icon: 'label' },
-        { id: 'units', label: 'Units', icon: 'straighten' }
-    ]},
-    { id: 'qb-health', label: 'QB Health', icon: 'favorite' },
-    { id: 'activity-log', label: 'Activity Log', icon: 'history' },
-    { id: 'project-analysis', label: 'Project Analysis', icon: 'science' },
-    { id: 'firebase-test', label: '🔥 Firebase Test', icon: 'bolt' },
+// Navigation sections with items
+export const navSections = [
+    {
+        id: 'main',
+        label: 'MAIN',
+        items: [
+            { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+        ]
+    },
+    {
+        id: 'hr',
+        label: 'HUMAN RESOURCES',
+        items: [
+            { id: 'staff', label: 'Staff', icon: 'badge' },
+            { id: 'staff-duty', label: 'Attendance', icon: 'work_history' },
+        ]
+    },
+    {
+        id: 'commercial',
+        label: 'COMMERCIAL',
+        items: [
+            { id: 'clients', label: 'Clients', icon: 'group' },
+            { id: 'top-clients', label: 'Top Clients', icon: 'star' },
+            { id: 'suppliers', label: 'Suppliers', icon: 'local_shipping' },
+        ]
+    },
+    {
+        id: 'inventory',
+        label: 'INVENTORY',
+        items: [
+            { id: 'materials', label: 'Materials', icon: 'inventory_2' },
+            { id: 'products', label: 'Products', icon: 'category' },
+            { id: 'bom', label: 'Bill of Materials', icon: 'receipt_long' },
+        ]
+    },
+    {
+        id: 'production',
+        label: 'PRODUCTION',
+        items: [
+            { id: 'projects', label: 'Projects', icon: 'assignment' },
+            { id: 'operations', label: 'Operations', icon: 'engineering' },
+        ]
+    },
+    {
+        id: 'analytics',
+        label: 'ANALYTICS',
+        items: [
+            { id: 'reports', label: 'Reports', icon: 'analytics' },
+            { id: 'quality', label: 'Quality', icon: 'verified' },
+            { id: 'performance', label: 'Performance', icon: 'trending_up' },
+            { id: 'project-analysis', label: 'Project Analysis', icon: 'science' },
+            { id: 'activity-log', label: 'Activity Log', icon: 'history' },
+        ]
+    },
+    {
+        id: 'settings',
+        label: 'SETTINGS',
+        items: [
+            { id: 'categories', label: 'Categories', icon: 'label' },
+            { id: 'units', label: 'Units', icon: 'straighten' },
+            { id: 'qb-health', label: 'QB Health', icon: 'favorite' },
+        ]
+    }
 ];
+
+// Flatten navSections for backwards compatibility
+export const navItems = navSections.flatMap(section => section.items);
 
 // Stats data
 export const statsData = [

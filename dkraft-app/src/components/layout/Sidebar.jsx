@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Icon } from '../common';
-import { navItems } from '../../data/initialData';
+import { navSections } from '../../data/initialData';
 
 /**
  * Sidebar Component
@@ -74,36 +74,41 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
             </div>
 
             <nav className="nav-section">
-                {navItems.map((item) => (
-                    <div key={item.id} className="nav-item-container">
-                        <a
-                            className={`nav-item ${activeNav === item.id ? 'active' : ''} ${isSubmenuActive(item) ? 'has-active-child' : ''}`}
-                            onClick={() => handleNavClick(item)}
-                        >
-                            <Icon name={item.icon} />
-                            <span className="nav-label">{item.label}</span>
-                            {item.badge && <span className="nav-badge">{item.badge}</span>}
-                            {item.hasSubmenu && (
-                                <Icon
-                                    name={expandedMenus[item.id] ? 'expand_more' : 'chevron_right'}
-                                    className="submenu-arrow"
-                                />
-                            )}
-                        </a>
-                        {item.hasSubmenu && item.submenu && expandedMenus[item.id] && (
-                            <div className="nav-submenu">
-                                {item.submenu.map((subItem) => (
-                                    <a
-                                        key={subItem.id}
-                                        className={`nav-subitem ${activeNav === subItem.id ? 'active' : ''}`}
-                                        onClick={() => setActiveNav(subItem.id)}
-                                    >
-                                        <Icon name={subItem.icon} />
-                                        <span className="nav-label">{subItem.label}</span>
-                                    </a>
-                                ))}
+                {navSections.map((section) => (
+                    <div key={section.id} className="nav-section-group">
+                        <div className="nav-section-header">{section.label}</div>
+                        {section.items.map((item) => (
+                            <div key={item.id} className="nav-item-container">
+                                <a
+                                    className={`nav-item ${activeNav === item.id ? 'active' : ''} ${isSubmenuActive(item) ? 'has-active-child' : ''}`}
+                                    onClick={() => handleNavClick(item)}
+                                >
+                                    <Icon name={item.icon} />
+                                    <span className="nav-label">{item.label}</span>
+                                    {item.badge && <span className="nav-badge">{item.badge}</span>}
+                                    {item.hasSubmenu && (
+                                        <Icon
+                                            name={expandedMenus[item.id] ? 'expand_more' : 'chevron_right'}
+                                            className="submenu-arrow"
+                                        />
+                                    )}
+                                </a>
+                                {item.hasSubmenu && item.submenu && expandedMenus[item.id] && (
+                                    <div className="nav-submenu">
+                                        {item.submenu.map((subItem) => (
+                                            <a
+                                                key={subItem.id}
+                                                className={`nav-subitem ${activeNav === subItem.id ? 'active' : ''}`}
+                                                onClick={() => setActiveNav(subItem.id)}
+                                            >
+                                                <Icon name={subItem.icon} />
+                                                <span className="nav-label">{subItem.label}</span>
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        ))}
                     </div>
                 ))}
             </nav>
