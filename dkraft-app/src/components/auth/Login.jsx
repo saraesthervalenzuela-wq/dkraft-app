@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const Login = ({ onSwitchToRegister, onForgotPassword }) => {
-  const { login, error, clearError } = useAuth();
+  const { login, loginAsDemo, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -109,6 +109,19 @@ const Login = ({ onSwitchToRegister, onForgotPassword }) => {
           ) : (
             'Iniciar Sesión'
           )}
+        </button>
+
+        <div className="auth-divider">
+          <span>o</span>
+        </div>
+
+        <button
+          type="button"
+          className="auth-button demo"
+          onClick={loginAsDemo}
+        >
+          <span className="material-symbols-rounded">play_circle</span>
+          Entrar como Demo
         </button>
       </form>
 

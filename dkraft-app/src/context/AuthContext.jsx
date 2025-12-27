@@ -57,6 +57,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Demo mode - bypass authentication for testing
+  const loginAsDemo = () => {
+    setUser({
+      uid: 'demo-user',
+      email: 'demo@dkraft.com',
+      displayName: 'Usuario Demo'
+    });
+  };
+
   const clearError = () => setError(null);
 
   const value = {
@@ -66,6 +75,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    loginAsDemo,
     clearError,
     isAuthenticated: !!user
   };
