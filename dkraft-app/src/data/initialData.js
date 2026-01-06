@@ -35,6 +35,7 @@ export const navSections = [
         items: [
             { id: 'materials', label: 'Materials', icon: 'inventory_2' },
             { id: 'products', label: 'Products', icon: 'category' },
+            { id: 'warehouses', label: 'Warehouses', icon: 'warehouse' },
             { id: 'bom', label: 'Bill of Materials', icon: 'receipt_long' },
         ]
     },
@@ -43,6 +44,8 @@ export const navSections = [
         label: 'PRODUCTION',
         items: [
             { id: 'projects', label: 'Projects', icon: 'assignment' },
+            { id: 'quotations', label: 'Cotizaciones', icon: 'request_quote' },
+            { id: 'requisitions', label: 'Sales Orders', icon: 'shopping_cart' },
             { id: 'operations', label: 'Operations', icon: 'engineering' },
         ]
     },

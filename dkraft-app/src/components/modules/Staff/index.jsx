@@ -1,19 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
+import { isApiEnabled, usersApi } from '../../../services/api';
 
-// Staff data
-const initialStaffData = [
-    { id: 1, username: 'Francisco Antonio Hernandez Gaona', email: 'supervisor.almacen@dovecreekproducts.com', role: 'REQUISITOR' },
-    { id: 2, username: 'Irma Gloria Castro Encinas', email: 'icastro@dovecreekproducts.com', role: 'MANAGEMENT' },
-    { id: 3, username: 'Samuel Melendres', email: 'almacen@dovecreekproducts.com', role: 'REQUISITOR' },
-    { id: 4, username: 'Alba Dinora Valadez Chavez', email: 'avaladez@dovecreekproducts.com', role: 'ADMIN' },
-    { id: 5, username: 'Victor Dimas Gutierrez', email: 'vdimas@dovecreekproducts.com', role: 'SALES' },
-    { id: 6, username: 'Omar Andres Vasquez', email: 'ovasquez@dovecreekproducts.com', role: 'MANAGEMENT' },
-    { id: 7, username: 'admin_user', email: 'mcorl95@gmail.com', role: 'ADMIN_DEV' },
-    { id: 8, username: 'Alonso Pacheco Valderrama', email: 'apacheco@dovecreekproducts.com', role: 'REQUISITOR' },
-];
+// Empty initial data - will be loaded from API
+const initialStaffData = [];
 
-const roleOptions = ['ADMIN', 'ADMIN_DEV', 'MANAGEMENT', 'REQUISITOR', 'SALES', 'VIEWER'];
+const roleOptions = ['ADMIN_DEV', 'ADMIN', 'USER', 'STORE', 'SALES', 'COST', 'REQUISITOR', 'MANAGEMENT'];
 
 const StaffModule = () => {
     const [users, setUsers] = useState(initialStaffData);
@@ -21,9 +13,41 @@ const StaffModule = () => {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
-    const [newUser, setNewUser] = useState({ username: '', email: '', role: '' });
+    const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: '' });
     const [editingUser, setEditingUser] = useState(null);
-    const [viewMode, setViewMode] = useState('table'); // 'table' or 'list'
+    const [viewMode, setViewMode] = useState('table');
+    const [isLoading, setIsLoading] = useState(true);
+    const [showPassword, setShowPassword] = useState(false);
+
+    // Load data on mount
+    useEffect(() => {
+        loadData();
+    }, []);
+
+    const loadData = async () => {
+        setIsLoading(true);
+        try {
+            if (isApiEnabled()) {
+                console.log('[Staff] Loading users from API...');
+                const usersData = await usersApi.getAll();
+                console.log('[Staff] API response:', usersData);
+                if (usersData?.length > 0) {
+                    // Normalize user data
+                    const normalizedUsers = usersData.map(u => ({
+                        id: u.id || u.idUser,
+                        username: u.username || u.name || '',
+                        email: u.email || '',
+                        role: u.role || 'VIEWER',
+                    }));
+                    setUsers(normalizedUsers);
+                }
+            }
+        } catch (error) {
+            console.error('[Staff] Error loading users:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const filteredUsers = users.filter(user =>
         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,41 +85,90 @@ const StaffModule = () => {
         );
     };
 
-    const handleCreateUser = () => {
-        if (!newUser.username || !newUser.email || !newUser.role) return;
-        const user = {
-            id: Math.max(...users.map(u => u.id)) + 1,
-            ...newUser
-        };
-        setUsers([...users, user]);
-        setNewUser({ username: '', email: '', role: '' });
-        setShowModal(false);
+    const handleCreateUser = async () => {
+        if (!newUser.username || !newUser.email || !newUser.role || !newUser.password) return;
+        try {
+            // Build user data for API
+            const userToCreate = {
+                name: newUser.username,
+                email: newUser.email,
+                password: newUser.password,
+                role: newUser.role,
+                areaId: "1",
+                departmentId: "1",
+            };
+
+            console.log('[Staff] Creating user:', userToCreate);
+            if (isApiEnabled()) {
+                const createdUser = await usersApi.create(userToCreate);
+                console.log('[Staff] API response:', createdUser);
+            }
+            setNewUser({ username: '', email: '', password: '', role: '' });
+            setShowModal(false);
+            await loadData();
+        } catch (error) {
+            console.error('[Staff] Error creating user:', error);
+            alert('Error creating user: ' + error.message);
+        }
     };
 
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async () => {
         if (selectedUsers.length === 0) return;
-        setUsers(users.filter(u => !selectedUsers.includes(u.id)));
-        setSelectedUsers([]);
+        try {
+            if (isApiEnabled()) {
+                for (const id of selectedUsers) {
+                    await usersApi.delete(id);
+                }
+            }
+            setSelectedUsers([]);
+            await loadData();
+        } catch (error) {
+            console.error('[Staff] Error deleting users:', error);
+            alert('Error deleting users: ' + error.message);
+        }
     };
 
     const handleEditUser = (user) => {
         setEditingUser(user);
-        setNewUser({ username: user.username, email: user.email, role: user.role });
+        setNewUser({ username: user.username, email: user.email, password: '', role: user.role });
         setShowModal(true);
     };
 
-    const handleUpdateUser = () => {
+    const handleUpdateUser = async () => {
         if (!newUser.username || !newUser.email || !newUser.role) return;
-        setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...newUser } : u));
-        setNewUser({ username: '', email: '', role: '' });
-        setEditingUser(null);
-        setShowModal(false);
+        try {
+            // Build user data for API
+            const userToUpdate = {
+                name: newUser.username,
+                email: newUser.email,
+                role: newUser.role,
+                areaId: "1",
+                departmentId: "1",
+            };
+            // Add password only if changed
+            if (newUser.password?.trim()) {
+                userToUpdate.password = newUser.password;
+            }
+
+            console.log('[Staff] Updating user:', editingUser.id, userToUpdate);
+            if (isApiEnabled()) {
+                await usersApi.update(editingUser.id, userToUpdate);
+            }
+            setNewUser({ username: '', email: '', password: '', role: '' });
+            setEditingUser(null);
+            setShowModal(false);
+            await loadData();
+        } catch (error) {
+            console.error('[Staff] Error updating user:', error);
+            alert('Error updating user: ' + error.message);
+        }
     };
 
     const closeModal = () => {
         setShowModal(false);
-        setNewUser({ username: '', email: '', role: '' });
+        setNewUser({ username: '', email: '', password: '', role: '' });
         setEditingUser(null);
+        setShowPassword(false);
     };
 
     // Calculate stats
@@ -195,7 +268,12 @@ const StaffModule = () => {
                 </div>
             </div>
 
-            {viewMode === 'table' ? (
+            {isLoading ? (
+                <div className="materials-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Loading users...</p>
+                </div>
+            ) : viewMode === 'table' ? (
                 <div className="staff-table-container">
                     <div className="staff-table">
                         <div className="staff-table-header">
@@ -307,23 +385,57 @@ const StaffModule = () => {
                         </div>
                         <div className="modal-body">
                             <div className="form-group">
-                                <label>Username</label>
+                                <label>Name *</label>
                                 <input
                                     type="text"
                                     value={newUser.username}
                                     onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                                    placeholder="Enter username"
+                                    placeholder="Enter name"
                                     autoFocus
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Email</label>
+                                <label>Email *</label>
                                 <input
                                     type="email"
                                     value={newUser.email}
                                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                                     placeholder="Enter email"
                                 />
+                            </div>
+                            <div className="form-group">
+                                <label>{editingUser ? 'Password (leave empty to keep current)' : 'Password *'}</label>
+                                <div style={{ position: 'relative', width: '100%' }}>
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={newUser.password}
+                                        onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                                        placeholder={editingUser ? 'Leave empty to keep current' : 'Enter password'}
+                                        style={{ width: '100%', paddingRight: '40px', boxSizing: 'border-box' }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            background: 'transparent',
+                                            border: 'none',
+                                            cursor: 'pointer',
+                                            padding: '4px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            color: '#888',
+                                            zIndex: 1
+                                        }}
+                                        title={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                    >
+                                        <Icon name={showPassword ? 'visibility_off' : 'visibility'} />
+                                    </button>
+                                </div>
                             </div>
                             <div className="form-group">
                                 <label>Role</label>
@@ -345,7 +457,7 @@ const StaffModule = () => {
                             <button
                                 className="btn-modal-save"
                                 onClick={editingUser ? handleUpdateUser : handleCreateUser}
-                                disabled={!newUser.username || !newUser.email || !newUser.role}
+                                disabled={!newUser.username || !newUser.email || !newUser.role || (!editingUser && !newUser.password)}
                             >
                                 <span className="material-symbols-rounded">save</span>
                                 {editingUser ? 'Update user' : 'Create user'}

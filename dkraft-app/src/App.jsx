@@ -11,8 +11,11 @@ import {
     SuppliersModule,
     MaterialsModule,
     ProductsModule,
+    WarehousesModule,
     BOMModule,
     ProjectsModule,
+    RequisitionsModule,
+    QuotationsModule,
     OperationsModule,
     ReportsModule,
     QualityModule,
@@ -67,10 +70,16 @@ const AppContent = () => {
                 return <MaterialsModule />;
             case 'products':
                 return <ProductsModule />;
+            case 'warehouses':
+                return <WarehousesModule />;
             case 'bom':
                 return <BOMModule />;
             case 'projects':
                 return <ProjectsModule />;
+            case 'requisitions':
+                return <RequisitionsModule />;
+            case 'quotations':
+                return <QuotationsModule />;
             case 'operations':
                 return <OperationsModule />;
             case 'reports':

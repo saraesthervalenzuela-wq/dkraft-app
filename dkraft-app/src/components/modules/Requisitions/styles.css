@@ -1,0 +1,836 @@
+/**
+ * Requisitions Module Styles
+ */
+
+.requisitions-module {
+    padding: 1.5rem;
+}
+
+/* Header */
+.requisitions-module .module-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.requisitions-module .header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.requisitions-module .header-title h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--text-primary, #1a1a2e);
+}
+
+.requisitions-module .module-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color, #4361ee);
+}
+
+.requisitions-module .api-badge {
+    background: var(--primary-color, #4361ee);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+/* Filters */
+.requisitions-module .module-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.requisitions-module .search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    flex: 1;
+    min-width: 250px;
+    max-width: 400px;
+}
+
+.requisitions-module .search-box input {
+    border: none;
+    background: transparent;
+    outline: none;
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.requisitions-module .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.requisitions-module .filter-group select {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    background: var(--bg-secondary, #f8f9fa);
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.requisitions-module .view-toggle {
+    display: flex;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.requisitions-module .view-toggle button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: var(--bg-secondary, #f8f9fa);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.requisitions-module .view-toggle button.active {
+    background: var(--primary-color, #4361ee);
+    color: white;
+}
+
+/* Stats Row */
+.requisitions-module .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.requisitions-module .stat-card {
+    padding: 1rem;
+}
+
+.requisitions-module .stat-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.requisitions-module .stat-icon {
+    font-size: 2rem;
+    color: var(--primary-color, #4361ee);
+}
+
+.requisitions-module .stat-card.pending .stat-icon {
+    color: #ffc107;
+}
+
+.requisitions-module .stat-card.approved .stat-icon {
+    color: #28a745;
+}
+
+.requisitions-module .stat-card.fulfilled .stat-icon {
+    color: #20c997;
+}
+
+.requisitions-module .stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary, #1a1a2e);
+}
+
+.requisitions-module .stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #6c757d);
+}
+
+/* Data Table */
+.requisitions-module .data-table-card {
+    overflow-x: auto;
+}
+
+.requisitions-module .data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.requisitions-module .data-table th,
+.requisitions-module .data-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+.requisitions-module .data-table th {
+    background: var(--bg-secondary, #f8f9fa);
+    font-weight: 600;
+    color: var(--text-secondary, #6c757d);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.requisitions-module .data-table tbody tr:hover {
+    background: var(--bg-hover, #f1f3f4);
+}
+
+.requisitions-module .data-table tbody tr.expanded {
+    background: var(--bg-secondary, #f8f9fa);
+}
+
+.requisitions-module .expand-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--text-secondary, #6c757d);
+    transition: transform 0.2s;
+}
+
+.requisitions-module .expand-btn:hover {
+    color: var(--primary-color, #4361ee);
+}
+
+.requisitions-module .folio-cell strong {
+    color: var(--primary-color, #4361ee);
+}
+
+.requisitions-module .cell-icon {
+    margin-right: 0.5rem;
+    color: var(--text-secondary, #6c757d);
+}
+
+.requisitions-module .items-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary, #6c757d);
+}
+
+/* Status Badges */
+.requisitions-module .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+}
+
+.requisitions-module .item-status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* Actions */
+.requisitions-module .actions-cell {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.requisitions-module .btn-icon {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.requisitions-module .btn-icon.view {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.requisitions-module .btn-icon.edit {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.requisitions-module .btn-icon.approve {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.requisitions-module .btn-icon.delete {
+    background: #ffebee;
+    color: #d32f2f;
+}
+
+.requisitions-module .btn-icon:hover {
+    transform: scale(1.1);
+}
+
+/* Expanded Row */
+.requisitions-module .expanded-row td {
+    padding: 0;
+    background: var(--bg-secondary, #f8f9fa);
+}
+
+.requisitions-module .expanded-content {
+    padding: 1rem 2rem;
+}
+
+.requisitions-module .expanded-content h4 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary, #1a1a2e);
+}
+
+.requisitions-module .items-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.requisitions-module .items-table th,
+.requisitions-module .items-table td {
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+    font-size: 0.85rem;
+}
+
+.requisitions-module .items-table th {
+    background: var(--bg-tertiary, #eee);
+    font-weight: 600;
+}
+
+.requisitions-module .requisition-comments {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* Grid View */
+.requisitions-module .requisitions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.requisitions-module .requisition-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.requisitions-module .requisition-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+    margin-bottom: 0.75rem;
+}
+
+.requisitions-module .requisition-card .folio {
+    font-weight: 700;
+    color: var(--primary-color, #4361ee);
+    font-size: 1.1rem;
+}
+
+.requisitions-module .requisition-card .card-body {
+    flex: 1;
+}
+
+.requisitions-module .requisition-card .info-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary, #6c757d);
+    font-size: 0.9rem;
+}
+
+.requisitions-module .requisition-card .info-icon {
+    color: var(--primary-color, #4361ee);
+}
+
+.requisitions-module .requisition-card .items-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+.requisitions-module .progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-secondary, #e0e0e0);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.requisitions-module .progress-bar.large {
+    height: 12px;
+}
+
+.requisitions-module .progress-fill {
+    height: 100%;
+    background: var(--primary-color, #4361ee);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.requisitions-module .requisition-card .card-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+.requisitions-module .requisition-card .card-actions button {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.requisitions-module .requisition-card .card-actions button:hover {
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border-color: var(--primary-color, #4361ee);
+}
+
+/* Empty State */
+.requisitions-module .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary, #6c757d);
+}
+
+.requisitions-module .empty-state svg {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.requisitions-module .empty-state.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Loading State */
+.requisitions-module .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: var(--text-secondary, #6c757d);
+}
+
+.requisitions-module .spinner {
+    font-size: 2rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Error State */
+.requisitions-module .error-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: #dc3545;
+}
+
+.requisitions-module .error-state svg {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.requisitions-module .error-state button {
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Buttons */
+.requisitions-module .btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.requisitions-module .btn-primary:hover {
+    background: var(--primary-hover, #3651d4);
+}
+
+.requisitions-module .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-secondary, #f8f9fa);
+    color: var(--text-primary, #1a1a2e);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.requisitions-module .btn-secondary:hover {
+    background: var(--bg-hover, #e9ecef);
+}
+
+.requisitions-module .btn-success {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.requisitions-module .btn-success:hover {
+    background: #218838;
+}
+
+.requisitions-module .btn-danger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.requisitions-module .btn-danger:hover {
+    background: #c82333;
+}
+
+/* Form Styles */
+.requisitions-module .requisition-form {
+    padding: 1rem;
+}
+
+.requisitions-module .form-section {
+    margin-bottom: 2rem;
+}
+
+.requisitions-module .form-section h3 {
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--primary-color, #4361ee);
+    color: var(--text-primary, #1a1a2e);
+}
+
+.requisitions-module .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.requisitions-module .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.requisitions-module .form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.requisitions-module .form-group label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #6c757d);
+}
+
+.requisitions-module .form-group input,
+.requisitions-module .form-group select,
+.requisitions-module .form-group textarea {
+    padding: 0.75rem;
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.requisitions-module .form-group input:focus,
+.requisitions-module .form-group select:focus,
+.requisitions-module .form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color, #4361ee);
+}
+
+.requisitions-module .form-group input[readonly] {
+    background: var(--bg-secondary, #f8f9fa);
+    cursor: not-allowed;
+}
+
+.requisitions-module .item-form {
+    background: var(--bg-secondary, #f8f9fa);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.requisitions-module .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color, #e0e0e0);
+}
+
+/* Detail View */
+.requisitions-module .requisition-detail {
+    padding: 1rem;
+}
+
+.requisitions-module .detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.requisitions-module .detail-date {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #6c757d);
+}
+
+.requisitions-module .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.requisitions-module .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.requisitions-module .detail-item label {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #6c757d);
+    text-transform: uppercase;
+}
+
+.requisitions-module .detail-item span {
+    font-weight: 600;
+    color: var(--text-primary, #1a1a2e);
+}
+
+.requisitions-module .detail-comments {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+}
+
+.requisitions-module .detail-comments label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #6c757d);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.requisitions-module .detail-items {
+    margin-bottom: 1.5rem;
+}
+
+.requisitions-module .detail-items h4 {
+    margin: 0 0 1rem 0;
+}
+
+.requisitions-module .detail-progress {
+    padding: 1rem;
+    background: var(--bg-secondary, #f8f9fa);
+    border-radius: 8px;
+}
+
+.requisitions-module .detail-progress label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-secondary, #6c757d);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+}
+
+.requisitions-module .progress-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Approval Form */
+.requisitions-module .approval-form {
+    padding: 1rem;
+}
+
+.requisitions-module .approval-form p {
+    margin-bottom: 1rem;
+}
+
+.requisitions-module .approval-summary {
+    background: var(--bg-secondary, #f8f9fa);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.requisitions-module .approval-summary > div {
+    margin-bottom: 0.5rem;
+}
+
+.requisitions-module .approval-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+/* Delete Confirmation */
+.requisitions-module .delete-confirmation {
+    text-align: center;
+    padding: 1rem;
+}
+
+.requisitions-module .delete-confirmation .warning-icon {
+    font-size: 3rem;
+    color: #ffc107;
+    margin-bottom: 1rem;
+}
+
+.requisitions-module .delete-confirmation .warning-text {
+    color: #dc3545;
+    font-size: 0.9rem;
+}
+
+.requisitions-module .confirmation-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .requisitions-module {
+        padding: 1rem;
+    }
+
+    .requisitions-module .module-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .requisitions-module .module-filters {
+        flex-direction: column;
+    }
+
+    .requisitions-module .search-box {
+        max-width: none;
+    }
+
+    .requisitions-module .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .requisitions-module .data-table {
+        font-size: 0.85rem;
+    }
+
+    .requisitions-module .data-table th,
+    .requisitions-module .data-table td {
+        padding: 0.5rem;
+    }
+
+    .requisitions-module .requisitions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .requisitions-module .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .requisitions-module .form-actions {
+        flex-direction: column;
+    }
+
+    .requisitions-module .approval-actions,
+    .requisitions-module .confirmation-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .requisitions-module .stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .requisitions-module .view-toggle {
+        width: 100%;
+    }
+
+    .requisitions-module .view-toggle button {
+        flex: 1;
+    }
+}
