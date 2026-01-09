@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
 import { isApiEnabled, productsApi, categoriesApi } from '../../../services/api';
+
+// Polling interval for QB sync status (30 seconds)
+const QB_SYNC_POLL_INTERVAL = 30000;
 
 // LocalStorage key for products
 const STORAGE_KEY = 'dkraft_products';
@@ -25,62 +28,77 @@ const initialProductsData = [
     {
         id: '1',
         qbSyncStatus: 'synced',
+        qbListId: 'QB-PROD-001',
+        qbEditSequence: '1234567890',
         name: 'Executive Desk',
         description: 'Wooden desk with walnut finish',
         categoryId: '1',
         status: 'ACTIVE',
         costPrice: 2500.00,
         price: 4500.00,
-        accountId: '1',
-        currencyId: '1'
+        account: '1',
+        currency: '1',
+        deleted: false
     },
     {
         id: '2',
         qbSyncStatus: 'synced',
+        qbListId: 'QB-PROD-002',
+        qbEditSequence: '1234567891',
         name: 'Modular Bookshelf',
         description: '5-tier bookshelf with doors',
         categoryId: '5',
         status: 'ACTIVE',
         costPrice: 1800.00,
         price: 3200.00,
-        accountId: '1',
-        currencyId: '1'
+        account: '1',
+        currency: '1',
+        deleted: false
     },
     {
         id: '3',
         qbSyncStatus: 'pending',
+        qbListId: null,
+        qbEditSequence: null,
         name: 'Coffee Table',
         description: 'Rectangular table with metal base',
         categoryId: '4',
         status: 'ACTIVE',
         costPrice: 950.00,
         price: 1750.00,
-        accountId: '1',
-        currencyId: '1'
+        account: '1',
+        currency: '1',
+        deleted: false
     },
     {
         id: '4',
         qbSyncStatus: 'error',
+        qbListId: null,
+        qbEditSequence: null,
         name: 'Built-in Closet',
         description: 'Closet with sliding doors',
         categoryId: '5',
         status: 'INACTIVE',
         costPrice: 8500.00,
         price: 15000.00,
-        accountId: '1',
-        currencyId: '1'
+        account: '1',
+        currency: '1',
+        deleted: false
     },
     {
         id: '5',
         qbSyncStatus: 'synced',
+        qbListId: 'QB-PROD-005',
+        qbEditSequence: '1234567894',
         name: 'Mobile Drawer Unit',
         description: '3-drawer unit with wheels',
         categoryId: '5',
         status: 'ACTIVE',
         costPrice: 650.00,
         price: 1200.00,
-        accountId: '1',
-        currencyId: '1'
+        account: '1',
+        currency: '1',
+        deleted: false
     },
 ];
 
@@ -95,8 +113,11 @@ const emptyProduct = {
     costPrice: 0,
     price: 0,
     qbSyncStatus: 'pending',
-    accountId: '',
-    currencyId: '1'
+    qbListId: null,
+    qbEditSequence: null,
+    account: '',
+    currency: '1',
+    deleted: false
 };
 
 /**
@@ -146,6 +167,10 @@ const ProductsModule = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
 
+    // QB Sync polling ref
+    const pollIntervalRef = useRef(null);
+    const [pendingSyncCount, setPendingSyncCount] = useState(0);
+
     // LocalStorage helpers
     const loadFromStorage = () => {
         try {
@@ -185,6 +210,79 @@ const ProductsModule = () => {
     useEffect(() => {
         loadData();
     }, []);
+
+    /**
+     * Check if any products have pending QB sync
+     */
+    const hasPendingQBSync = useCallback((productsList) => {
+        return productsList.some(p => !p.qbListId && p.qbSyncStatus !== 'error');
+    }, []);
+
+    /**
+     * Start polling for QB sync status updates
+     */
+    useEffect(() => {
+        const useApi = isApiEnabled();
+        if (!useApi) return;
+
+        // Check if we have pending syncs
+        const pendingProducts = products.filter(p => !p.qbListId && p.qbSyncStatus !== 'error');
+        setPendingSyncCount(pendingProducts.length);
+
+        if (pendingProducts.length > 0) {
+            console.log(`[Products] ${pendingProducts.length} products pending QB sync, starting polling...`);
+
+            // Clear existing interval
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+            }
+
+            // Start polling
+            pollIntervalRef.current = setInterval(async () => {
+                console.log('[Products] Polling for QB sync updates...');
+                try {
+                    const updatedProducts = await productsApi.getAll();
+                    if (updatedProducts?.length > 0) {
+                        const normalizedProducts = updatedProducts.map(normalizeProduct);
+
+                        // Check for newly synced products
+                        const newlySynced = normalizedProducts.filter(updated => {
+                            const original = products.find(p => p.id === updated.id);
+                            return original && !original.qbListId && updated.qbListId;
+                        });
+
+                        if (newlySynced.length > 0) {
+                            console.log(`[Products] ${newlySynced.length} products synced with QB:`, newlySynced.map(p => p.name));
+                        }
+
+                        setProducts(normalizedProducts);
+                        saveToStorage(normalizedProducts);
+
+                        // Update pending count
+                        const stillPending = normalizedProducts.filter(p => !p.qbListId && p.qbSyncStatus !== 'error');
+                        setPendingSyncCount(stillPending.length);
+
+                        // Stop polling if no more pending
+                        if (stillPending.length === 0) {
+                            console.log('[Products] All products synced, stopping polling');
+                            clearInterval(pollIntervalRef.current);
+                            pollIntervalRef.current = null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('[Products] Polling error:', error);
+                }
+            }, QB_SYNC_POLL_INTERVAL);
+        }
+
+        // Cleanup on unmount
+        return () => {
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+            }
+        };
+    }, [products.length]); // Re-run when products count changes
 
     /**
      * Load products and categories - tries API first, falls back to localStorage
@@ -243,10 +341,20 @@ const ProductsModule = () => {
     };
 
     /**
+     * Determine QB sync status based on qbListId presence
+     */
+    const getQBSyncStatusFromData = (product) => {
+        if (product.qbListId) return 'synced';
+        if (product.qbSyncStatus === 'error') return 'error';
+        return 'pending';
+    };
+
+    /**
      * Normalize product data to match MySQL schema
      */
     const normalizeProduct = (p) => {
-        if (p.costPrice !== undefined && p.categoryId !== undefined) return p;
+        // Determine qbSyncStatus based on qbListId
+        const qbSyncStatus = getQBSyncStatusFromData(p);
 
         return {
             id: p.id,
@@ -256,10 +364,12 @@ const ProductsModule = () => {
             status: normalizeStatus(p.status),
             costPrice: p.costPrice || 0,
             price: p.price || 0,
-            qbSyncStatus: p.statusQB || p.qbSyncStatus || 'pending',
+            qbSyncStatus: qbSyncStatus,
             qbListId: p.qbListId || null,
-            accountId: p.accountId || findAccountId(p.account) || '',
-            currencyId: p.currencyId || findCurrencyId(p.currency) || '1',
+            qbEditSequence: p.qbEditSequence || null,
+            account: p.account || p.accountId || findAccountId(p.account) || '',
+            currency: p.currency || p.currencyId || findCurrencyId(p.currency) || '1',
+            deleted: p.deleted || false
         };
     };
 
@@ -526,6 +636,12 @@ const ProductsModule = () => {
                     </div>
                 </div>
                 <div className="header-actions">
+                    {pendingSyncCount > 0 && (
+                        <div className="qb-sync-indicator pending" title={`${pendingSyncCount} products pending QB sync`}>
+                            <span className="material-symbols-rounded spinning">sync</span>
+                            <span className="sync-count">{pendingSyncCount} pending</span>
+                        </div>
+                    )}
                     <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
@@ -660,7 +776,7 @@ const ProductsModule = () => {
                                         </div>
                                         <div className="material-detail">
                                             <Icon name="currency_exchange" />
-                                            <span>{getCurrencyCode(product.currencyId)}</span>
+                                            <span>{getCurrencyCode(product.currency)}</span>
                                         </div>
                                     </div>
                                     {product.description && (
@@ -670,7 +786,7 @@ const ProductsModule = () => {
                                 <div className="material-card-footer">
                                     <div className="material-stock">
                                         <span className="stock-label">Account</span>
-                                        <span className="stock-value">{getAccountName(product.accountId)}</span>
+                                        <span className="stock-value">{getAccountName(product.account)}</span>
                                     </div>
                                     <div className="material-actions">
                                         <button className="btn-icon" onClick={() => handleView(product)} title="View">
@@ -916,8 +1032,8 @@ const ProductsModule = () => {
                         <div className="form-group">
                             <label>Account</label>
                             <select
-                                value={currentProduct.accountId}
-                                onChange={(e) => handleInputChange('accountId', e.target.value)}
+                                value={currentProduct.account}
+                                onChange={(e) => handleInputChange('account', e.target.value)}
                                 disabled={modalMode === 'view'}
                             >
                                 <option value="">Select account</option>
@@ -929,8 +1045,8 @@ const ProductsModule = () => {
                         <div className="form-group">
                             <label>Currency</label>
                             <select
-                                value={currentProduct.currencyId}
-                                onChange={(e) => handleInputChange('currencyId', e.target.value)}
+                                value={currentProduct.currency}
+                                onChange={(e) => handleInputChange('currency', e.target.value)}
                                 disabled={modalMode === 'view'}
                             >
                                 {currencyOptions.map(curr => (

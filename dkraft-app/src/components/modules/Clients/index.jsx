@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
 import { clientsService } from '../../../firebase';
 import { isApiEnabled, clientsApi } from '../../../services/api';
+
+// Polling interval for QB sync status (30 seconds)
+const QB_SYNC_POLL_INTERVAL = 30000;
 
 /**
  * Initial clients data matching MySQL schema
@@ -87,6 +90,7 @@ const initialClientsData = [
  * Empty client template matching MySQL schema
  */
 const emptyClient = {
+    code: '',
     name: '',
     companyName: '',
     email: '',
@@ -101,6 +105,7 @@ const emptyClient = {
     website: '',
     status: 'ACTIVE',
     qbSyncStatus: 'pending',
+    listId: null,
     notes: ''
 };
 
@@ -132,10 +137,86 @@ const ClientsModule = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [clientToDelete, setClientToDelete] = useState(null);
 
+    // QB Sync polling ref
+    const pollIntervalRef = useRef(null);
+    const [pendingSyncCount, setPendingSyncCount] = useState(0);
+
     // Load data on mount
     useEffect(() => {
         loadData();
     }, []);
+
+    /**
+     * Check if any clients have pending QB sync
+     */
+    const hasPendingQBSync = useCallback((clientsList) => {
+        return clientsList.some(c => !c.listId && c.qbSyncStatus !== 'error');
+    }, []);
+
+    /**
+     * Start polling for QB sync status updates
+     */
+    useEffect(() => {
+        const useApi = isApiEnabled();
+        if (!useApi) return;
+
+        // Check if we have pending syncs
+        const pendingClients = clients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
+        setPendingSyncCount(pendingClients.length);
+
+        if (pendingClients.length > 0) {
+            console.log(`[Clients] ${pendingClients.length} clients pending QB sync, starting polling...`);
+
+            // Clear existing interval
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+            }
+
+            // Start polling
+            pollIntervalRef.current = setInterval(async () => {
+                console.log('[Clients] Polling for QB sync updates...');
+                try {
+                    const updatedClients = await clientsApi.getAll();
+                    if (updatedClients?.length > 0) {
+                        const normalizedClients = updatedClients.map(normalizeClient);
+
+                        // Check for newly synced clients
+                        const newlySynced = normalizedClients.filter(updated => {
+                            const original = clients.find(c => c.id === updated.id);
+                            return original && !original.listId && updated.listId;
+                        });
+
+                        if (newlySynced.length > 0) {
+                            console.log(`[Clients] ${newlySynced.length} clients synced with QB:`, newlySynced.map(c => c.name));
+                        }
+
+                        setClients(normalizedClients);
+
+                        // Update pending count
+                        const stillPending = normalizedClients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
+                        setPendingSyncCount(stillPending.length);
+
+                        // Stop polling if no more pending
+                        if (stillPending.length === 0) {
+                            console.log('[Clients] All clients synced, stopping polling');
+                            clearInterval(pollIntervalRef.current);
+                            pollIntervalRef.current = null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('[Clients] Polling error:', error);
+                }
+            }, QB_SYNC_POLL_INTERVAL);
+        }
+
+        // Cleanup on unmount
+        return () => {
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+            }
+        };
+    }, [clients.length]); // Re-run when clients count changes
 
     /**
      * Load clients from Firebase or API
@@ -160,13 +241,28 @@ const ClientsModule = () => {
     };
 
     /**
+     * Determine QB sync status based on listId presence
+     */
+    const getQBSyncStatusFromData = (client) => {
+        if (client.listId) {
+            return 'synced';
+        }
+        if (client.qbSyncStatus === 'error') {
+            return 'error';
+        }
+        return 'pending';
+    };
+
+    /**
      * Normalize client data to match MySQL schema
      */
     const normalizeClient = (c) => {
-        if (c.companyName !== undefined && c.qbSyncStatus !== undefined) return c;
+        // Determine qbSyncStatus based on listId
+        const qbSyncStatus = getQBSyncStatusFromData(c);
 
         return {
             id: c.id || c.idClient,
+            code: c.code || '',
             name: c.name || '',
             companyName: c.company || c.companyName || c.name || '',
             email: c.email || '',
@@ -175,13 +271,13 @@ const ClientsModule = () => {
             city: c.city || '',
             state: c.state || '',
             country: c.country || 'USA',
-            zipCode: c.zipCode || '',
+            zipCode: c.zip || c.zipCode || '',
             rfc: c.rfc || '',
             contactName: c.contact || c.contactName || '',
             website: c.website || '',
             status: normalizeStatus(c.status),
-            qbSyncStatus: c.qbSyncStatus || 'pending',
-            qbListId: c.qbListId || null,
+            qbSyncStatus,
+            listId: c.listId || null,
             notes: c.notes || '',
         };
     };
@@ -277,9 +373,19 @@ const ClientsModule = () => {
         }
     };
 
+    /**
+     * Generate a unique client code
+     */
+    const generateClientCode = () => {
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+        return `CLI-${timestamp}-${random}`;
+    };
+
     // Modal handlers
     const handleAdd = () => {
-        setCurrentClient({ ...emptyClient });
+        const newCode = generateClientCode();
+        setCurrentClient({ ...emptyClient, code: newCode });
         setModalMode('add');
         setShowModal(true);
     };
@@ -345,30 +451,26 @@ const ClientsModule = () => {
             console.log('[Clients] Mode:', modalMode);
             console.log('[Clients] Data to save:', currentClient);
 
-            // Build client object - required fields: name, email
+            // Build client object - required fields: code, name, email
             const clientToSave = {
+                code: currentClient.code || generateClientCode(),
                 name: currentClient.name || '',
                 email: currentClient.email || '',
                 status: currentClient.status || 'ACTIVE',
             };
 
-            // Add optional fields only if they have values
+            // Add optional fields only if they have values (use backend field names)
             if (currentClient.phone?.trim()) clientToSave.phone = currentClient.phone;
-            if (currentClient.companyName?.trim()) clientToSave.companyName = currentClient.companyName;
-            if (currentClient.contactName?.trim()) clientToSave.contactName = currentClient.contactName;
+            if (currentClient.companyName?.trim()) clientToSave.company = currentClient.companyName;
+            if (currentClient.contactName?.trim()) clientToSave.contact = currentClient.contactName;
             if (currentClient.address?.trim()) clientToSave.address = currentClient.address;
             if (currentClient.city?.trim()) clientToSave.city = currentClient.city;
             if (currentClient.state?.trim()) clientToSave.state = currentClient.state;
             if (currentClient.country?.trim()) clientToSave.country = currentClient.country;
-            if (currentClient.zipCode?.trim()) clientToSave.zipCode = currentClient.zipCode;
+            if (currentClient.zipCode?.trim()) clientToSave.zip = currentClient.zipCode;
             if (currentClient.rfc?.trim()) clientToSave.rfc = currentClient.rfc;
             if (currentClient.notes?.trim()) clientToSave.notes = currentClient.notes;
             if (currentClient.website?.trim()) clientToSave.website = currentClient.website;
-
-            // Include id for edit mode
-            if (modalMode === 'edit') {
-                clientToSave.id = currentClient.id;
-            }
 
             console.log('[Clients] Final data:', clientToSave);
 
@@ -381,7 +483,7 @@ const ClientsModule = () => {
                 } else {
                     newClient = await clientsService.create(clientToSave);
                 }
-                setClients(prev => [...prev, { ...clientToSave, id: newClient?.id || newClient }]);
+                setClients(prev => [...prev, normalizeClient({ ...clientToSave, id: newClient?.id || newClient })]);
             } else if (modalMode === 'edit') {
                 if (useApi) {
                     console.log('[Clients] Calling clientsApi.update...');
@@ -389,7 +491,7 @@ const ClientsModule = () => {
                 } else {
                     await clientsService.update(currentClient.id, clientToSave);
                 }
-                setClients(prev => prev.map(c => c.id === currentClient.id ? clientToSave : c));
+                setClients(prev => prev.map(c => c.id === currentClient.id ? normalizeClient({ ...c, ...clientToSave }) : c));
             }
 
             console.log('[Clients] Save successful!');
@@ -427,6 +529,12 @@ const ClientsModule = () => {
                     </div>
                 </div>
                 <div className="header-actions">
+                    {pendingSyncCount > 0 && (
+                        <div className="qb-sync-indicator pending" title={`${pendingSyncCount} clients pending QB sync`}>
+                            <span className="material-symbols-rounded spinning">sync</span>
+                            <span className="sync-count">{pendingSyncCount} pending</span>
+                        </div>
+                    )}
                     <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}

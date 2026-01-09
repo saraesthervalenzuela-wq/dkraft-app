@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
 import { materialsService, suppliersService, categoriesService, unitsService } from '../../../firebase';
 import { isApiEnabled, materialsApi, suppliersApi, categoriesApi, unitsApi } from '../../../services/api';
+
+// Polling interval for QB sync status (30 seconds)
+const QB_SYNC_POLL_INTERVAL = 30000;
 
 /**
  * Default data (used if Firebase/API is empty)
@@ -95,10 +98,86 @@ const MaterialsModule = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [materialToDelete, setMaterialToDelete] = useState(null);
 
+    // QB Sync polling ref
+    const pollIntervalRef = useRef(null);
+    const [pendingSyncCount, setPendingSyncCount] = useState(0);
+
     // Load data on mount
     useEffect(() => {
         loadData();
     }, []);
+
+    /**
+     * Check if any materials have pending QB sync and need polling
+     */
+    const hasPendingQBSync = useCallback((materialsList) => {
+        return materialsList.some(m => !m.qbListId && m.qbSyncStatus !== 'error');
+    }, []);
+
+    /**
+     * Start polling for QB sync status updates
+     */
+    useEffect(() => {
+        const useApi = isApiEnabled();
+        if (!useApi) return;
+
+        // Check if we have pending syncs
+        const pendingMaterials = materials.filter(m => !m.qbListId && m.qbSyncStatus !== 'error');
+        setPendingSyncCount(pendingMaterials.length);
+
+        if (pendingMaterials.length > 0) {
+            console.log(`[Materials] ${pendingMaterials.length} materials pending QB sync, starting polling...`);
+
+            // Clear existing interval
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+            }
+
+            // Start polling
+            pollIntervalRef.current = setInterval(async () => {
+                console.log('[Materials] Polling for QB sync updates...');
+                try {
+                    const updatedMaterials = await materialsApi.getAll();
+                    if (updatedMaterials?.length > 0) {
+                        const normalizedMaterials = updatedMaterials.map(normalizeMaterial);
+
+                        // Check for newly synced materials
+                        const newlySynced = normalizedMaterials.filter(updated => {
+                            const original = materials.find(m => m.id === updated.id);
+                            return original && !original.qbListId && updated.qbListId;
+                        });
+
+                        if (newlySynced.length > 0) {
+                            console.log(`[Materials] ${newlySynced.length} materials synced with QB:`, newlySynced.map(m => m.name));
+                        }
+
+                        setMaterials(normalizedMaterials);
+
+                        // Update pending count
+                        const stillPending = normalizedMaterials.filter(m => !m.qbListId && m.qbSyncStatus !== 'error');
+                        setPendingSyncCount(stillPending.length);
+
+                        // Stop polling if no more pending
+                        if (stillPending.length === 0) {
+                            console.log('[Materials] All materials synced, stopping polling');
+                            clearInterval(pollIntervalRef.current);
+                            pollIntervalRef.current = null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('[Materials] Polling error:', error);
+                }
+            }, QB_SYNC_POLL_INTERVAL);
+        }
+
+        // Cleanup on unmount
+        return () => {
+            if (pollIntervalRef.current) {
+                clearInterval(pollIntervalRef.current);
+                pollIntervalRef.current = null;
+            }
+        };
+    }, [materials.length]); // Re-run when materials count changes
 
     /**
      * Load materials and related data from Firebase or API
@@ -134,17 +213,41 @@ const MaterialsModule = () => {
     };
 
     /**
+     * Determine QB sync status based on qbListId presence
+     * - If qbListId exists -> 'synced'
+     * - If no qbListId and qbSyncStatus is 'error' -> 'error'
+     * - Otherwise -> 'pending'
+     */
+    const getQBSyncStatusFromData = (material) => {
+        if (material.qbListId) {
+            return 'synced';
+        }
+        if (material.qbSyncStatus === 'error') {
+            return 'error';
+        }
+        return 'pending';
+    };
+
+    /**
      * Normalize material data from different sources to match MySQL schema
      */
     const normalizeMaterial = (m) => {
-        // If data already has new field names, return as is
-        if (m.code_qb !== undefined) return m;
+        // Determine qbSyncStatus based on qbListId
+        const qbSyncStatus = getQBSyncStatusFromData(m);
+
+        // If data already has new field names, just update qbSyncStatus
+        if (m.code_qb !== undefined) {
+            return {
+                ...m,
+                qbSyncStatus
+            };
+        }
 
         // Convert from old Firebase structure to new MySQL structure
         return {
             id: m.id,
             code_qb: m.codeQB || m.code_qb || '',
-            qbSyncStatus: m.statusQB || m.qbSyncStatus || 'pending',
+            qbSyncStatus,
             name: m.material || m.name || '',
             description: m.description || '',
             categoryId: findCategoryId(m.category) || m.categoryId || '',
@@ -439,6 +542,12 @@ const MaterialsModule = () => {
                     </div>
                 </div>
                 <div className="header-actions">
+                    {pendingSyncCount > 0 && (
+                        <div className="qb-sync-indicator pending" title={`${pendingSyncCount} materials pending QB sync`}>
+                            <span className="material-symbols-rounded spinning">sync</span>
+                            <span className="sync-count">{pendingSyncCount} pending</span>
+                        </div>
+                    )}
                     <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
