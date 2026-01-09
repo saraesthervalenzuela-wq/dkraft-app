@@ -356,19 +356,26 @@ const ProductsModule = () => {
         // Determine qbSyncStatus based on qbListId
         const qbSyncStatus = getQBSyncStatusFromData(p);
 
+        // Parse price and costPrice as numbers (backend sends as strings)
+        const costPrice = parseFloat(p.costPrice) || 0;
+        const price = parseFloat(p.price) || 0;
+
+        // Handle currency - backend sends code like "USD", we need to find or display it
+        const currencyValue = p.currency || p.currencyId || '1';
+
         return {
             id: p.id,
             name: p.name || '',
             description: p.description || '',
             categoryId: findCategoryId(p.category) || p.categoryId || '',
             status: normalizeStatus(p.status),
-            costPrice: p.costPrice || 0,
-            price: p.price || 0,
+            costPrice: costPrice,
+            price: price,
             qbSyncStatus: qbSyncStatus,
             qbListId: p.qbListId || null,
             qbEditSequence: p.qbEditSequence || null,
             account: p.account || p.accountId || findAccountId(p.account) || '',
-            currency: p.currency || p.currencyId || findCurrencyId(p.currency) || '1',
+            currency: currencyValue,
             deleted: p.deleted || false
         };
     };
@@ -388,11 +395,6 @@ const ProductsModule = () => {
         return acc?.id || '';
     };
 
-    const findCurrencyId = (currencyCode) => {
-        if (!currencyCode) return '1';
-        const curr = currencyOptions.find(c => c.code === currencyCode);
-        return curr?.id || '1';
-    };
 
     const normalizeStatus = (status) => {
         if (!status) return 'ACTIVE';
@@ -409,8 +411,16 @@ const ProductsModule = () => {
         return acc?.name || '-';
     };
 
-    const getCurrencyCode = (currencyId) => {
-        const curr = currencyOptions.find(c => c.id === currencyId);
+    const getCurrencyCode = (currencyValue) => {
+        // If it's already a currency code (like "USD"), return it
+        if (typeof currencyValue === 'string' && currencyValue.length === 3) {
+            const validCodes = currencyOptions.map(c => c.code);
+            if (validCodes.includes(currencyValue)) {
+                return currencyValue;
+            }
+        }
+        // Otherwise look up by ID
+        const curr = currencyOptions.find(c => c.id === currencyValue);
         return curr?.code || 'MXN';
     };
 
