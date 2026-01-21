@@ -1,0 +1,8 @@
+[build]
+  command = "cd dkraft-app && npm install && npm run build"
+  publish = "dkraft-app/dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
