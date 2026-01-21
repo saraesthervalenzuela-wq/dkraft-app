@@ -5,8 +5,13 @@
  * Response format: { success: boolean, data: any, message: string, error: string }
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://dkraft.com.mx/api';
-const USE_API = import.meta.env.VITE_USE_API === 'true';
+// In production (Netlify), use direct backend URL
+// In development, use /api which goes through Vite proxy
+const isProduction = import.meta.env.PROD;
+const API_BASE_URL = isProduction
+    ? 'https://dkraft.com.mx/api'
+    : (import.meta.env.VITE_API_URL || '/api');
+const USE_API = import.meta.env.VITE_USE_API === 'true' || isProduction;
 
 // Storage key for backend JWT token
 const TOKEN_KEY = 'dkraft_api_token';
@@ -36,11 +41,16 @@ const clearToken = () => {
  * Get CSRF token from NextAuth
  */
 const getCsrfToken = async () => {
-    const response = await fetch(`${API_BASE_URL}/auth/csrf`, {
-        credentials: 'include',
-    });
-    const data = await response.json();
-    return data.csrfToken;
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/csrf`, {
+            credentials: isProduction ? 'omit' : 'include',
+        });
+        const data = await response.json();
+        return data.csrfToken;
+    } catch (e) {
+        console.warn('[API] Could not get CSRF token:', e.message);
+        return null;
+    }
 };
 
 /**
@@ -51,18 +61,48 @@ const getCsrfToken = async () => {
  */
 export const loginToBackend = async (email, password) => {
     console.log('[API] loginToBackend called with:', { email, password: password ? '***' : 'EMPTY' });
+    console.log('[API] isProduction:', isProduction, 'API_BASE_URL:', API_BASE_URL);
 
-    // Step 1: Get CSRF token
-    console.log('[API] Getting CSRF token...');
+    // Try direct login endpoint first (custom endpoint if available)
+    try {
+        const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+            credentials: isProduction ? 'omit' : 'include',
+        });
+
+        console.log('[API] Direct login response status:', loginResponse.status);
+
+        if (loginResponse.ok) {
+            const result = await loginResponse.json();
+            console.log('[API] Direct login result:', result);
+
+            if (result.user || result.data?.user) {
+                const user = result.user || result.data.user;
+                // Store token if provided
+                if (result.token || result.data?.token) {
+                    storeToken(result.token || result.data.token);
+                }
+                return { user, token: result.token || result.data?.token };
+            }
+        }
+    } catch (e) {
+        console.log('[API] Direct login not available, trying NextAuth flow:', e.message);
+    }
+
+    // Fall back to NextAuth credentials flow
     const csrfToken = await getCsrfToken();
-    console.log('[API] CSRF token obtained');
+    console.log('[API] CSRF token:', csrfToken ? 'obtained' : 'not available');
 
-    // Step 2: Login using NextAuth credentials provider
-    // Use redirect: 'manual' to prevent automatic redirect and CORS issues
     const formData = new URLSearchParams();
     formData.append('email', email);
     formData.append('password', password);
-    formData.append('csrfToken', csrfToken);
+    if (csrfToken) {
+        formData.append('csrfToken', csrfToken);
+    }
     formData.append('callbackUrl', `${API_BASE_URL}/auth/session`);
     formData.append('json', 'true');
 
@@ -72,34 +112,43 @@ export const loginToBackend = async (email, password) => {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: formData.toString(),
-        credentials: 'include',
-        redirect: 'manual', // Don't follow redirects automatically
+        credentials: isProduction ? 'omit' : 'include',
+        redirect: 'manual',
     });
 
-    console.log('[API] Login response status:', response.status);
+    console.log('[API] Login response status:', response.status, 'type:', response.type);
 
-    // Status 200 or 302 (redirect) means the request was processed
-    // We need to check the session to see if login was successful
+    // For production without cookies, we need to handle differently
     if (response.status === 200 || response.status === 302 || response.type === 'opaqueredirect') {
-        // Get session to retrieve user data
+        // Try to get session
         const sessionResponse = await fetch(`${API_BASE_URL}/auth/session`, {
-            credentials: 'include',
+            credentials: isProduction ? 'omit' : 'include',
         });
         const session = await sessionResponse.json();
         console.log('[API] Session data:', session);
 
-        if (!session || !session.user) {
-            throw new Error('Credenciales inválidas');
+        if (session && session.user) {
+            return {
+                user: session.user,
+                token: null,
+            };
         }
 
-        return {
-            user: session.user,
-            token: null, // NextAuth uses cookies, not JWT tokens on client
-        };
+        // If no session in production, the backend doesn't support cross-origin auth
+        if (isProduction) {
+            throw new Error('El backend no soporta autenticación cross-origin. Contacte al administrador.');
+        }
+
+        throw new Error('Credenciales inválidas');
     }
 
     // Handle error response
-    const errorText = await response.text();
+    let errorText;
+    try {
+        errorText = await response.text();
+    } catch (e) {
+        errorText = 'Unknown error';
+    }
     console.error('[API] Login error:', errorText);
     throw new Error('Credenciales inválidas');
 };
@@ -121,7 +170,7 @@ export const registerToBackend = async (name, email, password, role = 'USER') =>
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ name, email, password, role }),
-        credentials: 'include',
+        credentials: isProduction ? 'omit' : 'include',
     });
 
     console.log('[API] Register response status:', response.status);
@@ -189,7 +238,7 @@ const request = async (endpoint, options = {}) => {
     const config = {
         ...options,
         headers,
-        credentials: 'include',
+        credentials: isProduction ? 'omit' : 'include',
     };
 
     console.log(`[API] ${options.method || 'GET'} ${API_BASE_URL}${endpoint}`);
