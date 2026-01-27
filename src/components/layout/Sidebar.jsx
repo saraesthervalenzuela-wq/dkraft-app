@@ -9,6 +9,7 @@ import { navSections } from '../../data/initialData';
 const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [expandedMenus, setExpandedMenus] = useState({});
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // Get user initials from display name or email
     const getUserInitials = () => {
@@ -53,7 +54,17 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
             toggleSubmenu(item.id);
         } else {
             setActiveNav(item.id);
+            // Close sidebar on mobile when clicking a nav item
+            setIsSidebarOpen(false);
         }
+    };
+
+    const toggleSidebar = () => {
+        setIsSidebarOpen(!isSidebarOpen);
+    };
+
+    const closeSidebar = () => {
+        setIsSidebarOpen(false);
     };
 
     const isSubmenuActive = (item) => {
@@ -62,8 +73,18 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
     };
 
     return (
-        <aside className="sidebar">
-            <div className="logo-section">
+        <>
+            {/* Mobile Menu Toggle Button */}
+            <button className="mobile-menu-toggle" onClick={toggleSidebar} aria-label="Toggle menu">
+                <Icon name="menu" />
+            </button>
+
+            {/* Mobile Overlay */}
+            <div className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`} onClick={closeSidebar}></div>
+
+            {/* Sidebar */}
+            <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+                <div className="logo-section">
                 <div className="logo-container">
                     <div className="logo-icon">DC</div>
                     <div className="logo-text">
@@ -99,7 +120,10 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
                                             <a
                                                 key={subItem.id}
                                                 className={`nav-subitem ${activeNav === subItem.id ? 'active' : ''}`}
-                                                onClick={() => setActiveNav(subItem.id)}
+                                                onClick={() => {
+                                                    setActiveNav(subItem.id);
+                                                    setIsSidebarOpen(false); // Close sidebar on mobile
+                                                }}
                                             >
                                                 <Icon name={subItem.icon} />
                                                 <span className="nav-label">{subItem.label}</span>
@@ -145,6 +169,7 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
                 </div>
             </div>
         </aside>
+        </>
     );
 };
 

@@ -25,7 +25,6 @@ import {
     CategoriesModule,
     UnitsModule
 } from './components/modules';
-import FirebaseTest from './components/FirebaseTest';
 import './styles/main.css';
 
 // Loading spinner component
@@ -96,8 +95,6 @@ const AppContent = () => {
                 return <CategoriesModule />;
             case 'units':
                 return <UnitsModule />;
-            case 'firebase-test':
-                return <FirebaseTest />;
             case 'dashboard':
             default:
                 return <Dashboard />;

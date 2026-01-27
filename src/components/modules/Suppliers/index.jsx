@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
-import { suppliersService } from '../../../firebase';
-import { isApiEnabled, suppliersApi } from '../../../services/api';
+import { suppliersApi } from '../../../services/api';
 
 /**
  * Initial suppliers data matching MySQL schema
@@ -137,10 +136,7 @@ const SuppliersModule = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const useApi = isApiEnabled();
-            const suppliersData = useApi
-                ? await suppliersApi.getAll()
-                : await suppliersService.getAll();
+            const suppliersData = await suppliersApi.getAll();
 
             if (suppliersData?.length > 0) {
                 const normalizedSuppliers = suppliersData.map(normalizeSupplier);
@@ -257,10 +253,6 @@ const SuppliersModule = () => {
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            if (isApiEnabled()) {
-                // await quickbooksApi.syncSuppliers();
-            }
-            await new Promise(resolve => setTimeout(resolve, 2000));
             await loadData();
         } catch (error) {
             console.error('Error syncing with QB:', error);
@@ -297,13 +289,8 @@ const SuppliersModule = () => {
         if (selectedSuppliers.length === 0) return;
 
         try {
-            const useApi = isApiEnabled();
             for (const id of selectedSuppliers) {
-                if (useApi) {
-                    await suppliersApi.delete(id);
-                } else {
-                    await suppliersService.delete(id);
-                }
+                await suppliersApi.delete(id);
             }
             setSuppliers(prev => prev.filter(s => !selectedSuppliers.includes(s.id)));
             setSelectedSuppliers([]);
@@ -313,31 +300,29 @@ const SuppliersModule = () => {
     };
 
     const confirmDelete = async () => {
-        if (supplierToDelete) {
-            try {
-                const useApi = isApiEnabled();
-                if (useApi) {
-                    await suppliersApi.delete(supplierToDelete.id);
-                } else {
-                    await suppliersService.delete(supplierToDelete.id);
-                }
-                setSuppliers(prev => prev.filter(s => s.id !== supplierToDelete.id));
-            } catch (error) {
-                console.error('Error deleting supplier:', error);
-            }
+      if (supplierToDelete) {
+        try {
+          await suppliersApi.delete(supplierToDelete.id);
+          setSuppliers(prev => prev.filter(s => s.id !== supplierToDelete.id));
+        } catch (error) {
+            console.error('Error deleting supplier:', error);
         }
-        setShowDeleteConfirm(false);
-        setSupplierToDelete(null);
+      }
+      setShowDeleteConfirm(false);
+      setSupplierToDelete(null);
     };
 
     const handleSave = async () => {
         try {
-            const useApi = isApiEnabled();
-            console.log('[Suppliers] Saving supplier, useApi:', useApi);
             console.log('[Suppliers] Mode:', modalMode);
             console.log('[Suppliers] Data to save:', currentSupplier);
 
             // Build supplier object - required fields: name, phone, email, status
+            if (!currentSupplier.name || !currentSupplier.email || !currentSupplier.phone || !currentSupplier.status) {
+                alert('Please fill in all required fields (Name, Email, Phone, Status)');
+                return;
+            }
+
             const supplierToSave = {
                 name: currentSupplier.name || '',
                 email: currentSupplier.email || '',
@@ -364,22 +349,10 @@ const SuppliersModule = () => {
             console.log('[Suppliers] Final data:', supplierToSave);
 
             if (modalMode === 'add') {
-                let newSupplier;
-                if (useApi) {
-                    console.log('[Suppliers] Calling suppliersApi.create...');
-                    newSupplier = await suppliersApi.create(supplierToSave);
-                    console.log('[Suppliers] API response:', newSupplier);
-                } else {
-                    newSupplier = await suppliersService.create(supplierToSave);
-                }
+                const newSupplier = await suppliersApi.create(supplierToSave);
                 setSuppliers(prev => [...prev, { ...supplierToSave, id: newSupplier?.id || newSupplier }]);
             } else if (modalMode === 'edit') {
-                if (useApi) {
-                    console.log('[Suppliers] Calling suppliersApi.update...');
-                    await suppliersApi.update(currentSupplier.id, supplierToSave);
-                } else {
-                    await suppliersService.update(currentSupplier.id, supplierToSave);
-                }
+                await suppliersApi.update(currentSupplier.id, supplierToSave);
                 setSuppliers(prev => prev.map(s => s.id === currentSupplier.id ? supplierToSave : s));
             }
 
@@ -852,7 +825,6 @@ const SuppliersModule = () => {
                             <button
                                 className="btn-primary"
                                 onClick={handleSave}
-                                disabled={!currentSupplier.name || !currentSupplier.email || !currentSupplier.phone || !currentSupplier.status}
                             >
                                 <Icon name="save" />
                                 {modalMode === 'add' ? 'Create supplier' : 'Save changes'}

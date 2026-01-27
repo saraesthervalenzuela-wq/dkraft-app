@@ -86,6 +86,7 @@ const Login = ({ onSwitchToRegister, onForgotPassword }) => {
           </div>
         </div>
 
+        {/* Forgot Password disabled until backend implements /api/auth/reset-password
         <div className="form-options">
           <button
             type="button"
@@ -95,6 +96,7 @@ const Login = ({ onSwitchToRegister, onForgotPassword }) => {
             ¿Olvidaste tu contraseña?
           </button>
         </div>
+        */}
 
         <button
           type="submit"

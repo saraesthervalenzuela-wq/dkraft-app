@@ -1,24 +1,13 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
-import { isApiEnabled, productsApi, categoriesApi } from '../../../services/api';
+import { productsApi, materialsApi, productMaterialsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
 
 // LocalStorage key for products
 const STORAGE_KEY = 'dkraft_products';
-const CATEGORIES_KEY = 'dkraft_product_categories';
 
-/**
- * Default categories for products
- */
-const defaultCategories = [
-    { id: '1', name: 'Furniture' },
-    { id: '2', name: 'Cabinets' },
-    { id: '3', name: 'Doors' },
-    { id: '4', name: 'Tables' },
-    { id: '5', name: 'Storage' },
-];
 
 /**
  * Initial products data matching MySQL schema
@@ -32,12 +21,11 @@ const initialProductsData = [
         qbEditSequence: '1234567890',
         name: 'Executive Desk',
         description: 'Wooden desk with walnut finish',
-        categoryId: '1',
         status: 'ACTIVE',
         costPrice: 2500.00,
         price: 4500.00,
         account: '1',
-        currency: '1',
+        currency: 'USD',
         deleted: false
     },
     {
@@ -47,12 +35,11 @@ const initialProductsData = [
         qbEditSequence: '1234567891',
         name: 'Modular Bookshelf',
         description: '5-tier bookshelf with doors',
-        categoryId: '5',
         status: 'ACTIVE',
         costPrice: 1800.00,
         price: 3200.00,
         account: '1',
-        currency: '1',
+        currency: 'USD',
         deleted: false
     },
     {
@@ -62,12 +49,11 @@ const initialProductsData = [
         qbEditSequence: null,
         name: 'Coffee Table',
         description: 'Rectangular table with metal base',
-        categoryId: '4',
         status: 'ACTIVE',
         costPrice: 950.00,
         price: 1750.00,
         account: '1',
-        currency: '1',
+        currency: 'USD',
         deleted: false
     },
     {
@@ -77,12 +63,11 @@ const initialProductsData = [
         qbEditSequence: null,
         name: 'Built-in Closet',
         description: 'Closet with sliding doors',
-        categoryId: '5',
         status: 'INACTIVE',
         costPrice: 8500.00,
         price: 15000.00,
         account: '1',
-        currency: '1',
+        currency: 'USD',
         deleted: false
     },
     {
@@ -92,12 +77,11 @@ const initialProductsData = [
         qbEditSequence: '1234567894',
         name: 'Mobile Drawer Unit',
         description: '3-drawer unit with wheels',
-        categoryId: '5',
         status: 'ACTIVE',
         costPrice: 650.00,
         price: 1200.00,
         account: '1',
-        currency: '1',
+        currency: 'USD',
         deleted: false
     },
 ];
@@ -108,15 +92,11 @@ const initialProductsData = [
 const emptyProduct = {
     name: '',
     description: '',
-    categoryId: '',
     status: 'ACTIVE',
     costPrice: 0,
     price: 0,
-    qbSyncStatus: 'pending',
-    qbListId: null,
-    qbEditSequence: null,
     account: '',
-    currency: '1',
+    currency: 'USD',
     deleted: false
 };
 
@@ -132,23 +112,13 @@ const statusOptions = [
  * Currency options
  */
 const currencyOptions = [
-    { id: '1', code: 'MXN', name: 'Mexican Peso' },
-    { id: '2', code: 'USD', name: 'US Dollar' },
-];
-
-/**
- * Account options (for QuickBooks)
- */
-const accountOptions = [
-    { id: '1', name: 'Inventory Asset' },
-    { id: '2', name: 'Cost of Goods Sold' },
-    { id: '3', name: 'Supplies Expense' },
+    { id: 'MXN', code: 'MXN', name: 'Mexican Peso' },
+    { id: 'USD', code: 'USD', name: 'US Dollar' },
 ];
 
 const ProductsModule = () => {
     // Data state
     const [products, setProducts] = useState(initialProductsData);
-    const [categories, setCategories] = useState(defaultCategories);
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
@@ -158,10 +128,22 @@ const ProductsModule = () => {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [viewMode, setViewMode] = useState('table');
     const [isLoading, setIsLoading] = useState(true);
-    const [isSyncing, setIsSyncing] = useState(false);
+
+    // Product Materials state
+    const [materialsList, setMaterialsList] = useState([]); // Keep to look up names if needed, or for initial cache
+    const [productMaterials, setProductMaterials] = useState([]);
+    const [newMaterial, setNewMaterial] = useState({ materialId: '', quantity: '1', unit: 'pcs', notes: '' });
+    const [isLoadingMaterials, setIsLoadingMaterials] = useState(false);
+    
+    // Material Search State
+    const [materialSearchTerm, setMaterialSearchTerm] = useState('');
+    const [materialSearchResults, setMaterialSearchResults] = useState([]);
+    const [showMaterialDropdown, setShowMaterialDropdown] = useState(false);
+    const searchTimeoutRef = useRef(null);
 
     // Modal states
     const [showModal, setShowModal] = useState(false);
+    const [activeTab, setActiveTab] = useState('general');
     const [modalMode, setModalMode] = useState('add');
     const [currentProduct, setCurrentProduct] = useState(emptyProduct);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -189,22 +171,7 @@ const ProductsModule = () => {
         }
     };
 
-    const loadCategoriesFromStorage = () => {
-        try {
-            const saved = localStorage.getItem(CATEGORIES_KEY);
-            return saved ? JSON.parse(saved) : null;
-        } catch {
-            return null;
-        }
-    };
 
-    const saveCategoriesToStorage = (data) => {
-        try {
-            localStorage.setItem(CATEGORIES_KEY, JSON.stringify(data));
-        } catch (error) {
-            console.error('[Products] Error saving categories:', error);
-        }
-    };
 
     // Load data on mount
     useEffect(() => {
@@ -214,17 +181,14 @@ const ProductsModule = () => {
     /**
      * Check if any products have pending QB sync
      */
-    const hasPendingQBSync = useCallback((productsList) => {
-        return productsList.some(p => !p.qbListId && p.qbSyncStatus !== 'error');
-    }, []);
+    // const hasPendingQBSync = useCallback((productsList) => {
+    //     return productsList.some(p => !p.qbListId && p.qbSyncStatus !== 'error');
+    // }, []);
 
     /**
      * Start polling for QB sync status updates
      */
     useEffect(() => {
-        const useApi = isApiEnabled();
-        if (!useApi) return;
-
         // Check if we have pending syncs
         const pendingProducts = products.filter(p => !p.qbListId && p.qbSyncStatus !== 'error');
         setPendingSyncCount(pendingProducts.length);
@@ -291,26 +255,17 @@ const ProductsModule = () => {
         setIsLoading(true);
         try {
             let productsData = null;
-            let categoriesData = null;
 
-            // Try API first if enabled
-            if (isApiEnabled()) {
-                try {
-                    [productsData, categoriesData] = await Promise.all([
-                        productsApi.getAll(),
-                        categoriesApi.getAll(),
-                    ]);
-                } catch (apiError) {
-                    console.warn('[Products] API error, falling back to localStorage:', apiError.message);
-                }
+            // Try API first
+            try {
+                productsData = await productsApi.getAll();
+            } catch (apiError) {
+                console.warn('[Products] API error, falling back to localStorage:', apiError.message);
             }
 
-            // Fall back to localStorage if API failed or not enabled
+            // Fall back to localStorage if API failed
             if (!productsData) {
                 productsData = loadFromStorage();
-            }
-            if (!categoriesData) {
-                categoriesData = loadCategoriesFromStorage();
             }
 
             // Use data if found, otherwise use initial/default data
@@ -322,15 +277,6 @@ const ProductsModule = () => {
                 // Use initial data for first time
                 setProducts(initialProductsData);
                 saveToStorage(initialProductsData);
-            }
-
-            if (categoriesData?.length > 0) {
-                setCategories(categoriesData);
-                saveCategoriesToStorage(categoriesData);
-            } else {
-                // Use default categories
-                setCategories(defaultCategories);
-                saveCategoriesToStorage(defaultCategories);
             }
 
         } catch (error) {
@@ -354,7 +300,7 @@ const ProductsModule = () => {
      */
     const normalizeProduct = (p) => {
         // Determine qbSyncStatus based on qbListId
-        const qbSyncStatus = getQBSyncStatusFromData(p);
+        // const qbSyncStatus = getQBSyncStatusFromData(p);
 
         // Parse price and costPrice as numbers (backend sends as strings)
         const costPrice = parseFloat(p.costPrice) || 0;
@@ -367,15 +313,14 @@ const ProductsModule = () => {
             id: p.id,
             name: p.name || '',
             description: p.description || '',
-            categoryId: findCategoryId(p.category) || p.categoryId || '',
             status: normalizeStatus(p.status),
             costPrice: costPrice,
             price: price,
-            qbSyncStatus: qbSyncStatus,
-            qbListId: p.qbListId || null,
-            qbEditSequence: p.qbEditSequence || null,
-            account: p.account || p.accountId || findAccountId(p.account) || '',
-            currency: currencyValue,
+            // qbSyncStatus: qbSyncStatus,
+            // qbListId: p.qbListId || null,
+            // qbEditSequence: p.qbEditSequence || null,
+            account: 'SALES',
+            currency: p.currency || 'USD',
             deleted: p.deleted || false
         };
     };
@@ -383,45 +328,15 @@ const ProductsModule = () => {
     /**
      * Helper functions
      */
-    const findCategoryId = (categoryName) => {
-        if (!categoryName) return '';
-        const cat = categories.find(c => c.name.toLowerCase() === categoryName.toLowerCase());
-        return cat?.id || '';
-    };
-
-    const findAccountId = (accountName) => {
-        if (!accountName) return '';
-        const acc = accountOptions.find(a => a.name.toLowerCase() === accountName.toLowerCase());
-        return acc?.id || '';
-    };
-
 
     const normalizeStatus = (status) => {
         if (!status) return 'ACTIVE';
         return status.toUpperCase() === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
     };
 
-    const getCategoryName = (categoryId) => {
-        const cat = categories.find(c => c.id === categoryId);
-        return cat?.name || '-';
-    };
-
-    const getAccountName = (accountId) => {
-        const acc = accountOptions.find(a => a.id === accountId);
-        return acc?.name || '-';
-    };
-
     const getCurrencyCode = (currencyValue) => {
-        // If it's already a currency code (like "USD"), return it
-        if (typeof currencyValue === 'string' && currencyValue.length === 3) {
-            const validCodes = currencyOptions.map(c => c.code);
-            if (validCodes.includes(currencyValue)) {
-                return currencyValue;
-            }
-        }
-        // Otherwise look up by ID
-        const curr = currencyOptions.find(c => c.id === currencyValue);
-        return curr?.code || 'MXN';
+        const curr = currencyOptions.find(c => c.id === currencyValue) || currencyOptions.find(c => c.code === currencyValue);
+        return curr?.code || 'USD';
     };
 
     const getQBStatusIcon = (status) => {
@@ -441,26 +356,18 @@ const ProductsModule = () => {
     // Filter products
     const filteredProducts = products.filter(p =>
         p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getCategoryName(p.categoryId)?.toLowerCase().includes(searchTerm.toLowerCase())
+        p.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     // Sort products
     const sortedProducts = [...filteredProducts].sort((a, b) => {
-        if (!sortConfig.key) return 0;
-
-        let aVal, bVal;
-
-        if (sortConfig.key === 'categoryId') {
-            aVal = getCategoryName(a.categoryId).toLowerCase();
-            bVal = getCategoryName(b.categoryId).toLowerCase();
-        } else {
-            aVal = String(a[sortConfig.key] || '').toLowerCase();
-            bVal = String(b[sortConfig.key] || '').toLowerCase();
+        if (sortConfig.key) {
+            const aVal = String(a[sortConfig.key] || '').toLowerCase();
+            const bVal = String(b[sortConfig.key] || '').toLowerCase();
+            
+            if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         }
-
-        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
     });
 
@@ -476,55 +383,170 @@ const ProductsModule = () => {
         }));
     };
 
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            setSelectedProducts(paginatedProducts.map(p => p.id));
-        } else {
-            setSelectedProducts([]);
-        }
-    };
+    // const handleSelectAll = (e) => {
+    //     if (e.target.checked) {
+    //         setSelectedProducts(paginatedProducts.map(p => p.id));
+    //     } else {
+    //         setSelectedProducts([]);
+    //     }
+    // };
 
-    const handleSelectProduct = (id) => {
-        setSelectedProducts(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
-    };
+    // const handleSelectProduct = (id) => {
+    //     setSelectedProducts(prev =>
+    //         prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    //     );
+    // };
 
     /**
      * Sync with QuickBooks
      */
-    const handleSync = async () => {
-        setIsSyncing(true);
-        try {
-            if (isApiEnabled()) {
-                // await quickbooksApi.syncProducts();
-            }
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await loadData();
-        } catch (error) {
-            console.error('Error syncing with QB:', error);
-        } finally {
-            setIsSyncing(false);
-        }
-    };
+    // const handleSync = async () => {
+    //     setIsSyncing(true);
+    //     try {
+    //         // await quickbooksApi.syncProducts();
+    //         await new Promise(resolve => setTimeout(resolve, 2000));
+    //         await loadData();
+    //     } catch (error) {
+    //         console.error('Error syncing with QB:', error);
+    //     } finally {
+    //         setIsSyncing(false);
+    //     }
+    // };
 
     // Modal handlers
     const handleAdd = () => {
         setCurrentProduct({ ...emptyProduct });
         setModalMode('add');
+        setActiveTab('general');
         setShowModal(true);
     };
 
-    const handleEdit = (product) => {
+    const handleEdit = async (product) => {
         setCurrentProduct({ ...product });
+        setProductMaterials([]); // Clear previous
         setModalMode('edit');
+        setActiveTab('general');
         setShowModal(true);
+        // Load materials for this product
+        if (product.id && !product.id.toString().startsWith('local-')) {
+            loadProductMaterials(product.id);
+        }
     };
 
-    const handleView = (product) => {
+    const handleView = async (product) => {
         setCurrentProduct({ ...product });
+        setProductMaterials([]); // Clear previous
         setModalMode('view');
+        setActiveTab('general');
         setShowModal(true);
+        // Load materials for this product
+        if (product.id && !product.id.toString().startsWith('local-')) {
+            loadProductMaterials(product.id);
+        }
+    };
+    
+    
+    // Load all available materials (for the dropdown)
+    // useEffect(() => {
+    //     if (showModal && (modalMode === 'edit' || modalMode === 'view')) {
+    //         // loadMaterialsList(); 
+    //     }
+    // }, [showModal, modalMode]);
+
+    // Material Search Handler
+    const handleMaterialSearch = async (term) => {
+        setMaterialSearchTerm(term);
+        
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        if (!term || term.length < 2) {
+            setMaterialSearchResults([]);
+            setShowMaterialDropdown(false);
+            return;
+        }
+
+        setShowMaterialDropdown(true);
+
+        searchTimeoutRef.current = setTimeout(async () => {
+            try {
+                const results = await materialsApi.search(term);
+                // Ensure results is an array
+                const resultsArray = Array.isArray(results) ? results : (results.data || []);
+                setMaterialSearchResults(resultsArray);
+            } catch (error) {
+                console.error('[Products] Error searching materials:', error);
+                setMaterialSearchResults([]);
+            }
+        }, 300);
+    };
+
+    const handleSelectMaterial = (material) => {
+        setNewMaterial(prev => ({ 
+            ...prev, 
+            materialId: material.id,
+            unit: material.unit || prev.unit // Auto-fill unit if available
+        }));
+        setMaterialSearchTerm(material.name);
+        setShowMaterialDropdown(false);
+    };
+
+    const loadProductMaterials = async (productId) => {
+        setIsLoadingMaterials(true);
+        try {
+            const data = await productMaterialsApi.getByProductId(productId);
+            if (data) setProductMaterials(data);
+        } catch (error) {
+            console.error('[Products] Error loading product materials:', error);
+        } finally {
+            setIsLoadingMaterials(false);
+        }
+    };
+
+    const handleAddMaterial = async () => {
+        if (!newMaterial.materialId || !newMaterial.quantity) return;
+
+        try {
+            const payload = {
+                productId: currentProduct.id,
+                materialId: parseInt(newMaterial.materialId),
+                quantity: parseFloat(newMaterial.quantity),
+                unit: newMaterial.unit,
+                notes: newMaterial.notes
+            };
+
+            await productMaterialsApi.create(payload);
+            
+            // Refresh list
+            await loadProductMaterials(currentProduct.id);
+            
+            // Reset form
+            setNewMaterial({ materialId: '', quantity: '1', unit: 'pcs', notes: '' });
+            setMaterialSearchTerm('');
+        } catch (error) {
+            console.error('[Products] Error adding material:', error);
+            alert('Error al agregar material');
+        }
+    };
+
+    const handleRemoveMaterial = async (id) => {
+        if (!confirm('Are you sure you want to remove this material?')) return;
+        try {
+            await productMaterialsApi.delete(id);
+            // Refresh list
+            await loadProductMaterials(currentProduct.id);
+        } catch (error) {
+            console.error('[Products] Error removing material:', error);
+            alert('Error al eliminar material');
+        }
+    };
+
+    const getMaterialName = (id) => {
+        // Try finding in current search results or product materials list
+        const m = materialSearchResults.find(mat => mat.id === id) || 
+                  productMaterials.find(pm => pm.materialId === id)?.materials;
+        return m ? m.name : 'Unknown Material';
     };
 
     const handleDelete = (product) => {
@@ -544,12 +566,10 @@ const ProductsModule = () => {
         if (productToDelete) {
             try {
                 // Try API first
-                if (isApiEnabled()) {
-                    try {
-                        await productsApi.delete(productToDelete.id);
-                    } catch (apiError) {
-                        console.warn('[Products] API delete failed, using localStorage:', apiError.message);
-                    }
+                try {
+                    await productsApi.delete(productToDelete.id);
+                } catch (apiError) {
+                    console.warn('[Products] API delete failed, using localStorage:', apiError.message);
                 }
                 // Update local state and storage
                 const updatedProducts = products.filter(p => p.id !== productToDelete.id);
@@ -568,36 +588,28 @@ const ProductsModule = () => {
         try {
             const productToSave = {
                 ...currentProduct,
-                qbSyncStatus: currentProduct.qbSyncStatus || 'pending',
-                updatedAt: new Date().toISOString(),
+                // qbSyncStatus: currentProduct.qbSyncStatus || 'pending',
+                // updatedAt: new Date().toISOString(),
             };
 
             let updatedProducts;
 
             if (modalMode === 'add') {
-                // Generate local ID
-                productToSave.id = `local-${Date.now()}`;
-                productToSave.createdAt = new Date().toISOString();
-
                 // Try API first
-                if (isApiEnabled()) {
-                    try {
-                        const newProduct = await productsApi.create(productToSave);
-                        productToSave.id = newProduct.id || productToSave.id;
-                    } catch (apiError) {
-                        console.warn('[Products] API create failed, saving locally:', apiError.message);
-                    }
+                try {
+                    const newProduct = await productsApi.create(productToSave);
+                    productToSave.id = newProduct.id || productToSave.id;
+                } catch (apiError) {
+                  console.warn('[Products] API create failed, saving locally:', apiError.message);
                 }
 
                 updatedProducts = [...products, productToSave];
             } else if (modalMode === 'edit') {
                 // Try API first
-                if (isApiEnabled()) {
-                    try {
-                        await productsApi.update(currentProduct.id, productToSave);
-                    } catch (apiError) {
-                        console.warn('[Products] API update failed, saving locally:', apiError.message);
-                    }
+                try {
+                    await productsApi.update(currentProduct.id, productToSave);
+                } catch (apiError) {
+                    console.warn('[Products] API update failed, saving locally:', apiError.message);
                 }
 
                 updatedProducts = products.map(p =>
@@ -652,10 +664,10 @@ const ProductsModule = () => {
                             <span className="sync-count">{pendingSyncCount} pending</span>
                         </div>
                     )}
-                    <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
+                    {/* <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
-                    </button>
+                    </button> */}
                     <button className="btn-primary-action" onClick={handleAdd}>
                         <span className="material-symbols-rounded">add</span>
                         Add new product
@@ -770,7 +782,6 @@ const ProductsModule = () => {
                                 </div>
                                 <div className="material-card-body">
                                     <h3 className="material-card-name">{product.name}</h3>
-                                    <span className="material-card-code">{getCategoryName(product.categoryId)}</span>
                                     <div className="material-card-details">
                                         <div className="material-detail">
                                             <Icon name="sell" />
@@ -794,10 +805,6 @@ const ProductsModule = () => {
                                     )}
                                 </div>
                                 <div className="material-card-footer">
-                                    <div className="material-stock">
-                                        <span className="stock-label">Account</span>
-                                        <span className="stock-value">{getAccountName(product.account)}</span>
-                                    </div>
                                     <div className="material-actions">
                                         <button className="btn-icon" onClick={() => handleView(product)} title="View">
                                             <Icon name="visibility" />
@@ -823,89 +830,148 @@ const ProductsModule = () => {
             ) : (
                 /* Table View */
                 <div className="products-table-container">
-                    <div className="products-table">
-                        <div className="products-table-header">
-                            <span className="col-checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={paginatedProducts.length > 0 && selectedProducts.length === paginatedProducts.length}
-                                    onChange={handleSelectAll}
-                                />
-                            </span>
-                            <span className="col-status-qb">Status QB</span>
-                            <span className="col-name sortable" onClick={() => handleSort('name')}>
-                                Name
-                                <Icon name={sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-description">Description</span>
-                            <span className="col-category sortable" onClick={() => handleSort('categoryId')}>
-                                Category
-                                <Icon name={sortConfig.key === 'categoryId' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-cost sortable" onClick={() => handleSort('costPrice')}>
-                                Cost
-                                <Icon name={sortConfig.key === 'costPrice' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-price sortable" onClick={() => handleSort('price')}>
-                                Price
-                                <Icon name={sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-status sortable" onClick={() => handleSort('status')}>
-                                Status
-                                <Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-actions">Actions</span>
-                        </div>
+                    <table className="products-table-modern">
+                        <thead>
+                            <tr>
+                                {/* <th className="col-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        checked={paginatedProducts.length > 0 && selectedProducts.length === paginatedProducts.length}
+                                        onChange={handleSelectAll}
+                                    />
+                                </th> */}
+                                <th className="col-qb">
+                                    <div className="th-content">
+                                        <Icon name="cloud_sync" />
+                                        <span>QB Sync</span>
+                                    </div>
+                                </th>
+                                <th className="col-name sortable" onClick={() => handleSort('name')}>
+                                    <div className="th-content">
+                                        <Icon name="category" />
+                                        <span>Product Name</span>
+                                        <Icon name={sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
 
-                        <div className="products-table-body">
+                                <th className="col-cost sortable" onClick={() => handleSort('costPrice')}>
+                                    <div className="th-content">
+                                        <Icon name="sell" />
+                                        <span>Cost Price</span>
+                                        <Icon name={sortConfig.key === 'costPrice' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-price sortable" onClick={() => handleSort('price')}>
+                                    <div className="th-content">
+                                        <Icon name="payments" />
+                                        <span>Sale Price</span>
+                                        <Icon name={sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-margin">
+                                    <div className="th-content">
+                                        <Icon name="trending_up" />
+                                        <span>Profit Margin</span>
+                                    </div>
+                                </th>
+                                <th className="col-status sortable" onClick={() => handleSort('status')}>
+                                    <div className="th-content">
+                                        <Icon name="toggle_on" />
+                                        <span>Status</span>
+                                        <Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-actions">
+                                    <div className="th-content">
+                                        <Icon name="settings" />
+                                        <span>Actions</span>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             {paginatedProducts.map((product) => {
                                 const qbStatus = getQBStatusIcon(product.qbSyncStatus);
                                 const statusStyle = getStatusStyle(product.status);
+                                const profitMargin = product.costPrice > 0
+                                    ? ((product.price - product.costPrice) / product.costPrice * 100)
+                                    : 0;
+                                const profitAmount = product.price - product.costPrice;
 
                                 return (
-                                    <div key={product.id} className="products-table-row">
-                                        <span className="col-checkbox">
+                                    <tr key={product.id} className="table-row">
+                                        {/* <td className="col-checkbox">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedProducts.includes(product.id)}
                                                 onChange={() => handleSelectProduct(product.id)}
                                             />
-                                        </span>
-                                        <span className="col-status-qb" title={qbStatus.label}>
+                                        </td> */}
+                                        <td className="col-qb" title={qbStatus.label}>
                                             <Icon name={qbStatus.icon} style={{ color: qbStatus.color, fontSize: '20px' }} />
-                                        </span>
-                                        <span className="col-name">{product.name}</span>
-                                        <span className="col-description">{product.description || '-'}</span>
-                                        <span className="col-category">{getCategoryName(product.categoryId)}</span>
-                                        <span className="col-cost">${product.costPrice?.toLocaleString() || '0'}</span>
-                                        <span className="col-price">${product.price?.toLocaleString() || '0'}</span>
-                                        <span className={`col-status status-badge ${statusStyle.color}`}>
-                                            <span className="status-dot"></span>
-                                            {statusStyle.label}
-                                        </span>
-                                        <span className="col-actions">
-                                            <button className="btn-icon" onClick={() => handleView(product)} title="View">
-                                                <Icon name="visibility" />
-                                            </button>
-                                            <button className="btn-icon" onClick={() => handleEdit(product)} title="Edit">
-                                                <Icon name="edit" />
-                                            </button>
-                                            <button className="btn-icon danger" onClick={() => handleDelete(product)} title="Delete">
-                                                <Icon name="delete" />
-                                            </button>
-                                        </span>
-                                    </div>
+                                        </td>
+                                        <td className="col-name">
+                                            <div className="name-cell">
+                                                <span className="name-text">{product.name}</span>
+                                                {product.description && (
+                                                    <span className="description-text">{product.description}</span>
+                                                )}
+                                            </div>
+                                        </td>
+
+                                        <td className="col-cost">
+                                            <div className="price-cell">
+                                                ${product.costPrice?.toLocaleString() || '0'}
+                                            </div>
+                                        </td>
+                                        <td className="col-price">
+                                            <div className="price-cell sale">
+                                                ${product.price?.toLocaleString() || '0'}
+                                            </div>
+                                        </td>
+                                        <td className="col-margin">
+                                            <div className="margin-cell">
+                                                <span className={`margin-percent ${profitMargin >= 30 ? 'high' : profitMargin >= 15 ? 'medium' : 'low'}`}>
+                                                    {profitMargin.toFixed(1)}%
+                                                </span>
+                                                <span className="margin-amount">+${profitAmount.toFixed(2)}</span>
+                                            </div>
+                                        </td>
+                                        <td className="col-status">
+                                            <span className={`status-badge ${statusStyle.color}`}>
+                                                <span className="status-dot"></span>
+                                                {statusStyle.label}
+                                            </span>
+                                        </td>
+                                        <td className="col-actions">
+                                            <div className="action-buttons">
+                                                <button className="btn-icon view" onClick={() => handleView(product)} title="View">
+                                                    <Icon name="visibility" />
+                                                </button>
+                                                <button className="btn-icon edit" onClick={() => handleEdit(product)} title="Edit">
+                                                    <Icon name="edit" />
+                                                </button>
+                                                <button className="btn-icon delete" onClick={() => handleDelete(product)} title="Delete">
+                                                    <Icon name="delete" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 );
                             })}
 
                             {paginatedProducts.length === 0 && (
-                                <div className="products-empty">
-                                    <Icon name="category" />
-                                    <p>No products found</p>
-                                </div>
+                                <tr>
+                                    <td colSpan="8" className="empty-state">
+                                        <div className="products-empty">
+                                            <Icon name="category" />
+                                            <p>No products found</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             )}
-                        </div>
-                    </div>
+                        </tbody>
+                    </table>
                 </div>
             )}
 
@@ -950,11 +1016,32 @@ const ProductsModule = () => {
                 title={modalMode === 'add' ? 'New Product' : modalMode === 'edit' ? 'Edit Product' : 'Product Details'}
                 onClose={() => setShowModal(false)}
                 icon={modalMode === 'add' ? 'add_box' : modalMode === 'edit' ? 'edit' : 'visibility'}
+                className="modal-large"
             >
-                <div className="material-form">
-                    <div className="form-row">
-                        <div className="form-group">
-                            <label>Name *</label>
+                <div className="product-modal-content">
+                    {/* Tab Navigation */}
+                    {modalMode !== 'add' && (
+                        <div className="modal-tabs">
+                            <button 
+                                className={`tab-btn ${activeTab === 'general' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('general')}
+                            >
+                                General Info
+                            </button>
+                            <button 
+                                className={`tab-btn ${activeTab === 'materials' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('materials')}
+                            >
+                                Composition (BOM)
+                            </button>
+                        </div>
+                    )}
+
+                    {/* General Info Tab */}
+                    <div className={`tab-content ${activeTab === 'general' ? 'active' : 'hidden'}`}>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Name *</label>
                             <input
                                 type="text"
                                 value={currentProduct.name}
@@ -989,20 +1076,7 @@ const ProductsModule = () => {
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label>Category *</label>
-                        <select
-                            value={currentProduct.categoryId}
-                            onChange={(e) => handleInputChange('categoryId', e.target.value)}
-                            disabled={modalMode === 'view'}
-                            required
-                        >
-                            <option value="">Select category</option>
-                            {categories.map(cat => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
-                    </div>
+
 
                     <div className="form-row">
                         <div className="form-group">
@@ -1040,19 +1114,6 @@ const ProductsModule = () => {
 
                     <div className="form-row">
                         <div className="form-group">
-                            <label>Account</label>
-                            <select
-                                value={currentProduct.account}
-                                onChange={(e) => handleInputChange('account', e.target.value)}
-                                disabled={modalMode === 'view'}
-                            >
-                                <option value="">Select account</option>
-                                {accountOptions.map(acc => (
-                                    <option key={acc.id} value={acc.id}>{acc.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <div className="form-group">
                             <label>Currency</label>
                             <select
                                 value={currentProduct.currency}
@@ -1065,6 +1126,108 @@ const ProductsModule = () => {
                             </select>
                         </div>
                     </div>
+
+                    </div>
+
+                    {/* Materials Tab */}
+                    {modalMode !== 'add' && (
+                        <div className={`tab-content ${activeTab === 'materials' ? 'active' : 'hidden'}`}>
+                            {modalMode === 'edit' && (
+                                <div className="add-material-section">
+                                    <div className="material-search-row">
+                                        <div className="search-input-group" style={{ position: 'relative', flex: 2 }}>
+                                            <input
+                                                type="text"
+                                                value={materialSearchTerm}
+                                                onChange={(e) => handleMaterialSearch(e.target.value)}
+                                                className="modern-input"
+                                                placeholder="Search material to add..."
+                                                autoComplete="off"
+                                                onFocus={() => {
+                                                    if (materialSearchTerm.length >= 2) setShowMaterialDropdown(true);
+                                                }}
+                                                onBlur={() => setTimeout(() => setShowMaterialDropdown(false), 200)}
+                                            />
+                                            {showMaterialDropdown && materialSearchResults.length > 0 && (
+                                                <ul className="material-search-results">
+                                                    {materialSearchResults.map(m => (
+                                                        <li 
+                                                            key={m.id} 
+                                                            onClick={() => handleSelectMaterial(m)}
+                                                            className="search-result-item"
+                                                        >
+                                                            <div className="result-name">{m.name}</div>
+                                                            <div className="result-code">{m.code || ''}</div>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            )}
+                                        </div>
+                                        <div className="qty-input-group" style={{ flex: 1 }}>
+                                            <input
+                                                type="number"
+                                                value={newMaterial.quantity}
+                                                onChange={(e) => setNewMaterial({...newMaterial, quantity: e.target.value})}
+                                                className="modern-input"
+                                                placeholder="Qty"
+                                            />
+                                        </div>
+                                        <div className="unit-input-group" style={{ flex: 1 }}>
+                                            <input
+                                                type="text"
+                                                value={newMaterial.unit}
+                                                onChange={(e) => setNewMaterial({...newMaterial, unit: e.target.value})}
+                                                className="modern-input"
+                                                placeholder="Unit"
+                                            />
+                                        </div>
+                                        <button 
+                                            className="btn-primary-small"
+                                            onClick={handleAddMaterial}
+                                            disabled={!newMaterial.materialId || !newMaterial.quantity}
+                                        >
+                                            <Icon name="add" /> Add
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="product-materials-list">
+                                {isLoadingMaterials ? (
+                                    <div className="loading-spinner-small">Loading materials...</div>
+                                ) : productMaterials.length > 0 ? (
+                                    <div className="materials-grid">
+                                        {productMaterials.map(pm => (
+                                            <div key={pm.id} className="material-list-item">
+                                                <div className="item-icon">
+                                                    <Icon name="inventory_2" />
+                                                </div>
+                                                <div className="item-info">
+                                                    <span className="item-name">{pm.materials?.name || getMaterialName(pm.materialId)}</span>
+                                                    <span className="item-qty">{parseFloat(pm.quantity)} {pm.unit}</span>
+                                                    {pm.notes && <span className="item-notes">{pm.notes}</span>}
+                                                </div>
+                                                {modalMode === 'edit' && (
+                                                    <button 
+                                                        className="btn-icon danger"
+                                                        onClick={() => handleRemoveMaterial(pm.id)}
+                                                        title="Remove"
+                                                    >
+                                                        <Icon name="close" />
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="empty-materials-state">
+                                        <Icon name="straighten" />
+                                        <p>No materials assigned.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
 
                     {modalMode === 'view' && currentProduct.qbSyncStatus && (
                         <div className="form-group">
@@ -1079,20 +1242,20 @@ const ProductsModule = () => {
                         </div>
                     )}
 
-                    {modalMode !== 'view' && (
-                        <div className="form-actions">
-                            <button className="btn-secondary" onClick={() => setShowModal(false)}>
-                                Cancel
-                            </button>
-                            <button
-                                className="btn-primary"
-                                onClick={handleSave}
-                                disabled={!currentProduct.name || !currentProduct.categoryId}
-                            >
-                                <Icon name="save" />
-                                {modalMode === 'add' ? 'Create product' : 'Save changes'}
-                            </button>
-                        </div>
+                    {modalMode !== 'view' && activeTab === 'general' && (
+                      <div className="form-actions">
+                          <button className="btn-secondary" onClick={() => setShowModal(false)}>
+                              Cancel
+                          </button>
+                          <button
+                              className="btn-primary"
+                              onClick={handleSave}
+                              disabled={!currentProduct.name}
+                          >
+                              <Icon name="save" />
+                              {modalMode === 'add' ? 'Create product' : 'Save changes'}
+                          </button>
+                      </div>
                     )}
                 </div>
             </Modal>

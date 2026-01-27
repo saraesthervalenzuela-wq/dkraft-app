@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
-import { bomService, productsService, materialsService } from '../../../firebase';
+import { bomApi, productsApi, materialsApi } from '../../../services/api';
 import { bomData, bomStatusOptions, productsData, materialsData } from '../../../data/initialData';
 
 const emptyBOM = {
@@ -70,9 +70,9 @@ const BOMModule = () => {
         setIsLoading(true);
         try {
             const [bomsData, productsData, materialsData] = await Promise.all([
-                bomService.getAll(),
-                productsService.getAll(),
-                materialsService.getAll()
+                bomApi.getAll(),
+                productsApi.getAll(),
+                materialsApi.getAll()
             ]);
 
             if (bomsData.length > 0) setBoms(bomsData);
@@ -208,7 +208,7 @@ const BOMModule = () => {
     const confirmDelete = async () => {
         if (bomToDelete) {
             try {
-                await bomService.delete(bomToDelete.id);
+                await bomApi.delete(bomToDelete.id);
                 setBoms(prev => prev.filter(b => b.id !== bomToDelete.id));
             } catch (error) {
                 console.error('Error deleting BOM:', error);
@@ -224,10 +224,10 @@ const BOMModule = () => {
             const bomToSave = { ...currentBOM, ...costs };
 
             if (modalMode === 'add') {
-                const newBOM = await bomService.create(bomToSave);
+                const newBOM = await bomApi.create(bomToSave);
                 setBoms(prev => [...prev, { ...bomToSave, id: newBOM.id }]);
             } else if (modalMode === 'edit') {
-                await bomService.update(currentBOM.id, bomToSave);
+                await bomApi.update(currentBOM.id, bomToSave);
                 setBoms(prev => prev.map(b => b.id === currentBOM.id ? bomToSave : b));
             }
             setShowModal(false);
