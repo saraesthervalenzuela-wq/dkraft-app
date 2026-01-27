@@ -17,7 +17,9 @@
       "Bash(head:*)",
       "Bash(\"/Users/concepcion/Library/CloudStorage/Dropbox/My Mac \\(Carloss-MacBook-Pro.local\\)/Downloads/D-Kraft/dkraft-app/src/styles/main.css.tmp\")",
       "Bash(mv:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(tree:*)",
+      "Bash(git -C /Users/concepcion/Documents/GitHub/dkraft-app log --oneline)"
     ]
   }
 }
