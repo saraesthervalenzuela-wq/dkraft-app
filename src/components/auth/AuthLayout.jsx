@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import Login from './Login';
 import Register from './Register';
-import ForgotPassword from './ForgotPassword';
+// ForgotPassword removed - backend endpoint not implemented yet
+// import ForgotPassword from './ForgotPassword';
 import './auth.css';
 
 const AuthLayout = () => {
@@ -11,14 +12,16 @@ const AuthLayout = () => {
     switch (view) {
       case 'register':
         return <Register onSwitchToLogin={() => setView('login')} />;
-      case 'forgot':
-        return <ForgotPassword onBack={() => setView('login')} />;
+      // ForgotPassword view removed - backend endpoint not implemented yet
+      // case 'forgot':
+      //   return <ForgotPassword onBack={() => setView('login')} />;
       case 'login':
       default:
         return (
           <Login
             onSwitchToRegister={() => setView('register')}
-            onForgotPassword={() => setView('forgot')}
+            // onForgotPassword disabled until backend implements endpoint
+            onForgotPassword={() => {}}
           />
         );
     }

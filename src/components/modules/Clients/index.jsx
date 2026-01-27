@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
-import { clientsService } from '../../../firebase';
-import { isApiEnabled, clientsApi } from '../../../services/api';
+import { clientsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
@@ -147,19 +146,9 @@ const ClientsModule = () => {
     }, []);
 
     /**
-     * Check if any clients have pending QB sync
-     */
-    const hasPendingQBSync = useCallback((clientsList) => {
-        return clientsList.some(c => !c.listId && c.qbSyncStatus !== 'error');
-    }, []);
-
-    /**
      * Start polling for QB sync status updates
      */
     useEffect(() => {
-        const useApi = isApiEnabled();
-        if (!useApi) return;
-
         // Check if we have pending syncs
         const pendingClients = clients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
         setPendingSyncCount(pendingClients.length);
@@ -224,10 +213,7 @@ const ClientsModule = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const useApi = isApiEnabled();
-            const clientsData = useApi
-                ? await clientsApi.getAll()
-                : await clientsService.getAll();
+            const clientsData = await clientsApi.getAll();
 
             if (clientsData?.length > 0) {
                 const normalizedClients = clientsData.map(normalizeClient);
@@ -361,9 +347,7 @@ const ClientsModule = () => {
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            if (isApiEnabled()) {
-                // await quickbooksApi.syncClients();
-            }
+            // await quickbooksApi.syncClients();
             await new Promise(resolve => setTimeout(resolve, 2000));
             await loadData();
         } catch (error) {
@@ -411,13 +395,8 @@ const ClientsModule = () => {
         if (selectedClients.length === 0) return;
 
         try {
-            const useApi = isApiEnabled();
             for (const id of selectedClients) {
-                if (useApi) {
-                    await clientsApi.delete(id);
-                } else {
-                    await clientsService.delete(id);
-                }
+                await clientsApi.delete(id);
             }
             setClients(prev => prev.filter(c => !selectedClients.includes(c.id)));
             setSelectedClients([]);
@@ -429,12 +408,7 @@ const ClientsModule = () => {
     const confirmDelete = async () => {
         if (clientToDelete) {
             try {
-                const useApi = isApiEnabled();
-                if (useApi) {
-                    await clientsApi.delete(clientToDelete.id);
-                } else {
-                    await clientsService.delete(clientToDelete.id);
-                }
+                await clientsApi.delete(clientToDelete.id);
                 setClients(prev => prev.filter(c => c.id !== clientToDelete.id));
             } catch (error) {
                 console.error('Error deleting client:', error);
@@ -446,8 +420,6 @@ const ClientsModule = () => {
 
     const handleSave = async () => {
         try {
-            const useApi = isApiEnabled();
-            console.log('[Clients] Saving client, useApi:', useApi);
             console.log('[Clients] Mode:', modalMode);
             console.log('[Clients] Data to save:', currentClient);
 
@@ -475,22 +447,13 @@ const ClientsModule = () => {
             console.log('[Clients] Final data:', clientToSave);
 
             if (modalMode === 'add') {
-                let newClient;
-                if (useApi) {
-                    console.log('[Clients] Calling clientsApi.create...');
-                    newClient = await clientsApi.create(clientToSave);
-                    console.log('[Clients] API response:', newClient);
-                } else {
-                    newClient = await clientsService.create(clientToSave);
-                }
+                console.log('[Clients] Calling clientsApi.create...');
+                const newClient = await clientsApi.create(clientToSave);
+                console.log('[Clients] API response:', newClient);
                 setClients(prev => [...prev, normalizeClient({ ...clientToSave, id: newClient?.id || newClient })]);
             } else if (modalMode === 'edit') {
-                if (useApi) {
-                    console.log('[Clients] Calling clientsApi.update...');
-                    await clientsApi.update(currentClient.id, clientToSave);
-                } else {
-                    await clientsService.update(currentClient.id, clientToSave);
-                }
+                console.log('[Clients] Calling clientsApi.update...');
+                await clientsApi.update(currentClient.id, clientToSave);
                 setClients(prev => prev.map(c => c.id === currentClient.id ? normalizeClient({ ...c, ...clientToSave }) : c));
             }
 
@@ -535,10 +498,10 @@ const ClientsModule = () => {
                             <span className="sync-count">{pendingSyncCount} pending</span>
                         </div>
                     )}
-                    <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
+                    {/* <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
-                    </button>
+                    </button> */}
                     <button className="btn-primary-action" onClick={handleAdd}>
                         <span className="material-symbols-rounded">add</span>
                         Add new client

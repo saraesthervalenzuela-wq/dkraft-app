@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import Icon from './Icon';
 
 /**
@@ -16,7 +17,7 @@ const Modal = ({
 }) => {
     if (!isOpen) return null;
 
-    return (
+    return createPortal(
         <div className="modal-overlay" onClick={onClose}>
             <div className={`modal-content ${className}`} onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
@@ -42,7 +43,8 @@ const Modal = ({
                     </div>
                 )}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

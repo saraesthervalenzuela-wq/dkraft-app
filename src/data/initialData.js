@@ -693,23 +693,6 @@ export const operationStatusOptions = ['Pending', 'In Progress', 'Completed', 'O
 export const priorityOptions = ['Low', 'Medium', 'High', 'Urgent'];
 export const stageStatusOptions = ['pending', 'in_progress', 'completed', 'skipped'];
 
-// Helper to create default stages
-const createDefaultStages = () => {
-    const stages = {};
-    operationStages.forEach(stage => {
-        stages[stage.key] = {
-            status: 'pending',
-            assignedTo: [],
-            startDate: '',
-            endDate: '',
-            estimatedHours: 0,
-            actualHours: 0,
-            notes: ''
-        };
-    });
-    return stages;
-};
-
 // Operations data
 export const operationsData = [
     {

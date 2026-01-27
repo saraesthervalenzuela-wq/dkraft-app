@@ -90,14 +90,7 @@ const StaffModule = () => {
         try {
             console.log('[Staff] Creating user via /api/auth/register...');
             if (isApiEnabled()) {
-                // Use registerToBackend instead of usersApi.create since backend uses /api/auth/register
-                const createdUser = await registerToBackend(
-                    newUser.username,
-                    newUser.email,
-                    newUser.password,
-                    newUser.role
-                );
-                console.log('[Staff] User created:', createdUser);
+                const createdUser = await usersApi.create(newUser);
             }
             setNewUser({ username: '', email: '', password: '', role: '' });
             setShowModal(false);

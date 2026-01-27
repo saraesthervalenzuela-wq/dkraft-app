@@ -1,23 +1,9 @@
 /**
  * useService Hook
- * Provides a unified interface for data operations
- * Automatically switches between Firebase and API based on configuration
+ * Provides a unified interface for data operations using the API backend
  */
 
 import { useState, useCallback } from 'react';
-import { isApiEnabled } from '../services/api';
-
-// Import Firebase services
-import {
-    materialsService,
-    productsService,
-    suppliersService,
-    clientsService,
-    categoriesService,
-    unitsService,
-    projectsService,
-    bomService,
-} from '../firebase';
 
 // Import API services
 import {
@@ -34,36 +20,35 @@ import {
 } from '../services/api';
 
 /**
- * Map of service names to their Firebase and API implementations
+ * Map of service names to their API implementations
  */
 const serviceMap = {
-    materials: { firebase: materialsService, api: materialsApi },
-    products: { firebase: productsService, api: productsApi },
-    suppliers: { firebase: suppliersService, api: suppliersApi },
-    clients: { firebase: clientsService, api: clientsApi },
-    categories: { firebase: categoriesService, api: categoriesApi },
-    units: { firebase: unitsService, api: unitsApi },
-    projects: { firebase: projectsService, api: projectsApi },
-    bom: { firebase: bomService, api: bomApi },
-    warehouses: { firebase: null, api: warehousesApi },
-    requisitions: { firebase: null, api: requisitionsApi },
+    materials: materialsApi,
+    products: productsApi,
+    suppliers: suppliersApi,
+    clients: clientsApi,
+    categories: categoriesApi,
+    units: unitsApi,
+    projects: projectsApi,
+    bom: bomApi,
+    warehouses: warehousesApi,
+    requisitions: requisitionsApi,
 };
 
 /**
- * Hook to get the appropriate service based on configuration
+ * Hook to get the appropriate API service
  * @param {string} serviceName - Name of the service (materials, products, etc.)
  * @returns {Object} Service object with CRUD methods
  */
 export const useService = (serviceName) => {
-    const useApi = isApiEnabled();
-    const services = serviceMap[serviceName];
+    const service = serviceMap[serviceName];
 
-    if (!services) {
+    if (!service) {
         console.warn(`Service "${serviceName}" not found`);
         return null;
     }
 
-    return useApi ? services.api : services.firebase;
+    return service;
 };
 
 /**
@@ -188,7 +173,6 @@ export const useDataService = (serviceName) => {
         update,
         remove,
         service,
-        isApiEnabled: isApiEnabled(),
     };
 };
 

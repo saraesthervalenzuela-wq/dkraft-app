@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * API Service for D-Kraft MRP/ERP
  * Connects to backend at https://dkraft.com.mx/api
@@ -7,10 +8,10 @@
 
 // In production (Netlify), use direct backend URL
 // In development, use /api which goes through Vite proxy
-const isProduction = import.meta.env.PROD;
+const isProduction = import.meta.env.PROD || !window.location.hostname.includes('localhost');
 const API_BASE_URL = isProduction
-    ? 'https://dkraft.com.mx/api'
-    : (import.meta.env.VITE_API_URL || '/api');
+    ? 'https://api.dkraft.com.mx/api'
+    : import.meta.env.VITE_API_URL || '/api';
 const USE_API = import.meta.env.VITE_USE_API === 'true' || isProduction;
 
 // Storage key for backend JWT token
@@ -335,6 +336,7 @@ export const materialsApi = {
     getByCategory: (categoryId) => request(`/materials?categoryId=${categoryId}`),
     getBySupplier: (supplierId) => request(`/materials?supplierId=${supplierId}`),
     getLowStock: () => request('/materials/low-stock'),
+    search: (term) => request(`/materials/search?q=${encodeURIComponent(term)}`),
 };
 
 // ============================================
@@ -356,6 +358,26 @@ export const productsApi = {
     }),
     delete: (id) => request(`/products/${id}`, { method: 'DELETE' }),
     syncToQB: (id) => request(`/products/${id}/sync-qb`, { method: 'POST' }),
+};
+
+// ============================================
+// PRODUCT MATERIALS API
+// ============================================
+export const productMaterialsApi = {
+    getAll: (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/product-materials${query ? `?${query}` : ''}`);
+    },
+    getByProductId: (productId) => request(`/product-materials/product/${productId}`),
+    create: (data) => request('/product-materials', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    update: (id, data) => request(`/product-materials/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    }),
+    delete: (id) => request(`/product-materials/${id}`, { method: 'DELETE' }),
 };
 
 // ============================================

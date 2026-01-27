@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
-import { materialsService, suppliersService, categoriesService, unitsService } from '../../../firebase';
-import { isApiEnabled, materialsApi, suppliersApi, categoriesApi, unitsApi } from '../../../services/api';
+import { materialsApi, suppliersApi, categoriesApi, unitsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
@@ -39,6 +38,12 @@ const defaultUnits = [
     { id: '8', name: 'Kg', abbreviation: 'kg' },
 ];
 
+const accountOptions = [
+    { id: 'Materials for Production', name: 'Materials for Production' },
+    { id: 'Supplies for Production', name: 'Supplies for Production' },
+    { id: 'Manufacturing Services', name: 'Manufacturing Services' },
+];
+
 /**
  * Initial materials data matching MySQL schema
  * Fields: id, code_qb, name, description, categoryId, unitId, supplierId,
@@ -61,7 +66,8 @@ const emptyMaterial = {
     status: 'ACTIVE',
     stock: 0,
     minStock: 0,
-    price: 0
+    price: 0,
+    account: ''
 };
 
 /**
@@ -82,12 +88,12 @@ const MaterialsModule = () => {
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedMaterials, setSelectedMaterials] = useState([]);
+    // const [selectedMaterials, setSelectedMaterials] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(8);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [activeTab, setActiveTab] = useState('materials');
-    const [isSyncing, setIsSyncing] = useState(false);
+    // const [isSyncing, setIsSyncing] = useState(false);
     const [viewMode, setViewMode] = useState('table');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -104,23 +110,13 @@ const MaterialsModule = () => {
 
     // Load data on mount
     useEffect(() => {
-        loadData();
-    }, []);
-
-    /**
-     * Check if any materials have pending QB sync and need polling
-     */
-    const hasPendingQBSync = useCallback((materialsList) => {
-        return materialsList.some(m => !m.qbListId && m.qbSyncStatus !== 'error');
+      loadData();
     }, []);
 
     /**
      * Start polling for QB sync status updates
      */
     useEffect(() => {
-        const useApi = isApiEnabled();
-        if (!useApi) return;
-
         // Check if we have pending syncs
         const pendingMaterials = materials.filter(m => !m.qbListId && m.qbSyncStatus !== 'error');
         setPendingSyncCount(pendingMaterials.length);
@@ -180,24 +176,22 @@ const MaterialsModule = () => {
     }, [materials.length]); // Re-run when materials count changes
 
     /**
-     * Load materials and related data from Firebase or API
+     * Load materials and related data from API
      */
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const useApi = isApiEnabled();
-
             // Load all data in parallel
             const [materialsData, suppliersData, categoriesData, unitsData] = await Promise.all([
-                useApi ? materialsApi.getAll() : materialsService.getAll(),
-                useApi ? suppliersApi.getAll() : suppliersService.getAll(),
-                useApi ? categoriesApi.getAll() : categoriesService.getAll(),
-                useApi ? unitsApi.getAll() : unitsService.getAll(),
+                materialsApi.getAll(),
+                suppliersApi.getAll(),
+                categoriesApi.getAll(),
+                unitsApi.getAll(),
             ]);
 
             // Update state with fetched data or keep defaults
             if (materialsData?.length > 0) {
-                // Normalize field names if coming from old Firebase structure
+                // Normalize field names if coming from old structure
                 const normalizedMaterials = materialsData.map(normalizeMaterial);
                 setMaterials(normalizedMaterials);
             }
@@ -381,39 +375,19 @@ const MaterialsModule = () => {
         }));
     };
 
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            setSelectedMaterials(paginatedMaterials.map(m => m.id));
-        } else {
-            setSelectedMaterials([]);
-        }
-    };
+    // const handleSelectAll = (e) => {
+    //     if (e.target.checked) {
+    //         setSelectedMaterials(paginatedMaterials.map(m => m.id));
+    //     } else {
+    //         setSelectedMaterials([]);
+    //     }
+    // };
 
-    const handleSelectMaterial = (id) => {
-        setSelectedMaterials(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
-    };
-
-    /**
-     * Sync with QuickBooks
-     */
-    const handleSync = async () => {
-        setIsSyncing(true);
-        try {
-            // In production, this would call the QuickBooks sync API
-            if (isApiEnabled()) {
-                // await quickbooksApi.syncMaterials();
-            }
-            // Simulate sync delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await loadData(); // Reload data after sync
-        } catch (error) {
-            console.error('Error syncing with QB:', error);
-        } finally {
-            setIsSyncing(false);
-        }
-    };
+    // const handleSelectMaterial = (id) => {
+    //     setSelectedMaterials(prev =>
+    //         prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    //     );
+    // };
 
     // Modal handlers
     const handleAdd = () => {
@@ -441,81 +415,65 @@ const MaterialsModule = () => {
     };
 
     const confirmDelete = async () => {
-        if (materialToDelete) {
-            try {
-                const useApi = isApiEnabled();
-                if (useApi) {
-                    await materialsApi.delete(materialToDelete.id);
-                } else {
-                    await materialsService.delete(materialToDelete.id);
-                }
-                setMaterials(prev => prev.filter(m => m.id !== materialToDelete.id));
-            } catch (error) {
-                console.error('Error deleting material:', error);
-            }
+      if (materialToDelete) {
+        try {
+          await materialsApi.delete(materialToDelete.id);
+          setMaterials(prev => prev.filter(m => m.id !== materialToDelete.id));
+        } catch (error) {
+            console.error('Error deleting material:', error);
         }
-        setShowDeleteConfirm(false);
-        setMaterialToDelete(null);
+      }
+      setShowDeleteConfirm(false);
+      setMaterialToDelete(null);
     };
 
     const handleSave = async () => {
-        try {
-            const useApi = isApiEnabled();
-            console.log('[Materials] Saving material, useApi:', useApi);
-            console.log('[Materials] Mode:', modalMode);
-            console.log('[Materials] Data to save:', currentMaterial);
+      try {
+        console.log('[Materials] Mode:', modalMode);
+        console.log('[Materials] Data to save:', currentMaterial);
 
-            // Auto-calculate status based on stock vs minStock
-            let finalStatus = currentMaterial.status;
-            if (currentMaterial.stock <= 0) {
-                finalStatus = 'INACTIVE';
-            } else if (currentMaterial.stock <= currentMaterial.minStock) {
-                finalStatus = 'LOW_STOCK';
-            }
-
-            const materialToSave = {
-                ...currentMaterial,
-                status: finalStatus,
-                qbSyncStatus: 'pending',
-                skipQBSync: true  // Skip QuickBooks sync for now
-            };
-
-            // Remove id for new materials
-            if (modalMode === 'add') {
-                delete materialToSave.id;
-            }
-
-            console.log('[Materials] Final data:', materialToSave);
-
-            if (modalMode === 'add') {
-                let newMaterial;
-                if (useApi) {
-                    console.log('[Materials] Calling materialsApi.create...');
-                    newMaterial = await materialsApi.create(materialToSave);
-                    console.log('[Materials] API response:', newMaterial);
-                } else {
-                    newMaterial = await materialsService.create(materialToSave);
-                }
-                setMaterials(prev => [...prev, { ...materialToSave, id: newMaterial?.id || newMaterial }]);
-            } else if (modalMode === 'edit') {
-                if (useApi) {
-                    console.log('[Materials] Calling materialsApi.update...');
-                    await materialsApi.update(currentMaterial.id, materialToSave);
-                } else {
-                    await materialsService.update(currentMaterial.id, materialToSave);
-                }
-                setMaterials(prev => prev.map(m => m.id === currentMaterial.id ? materialToSave : m));
-            }
-
-            console.log('[Materials] Save successful!');
-            setShowModal(false);
-            setCurrentMaterial(emptyMaterial);
-            // Reload data to get fresh data from server
-            await loadData();
-        } catch (error) {
-            console.error('[Materials] Error saving material:', error);
-            alert('Error saving material: ' + error.message);
+        // Auto-calculate status based on stock vs minStock
+        let finalStatus = currentMaterial.status;
+        if (currentMaterial.stock <= 0) {
+            finalStatus = 'INACTIVE';
+        } else if (currentMaterial.stock <= currentMaterial.minStock) {
+            finalStatus = 'LOW_STOCK';
         }
+
+        const materialToSave = {
+            ...currentMaterial,
+            status: finalStatus,
+            qbSyncStatus: 'pending',
+            skipQBSync: true  // Skip QuickBooks sync for now
+        };
+
+        // Remove id for new materials
+        if (modalMode === 'add') {
+            delete materialToSave.id;
+        }
+
+        console.log('[Materials] Final data:', materialToSave);
+
+        if (modalMode === 'add') {
+          console.log('[Materials] Calling materialsApi.create...');
+          const newMaterial = await materialsApi.create(materialToSave);
+          console.log('[Materials] API response:', newMaterial);
+          setMaterials(prev => [...prev, { ...materialToSave, id: newMaterial?.id || newMaterial }]);
+        } else if (modalMode === 'edit') {
+          console.log('[Materials] Calling materialsApi.update...');
+          await materialsApi.update(currentMaterial.id, materialToSave);
+          setMaterials(prev => prev.map(m => m.id === currentMaterial.id ? materialToSave : m));
+        }
+
+        console.log('[Materials] Save successful!');
+        setShowModal(false);
+        setCurrentMaterial(emptyMaterial);
+        // Reload data to get fresh data from server
+        await loadData();
+      } catch (error) {
+        console.error('[Materials] Error saving material:', error);
+        alert('Error saving material: ' + error.message);
+      }
     };
 
     const handleInputChange = (field, value) => {
@@ -548,10 +506,10 @@ const MaterialsModule = () => {
                             <span className="sync-count">{pendingSyncCount} pending</span>
                         </div>
                     )}
-                    <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
+                    {/* <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
-                    </button>
+                    </button> */}
                     <button className="btn-primary-action" onClick={handleAdd}>
                         <span className="material-symbols-rounded">add</span>
                         Add material
@@ -736,109 +694,169 @@ const MaterialsModule = () => {
                 </div>
             ) : (
                 /* Table View */
-                <div className="materials-table">
-                    <div className="materials-table-header">
-                        <span className="col-checkbox">
-                            <input
-                                type="checkbox"
-                                checked={paginatedMaterials.length > 0 && selectedMaterials.length === paginatedMaterials.length}
-                                onChange={handleSelectAll}
-                            />
-                        </span>
-                        <span className="col-code sortable" onClick={() => handleSort('code_qb')}>
-                            Code QB
-                            <Icon name={sortConfig.key === 'code_qb' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                        </span>
-                        <span className="col-status-qb">QB Status</span>
-                        <span className="col-material sortable" onClick={() => handleSort('name')}>
-                            Material
-                            <Icon name={sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                        </span>
-                        <span className="col-category sortable" onClick={() => handleSort('categoryId')}>
-                            Category
-                            <Icon name={sortConfig.key === 'categoryId' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                        </span>
-                        <span className="col-unit">Unit</span>
-                        <span className="col-supplier sortable" onClick={() => handleSort('supplierId')}>
-                            Supplier
-                            <Icon name={sortConfig.key === 'supplierId' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                        </span>
-                        <span className="col-status sortable" onClick={() => handleSort('status')}>
-                            Status
-                            <Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                        </span>
-                        <span className="col-stock sortable" onClick={() => handleSort('stock')}>
-                            Stock
-                            <Icon name={sortConfig.key === 'stock' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                        </span>
-                        <span className="col-min-stock">Min</span>
-                        <span className="col-price sortable" onClick={() => handleSort('price')}>
-                            Price
-                            <Icon name={sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                        </span>
-                        <span className="col-actions">Actions</span>
-                    </div>
-
-                    {paginatedMaterials.map((material) => {
-                        const qbStatus = getQBStatusIcon(material.qbSyncStatus);
-                        const statusStyle = getStatusStyle(material.status);
-                        const isLowStock = material.stock <= material.minStock && material.stock > 0;
-
-                        return (
-                            <div key={material.id} className="materials-table-row">
-                                <span className="col-checkbox">
+                <div className="materials-table-container">
+                    <table className="materials-table-modern">
+                        <thead>
+                            <tr>
+                                {/* <th className="col-checkbox">
                                     <input
                                         type="checkbox"
-                                        checked={selectedMaterials.includes(material.id)}
-                                        onChange={() => handleSelectMaterial(material.id)}
+                                        checked={paginatedMaterials.length > 0 && selectedMaterials.length === paginatedMaterials.length}
+                                        onChange={handleSelectAll}
                                     />
-                                </span>
-                                <span className="col-code">{material.code_qb}</span>
-                                <span className="col-status-qb" title={qbStatus.label}>
-                                    <Icon name={qbStatus.icon} style={{ color: qbStatus.color, fontSize: '20px' }} />
-                                </span>
-                                <span className="col-material">
-                                    <div className="material-info">
-                                        <span className="material-name">{material.name}</span>
-                                        {material.description && (
-                                            <span className="material-desc">{material.description}</span>
-                                        )}
+                                </th> */}
+                                <th className="col-code sortable" onClick={() => handleSort('code_qb')}>
+                                    <div className="th-content">
+                                        <Icon name="tag" />
+                                        <span>Code QB</span>
+                                        <Icon name={sortConfig.key === 'code_qb' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
                                     </div>
-                                </span>
-                                <span className="col-category">{getCategoryName(material.categoryId)}</span>
-                                <span className="col-unit">{getUnitName(material.unitId)}</span>
-                                <span className="col-supplier">{getSupplierName(material.supplierId)}</span>
-                                <span className={`col-status status-badge ${statusStyle.color}`}>
-                                    <span className="status-dot"></span>
-                                    {statusStyle.label}
-                                </span>
-                                <span className={`col-stock ${isLowStock ? 'low-stock' : ''}`}>
-                                    {material.stock}
-                                    {isLowStock && <Icon name="warning" style={{ color: '#f59e0b', marginLeft: '4px', fontSize: '14px' }} />}
-                                </span>
-                                <span className="col-min-stock">{material.minStock}</span>
-                                <span className="col-price">${material.price?.toFixed(2)}</span>
-                                <span className="col-actions">
-                                    <button className="btn-icon" onClick={() => handleView(material)} title="View">
-                                        <Icon name="visibility" />
-                                    </button>
-                                    <button className="btn-icon" onClick={() => handleEdit(material)} title="Edit">
-                                        <Icon name="edit" />
-                                    </button>
-                                    <button className="btn-icon danger" onClick={() => handleDelete(material)} title="Delete">
-                                        <Icon name="delete" />
-                                    </button>
-                                </span>
-                            </div>
-                        );
-                    })}
+                                </th>
+                                <th className="col-status-qb">
+                                    <div className="th-content">
+                                        <Icon name="sync_alt" />
+                                        <span>QB</span>
+                                    </div>
+                                </th>
+                                <th className="col-material sortable" onClick={() => handleSort('name')}>
+                                    <div className="th-content">
+                                        <Icon name="inventory_2" />
+                                        <span>Material</span>
+                                        <Icon name={sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-category sortable" onClick={() => handleSort('categoryId')}>
+                                    <div className="th-content">
+                                        <Icon name="category" />
+                                        <span>Category</span>
+                                        <Icon name={sortConfig.key === 'categoryId' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-supplier sortable" onClick={() => handleSort('supplierId')}>
+                                    <div className="th-content">
+                                        <Icon name="local_shipping" />
+                                        <span>Supplier</span>
+                                        <Icon name={sortConfig.key === 'supplierId' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-status sortable" onClick={() => handleSort('status')}>
+                                    <div className="th-content">
+                                        <Icon name="circle" />
+                                        <span>Status</span>
+                                        <Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-stock sortable" onClick={() => handleSort('stock')}>
+                                    <div className="th-content">
+                                        <Icon name="inventory" />
+                                        <span>Stock</span>
+                                        <Icon name={sortConfig.key === 'stock' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-price sortable" onClick={() => handleSort('price')}>
+                                    <div className="th-content">
+                                        <Icon name="attach_money" />
+                                        <span>Price</span>
+                                        <Icon name={sortConfig.key === 'price' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} className="sort-icon" />
+                                    </div>
+                                </th>
+                                <th className="col-value">
+                                    <div className="th-content">
+                                        <Icon name="account_balance" />
+                                        <span>Total Value</span>
+                                    </div>
+                                </th>
+                                <th className="col-actions">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {paginatedMaterials.map((material) => {
+                                const qbStatus = getQBStatusIcon(material.qbSyncStatus);
+                                const statusStyle = getStatusStyle(material.status);
+                                const isLowStock = material.stock <= material.minStock && material.stock > 0;
+                                const totalValue = (material.stock || 0) * (material.price || 0);
 
-                    {paginatedMaterials.length === 0 && (
-                        <div className="materials-empty">
-                            <Icon name="inventory_2" />
-                            <p>No materials found</p>
-                        </div>
-                    )}
+                                return (
+                                    <tr key={material.id} className={`table-row ${isLowStock ? 'low-stock-row' : ''}`}>
+                                        {/* <td className="col-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedMaterials.includes(material.id)}
+                                                onChange={() => handleSelectMaterial(material.id)}
+                                            />
+                                        </td> */}
+                                        <td className="col-code">
+                                            <span className="code-badge">{material.code_qb}</span>
+                                        </td>
+                                        <td className="col-status-qb" title={qbStatus.label}>
+                                            <Icon name={qbStatus.icon} style={{ color: qbStatus.color, fontSize: '20px' }} />
+                                        </td>
+                                        <td className="col-material">
+                                            <div className="material-info">
+                                                <span className="material-name">{material.name}</span>
+                                                {material.description && (
+                                                    <span className="material-desc">{material.description}</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="col-category">
+                                            <span className="category-tag">{getCategoryName(material.categoryId)}</span>
+                                        </td>
+                                        <td className="col-supplier">{getSupplierName(material.supplierId)}</td>
+                                        <td className="col-status">
+                                            <span className={`status-badge ${statusStyle.color}`}>
+                                                <span className="status-dot"></span>
+                                                {statusStyle.label}
+                                            </span>
+                                        </td>
+                                        <td className="col-stock">
+                                            <div className="stock-info">
+                                                <span className="stock-value">{material.stock}</span>
+                                                <span className="stock-unit">{getUnitName(material.unitId)}</span>
+                                                {isLowStock && (
+                                                    <Icon name="warning" className="stock-warning" />
+                                                )}
+                                            </div>
+                                            <div className="stock-min">Min: {material.minStock}</div>
+                                        </td>
+                                        <td className="col-price">
+                                            <div className="price-cell">
+                                                ${material.price?.toFixed(2)}
+                                            </div>
+                                        </td>
+                                        <td className="col-value">
+                                            <div className="value-cell">
+                                                ${totalValue.toFixed(2)}
+                                            </div>
+                                        </td>
+                                        <td className="col-actions">
+                                            <div className="action-buttons">
+                                                {/* <button className="btn-icon-sm" onClick={() => handleView(material)} title="View">
+                                                    <Icon name="visibility" />
+                                                </button> */}
+                                                <button className="btn-icon-sm primary" onClick={() => handleEdit(material)} title="Edit">
+                                                    <Icon name="edit" />
+                                                </button>
+                                                <button className="btn-icon-sm danger" onClick={() => handleDelete(material)} title="Delete">
+                                                    <Icon name="delete" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            {paginatedMaterials.length === 0 && (
+                                <tr>
+                                    <td colSpan="11" className="empty-state">
+                                        <div className="empty-content">
+                                            <Icon name="inventory_2" />
+                                            <p>No materials found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             )}
 
@@ -945,6 +963,20 @@ const MaterialsModule = () => {
                                 <option value="">Select category</option>
                                 {categories.map(cat => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Account *</label>
+                            <select
+                                value={currentMaterial.account}
+                                onChange={(e) => handleInputChange('account', e.target.value)}
+                                disabled={modalMode === 'view'}
+                                required
+                            >
+                                <option value="">Select account</option>
+                                {accountOptions.map(acc => (
+                                    <option key={acc.id} value={acc.id}>{acc.name}</option>
                                 ))}
                             </select>
                         </div>
