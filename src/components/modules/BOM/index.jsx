@@ -700,6 +700,7 @@ const BOMModule = () => {
                 title={modalMode === 'add' ? 'New BOM' : modalMode === 'edit' ? 'Edit BOM' : 'BOM Details'}
                 onClose={() => setShowModal(false)}
                 icon={modalMode === 'add' ? 'add_box' : modalMode === 'edit' ? 'edit' : 'visibility'}
+                className="modal-large"
             >
                 <div className="bom-form">
                     <div className="form-row">

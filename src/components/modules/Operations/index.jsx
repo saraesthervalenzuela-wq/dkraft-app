@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Icon, SearchBox } from '../../common';
+import './styles.css';
 import {
     operationsData,
     operationStages,

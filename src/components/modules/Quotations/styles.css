@@ -288,12 +288,68 @@
     cursor: pointer;
 }
 
+/* Modal Size for Quotations */
+.quotations-module .modal-content {
+    max-width: 700px;
+    width: 95%;
+}
+
+.quotation-form .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.quotation-form .form-group {
+    margin-bottom: 0;
+}
+
+.quotation-form .form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.quotation-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary, #aaa);
+}
+
+.quotation-form .form-group input,
+.quotation-form .form-group select,
+.quotation-form .form-group textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary, #fff);
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.quotation-form .form-group input:focus,
+.quotation-form .form-group select:focus,
+.quotation-form .form-group textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+}
+
+.quotation-form .form-group input:disabled,
+.quotation-form .form-group select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 /* Form Section */
 .form-section {
     background: rgba(255, 255, 255, 0.02);
     border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
 }
 
 .form-section h3 {
@@ -477,8 +533,9 @@
         grid-template-columns: 1fr;
     }
 
-    .form-row {
-        flex-direction: column;
+    .quotation-form .form-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
 
     .quotation-totals {
@@ -487,5 +544,10 @@
 
     .total-row {
         justify-content: space-between;
+    }
+
+    .quotations-module .modal-content {
+        max-width: 100%;
+        margin: 16px;
     }
 }

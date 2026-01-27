@@ -2966,6 +2966,9 @@ button {
     border-radius: 16px;
     width: 100%;
     max-width: 480px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--shadow-lg);
     animation: slideUp 0.3s ease;
 }
@@ -2987,6 +2990,7 @@ button {
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
 }
 
 .modal-header h3 {
@@ -3018,6 +3022,8 @@ button {
 
 .modal-body {
     padding: 24px;
+    overflow-y: auto;
+    flex: 1;
 }
 
 .form-group {
@@ -3430,6 +3436,11 @@ button {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    margin-bottom: 16px;
+}
+
+.form-row:last-child {
+    margin-bottom: 0;
 }
 
 .form-group textarea {
@@ -16500,13 +16511,15 @@ button {
     .sidebar {
         width: 70px;
         padding: 1rem 0.5rem;
+        overflow: hidden;
     }
 
     .sidebar .logo-text,
     .sidebar .nav-label,
     .sidebar .nav-badge,
     .sidebar .user-info,
-    .sidebar .logout-text {
+    .sidebar .logout-text,
+    .sidebar .nav-section-header {
         display: none;
     }
 
@@ -16551,8 +16564,14 @@ button {
     .sidebar .nav-label,
     .sidebar .nav-badge,
     .sidebar .user-info,
-    .sidebar .logout-text {
+    .sidebar .logout-text,
+    .sidebar .nav-section-header {
         display: block;
+    }
+
+    .sidebar {
+        overflow: visible;
+        overflow-y: auto;
     }
 
     .sidebar .nav-item {
