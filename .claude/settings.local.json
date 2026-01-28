@@ -19,7 +19,10 @@
       "Bash(mv:*)",
       "Bash(npx vite:*)",
       "Bash(tree:*)",
-      "Bash(git -C /Users/concepcion/Documents/GitHub/dkraft-app log --oneline)"
+      "Bash(git -C /Users/concepcion/Documents/GitHub/dkraft-app log --oneline)",
+      "Bash(for f in *.svg)",
+      "Bash(do sed -i '' 's/<path /<path fill=\"\"currentColor\"\" /g' \"$f\")",
+      "Bash(done)"
     ]
   }
 }

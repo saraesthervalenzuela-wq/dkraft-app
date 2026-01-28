@@ -182,6 +182,497 @@ body::after {
     border: 1px solid var(--glass-border);
 }
 
+/* ================================
+   ENHANCED ICON STYLES
+   Modern icons with gradients, glows and animations
+   ================================ */
+
+/* Base icon styling with better rendering */
+.material-symbols-rounded {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Icons with filled style */
+.icon-filled .material-symbols-rounded,
+.nav-item.active .material-symbols-rounded,
+.btn-primary-action .material-symbols-rounded {
+    font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Enhanced stat icons with gradient backgrounds and glow */
+.stat-icon,
+.header-icon,
+.metric-icon,
+.qa-metric-card .metric-icon,
+.report-card-icon,
+.materials-page-icon,
+.materials-tab-icon,
+.operations-tab-icon,
+.qa-tab-icon,
+.report-tab-icon,
+.perf-tab-icon,
+.duty-stat-icon,
+.clients-stat-icon,
+.pa-header-icon,
+.pa-action-icon,
+.pa-module-icon {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shimmer effect on icon containers */
+.stat-icon::before,
+.header-icon::before,
+.metric-icon::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent 40%,
+        rgba(255, 255, 255, 0.15) 50%,
+        transparent 60%
+    );
+    transform: rotate(45deg) translateX(-100%);
+    transition: transform 0.6s ease;
+    pointer-events: none;
+}
+
+.stat-icon:hover::before,
+.header-icon:hover::before,
+.metric-icon:hover::before {
+    transform: rotate(45deg) translateX(100%);
+}
+
+/* Icon container glow on hover */
+.stat-icon:hover,
+.header-icon:hover,
+.metric-icon:hover {
+    transform: scale(1.08);
+    box-shadow:
+        0 8px 25px rgba(139, 92, 246, 0.35),
+        0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+/* Pulsing animation for important icons */
+@keyframes iconPulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(139, 92, 246, 0.5);
+    }
+}
+
+.stat-icon.pulse {
+    animation: iconPulse 2s ease-in-out infinite;
+}
+
+/* Navigation icons enhancement */
+.nav-icon {
+    position: relative;
+    font-size: 22px;
+    color: var(--text-muted);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nav-item:hover .nav-icon {
+    color: var(--accent-primary);
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
+}
+
+.nav-item.active .nav-icon {
+    color: white;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.4));
+    transform: scale(1.05);
+}
+
+/* Submenu icons */
+.nav-subitem .nav-icon {
+    font-size: 18px;
+    transition: all 0.25s ease;
+}
+
+.nav-subitem:hover .nav-icon {
+    transform: translateX(3px) scale(1.05);
+    color: var(--accent-primary);
+}
+
+.nav-subitem.active .nav-icon {
+    color: var(--accent-primary);
+    filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.4));
+}
+
+/* Button icons with modern effects */
+.btn-primary-action .material-symbols-rounded,
+.btn-add-user .nav-icon,
+.btn-add-material .nav-icon,
+.btn-add-product .nav-icon,
+.btn-add-project .nav-icon,
+.btn-add-operation .nav-icon {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+    transition: all 0.3s ease;
+}
+
+.btn-primary-action:hover .material-symbols-rounded,
+.btn-add-user:hover .nav-icon,
+.btn-add-material:hover .nav-icon,
+.btn-add-product:hover .nav-icon,
+.btn-add-project:hover .nav-icon,
+.btn-add-operation:hover .nav-icon {
+    transform: scale(1.15) rotate(-5deg);
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* Icon action buttons (edit, delete, etc) */
+.btn-icon .material-symbols-rounded,
+.btn-icon .nav-icon,
+.btn-action-edit .material-symbols-rounded {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-icon:hover .material-symbols-rounded,
+.btn-icon:hover .nav-icon {
+    transform: scale(1.2);
+}
+
+.btn-icon:hover .material-symbols-rounded[style*="color: var(--danger)"],
+.btn-icon:hover .nav-icon[style*="color: var(--danger)"] {
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
+}
+
+/* Tab card icons with enhanced gradients */
+.materials-tab-icon,
+.operations-tab-icon,
+.qa-tab-icon,
+.report-tab-icon,
+.perf-tab-icon {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.materials-tab-icon::after,
+.operations-tab-icon::after,
+.qa-tab-icon::after,
+.report-tab-icon::after,
+.perf-tab-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.materials-tab-card:hover .materials-tab-icon,
+.operations-tab-card:hover .operations-tab-icon,
+.qa-tab-card:hover .qa-tab-icon,
+.report-tab-card:hover .report-tab-icon,
+.perf-tab-card:hover .perf-tab-icon {
+    transform: scale(1.1) rotate(-3deg);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Arrow icons in tab cards */
+.materials-tab-arrow .nav-icon,
+.operations-tab-arrow .nav-icon,
+.qa-tab-arrow .nav-icon,
+.report-tab-arrow .nav-icon,
+.perf-tab-arrow .material-symbols-rounded {
+    transition: all 0.3s ease;
+}
+
+.materials-tab-card:hover .materials-tab-arrow .nav-icon,
+.operations-tab-card:hover .operations-tab-arrow .nav-icon,
+.qa-tab-card:hover .qa-tab-arrow .nav-icon,
+.report-tab-card:hover .report-tab-arrow .nav-icon,
+.perf-tab-card:hover .perf-tab-arrow .material-symbols-rounded {
+    transform: translateX(4px);
+}
+
+/* Status and badge icons */
+.status-badge .material-symbols-rounded,
+.status-badge .nav-icon,
+.result-badge .material-symbols-rounded,
+.result-badge .nav-icon {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Empty state icons */
+.materials-empty .nav-icon,
+.clients-empty .nav-icon,
+.products-empty .nav-icon,
+.projects-empty .nav-icon,
+.operations-empty .nav-icon,
+.suppliers-empty .nav-icon,
+.staff-empty .nav-icon,
+.qa-empty .nav-icon,
+.activity-empty .nav-icon,
+.catalog-empty .nav-icon {
+    opacity: 0.4;
+    filter: grayscale(0.3);
+    transition: all 0.3s ease;
+}
+
+.materials-empty:hover .nav-icon,
+.clients-empty:hover .nav-icon,
+.products-empty:hover .nav-icon,
+.projects-empty:hover .nav-icon,
+.operations-empty:hover .nav-icon,
+.suppliers-empty:hover .nav-icon,
+.staff-empty:hover .nav-icon,
+.qa-empty:hover .nav-icon,
+.activity-empty:hover .nav-icon,
+.catalog-empty:hover .nav-icon {
+    opacity: 0.6;
+    filter: grayscale(0);
+    transform: scale(1.1);
+}
+
+/* Sync button spinning icon */
+.btn-sync.syncing .material-symbols-rounded,
+.btn-sync.syncing .nav-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Card icons with gradient overlays */
+.material-card-icon,
+.project-card-icon,
+.operation-card-icon,
+.supplier-card-icon,
+.warehouse-card-icon {
+    position: relative;
+    overflow: hidden;
+}
+
+.material-card-icon::before,
+.project-card-icon::before,
+.operation-card-icon::before,
+.supplier-card-icon::before,
+.warehouse-card-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.material-card:hover .material-card-icon,
+.project-card:hover .project-card-icon,
+.operation-card:hover .operation-card-icon,
+.supplier-card:hover .supplier-card-icon,
+.warehouse-card:hover .warehouse-card-icon {
+    transform: scale(1.08) rotate(3deg);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Theme toggle icon */
+.themes-toggle .material-symbols-rounded,
+.themes-toggle .nav-icon {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.themes-toggle:hover .material-symbols-rounded,
+.themes-toggle:hover .nav-icon {
+    transform: rotate(180deg) scale(1.1);
+    color: var(--accent-primary);
+    filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
+}
+
+/* User menu icons */
+.user-dropdown .dropdown-item .material-symbols-rounded,
+.user-dropdown .dropdown-item .nav-icon {
+    transition: all 0.25s ease;
+}
+
+.user-dropdown .dropdown-item:hover .material-symbols-rounded,
+.user-dropdown .dropdown-item:hover .nav-icon {
+    transform: scale(1.15);
+}
+
+.user-dropdown .dropdown-item.danger:hover .material-symbols-rounded,
+.user-dropdown .dropdown-item.danger:hover .nav-icon {
+    filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.5));
+}
+
+/* Floating action buttons */
+.fab-icon .material-symbols-rounded,
+.fab-icon .nav-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab:hover .fab-icon .material-symbols-rounded,
+.fab:hover .fab-icon .nav-icon {
+    transform: rotate(90deg);
+}
+
+/* Alert icons */
+.alert-item .material-symbols-rounded,
+.alert-item .nav-icon,
+.perf-alert-item .material-symbols-rounded {
+    animation: alertBounce 2s ease-in-out infinite;
+}
+
+@keyframes alertBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Modal header icons */
+.modal-header-icon .material-symbols-rounded,
+.modal-header-icon .nav-icon {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* Report and dashboard icons glow */
+.report-stat-card .stat-icon,
+.module-stat-card .stat-icon {
+    transition: all 0.3s ease;
+}
+
+.report-stat-card:hover .stat-icon,
+.module-stat-card:hover .stat-icon {
+    transform: scale(1.1);
+}
+
+.report-stat-card .stat-icon.pending:hover { box-shadow: 0 0 25px rgba(100, 116, 139, 0.5); }
+.report-stat-card .stat-icon.in-progress:hover { box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
+.report-stat-card .stat-icon.completed:hover { box-shadow: 0 0 25px rgba(16, 185, 129, 0.5); }
+.report-stat-card .stat-icon.total:hover { box-shadow: 0 0 25px rgba(139, 92, 246, 0.5); }
+.report-stat-card .stat-icon.warning:hover { box-shadow: 0 0 25px rgba(245, 158, 11, 0.5); }
+.report-stat-card .stat-icon.danger:hover { box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); }
+
+/* Icon color utilities with glow */
+.icon-success { color: var(--success); filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.4)); }
+.icon-warning { color: var(--warning); filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.4)); }
+.icon-danger { color: var(--danger); filter: drop-shadow(0 0 6px rgba(239, 68, 68, 0.4)); }
+.icon-info { color: var(--info); filter: drop-shadow(0 0 6px rgba(59, 130, 246, 0.4)); }
+.icon-primary { color: var(--accent-primary); filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.4)); }
+
+/* Light theme icon adjustments */
+[data-theme="light"] .nav-item:hover .nav-icon {
+    filter: drop-shadow(0 0 6px rgba(139, 92, 246, 0.3));
+}
+
+[data-theme="light"] .stat-icon:hover,
+[data-theme="light"] .header-icon:hover,
+[data-theme="light"] .metric-icon:hover {
+    box-shadow:
+        0 8px 25px rgba(139, 92, 246, 0.25),
+        0 0 15px rgba(139, 92, 246, 0.15);
+}
+
+[data-theme="light"] .themes-toggle:hover .material-symbols-rounded,
+[data-theme="light"] .themes-toggle:hover .nav-icon {
+    filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.3));
+}
+
+/* ================================
+   INDUSTRIAL ICON STYLES
+   Custom SVG icons for industrial theme
+   ================================ */
+
+.industrial-icon {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Default inherit color - use CSS filters based on theme */
+.industrial-icon-inherit {
+    filter: brightness(0) invert(1); /* White for dark theme */
+    opacity: 0.85;
+}
+
+[data-theme="light"] .industrial-icon-inherit {
+    filter: brightness(0); /* Black for light theme */
+    opacity: 0.8;
+}
+
+/* Hover effects for industrial icons */
+.industrial-icon:hover {
+    transform: scale(1.1);
+    filter: brightness(0) saturate(100%) invert(42%) sepia(93%) saturate(1352%) hue-rotate(238deg) brightness(96%) contrast(98%) !important; /* Primary color on hover */
+}
+
+/* Container styles for industrial icons */
+.industrial-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--accent-gradient);
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.industrial-icon-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.industrial-icon-container:hover {
+    transform: scale(1.08) rotate(3deg);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4);
+}
+
+.industrial-icon-container .industrial-icon {
+    filter: brightness(0) invert(1) !important;
+}
+
+.industrial-icon-container .industrial-icon:hover {
+    transform: none;
+    filter: brightness(0) invert(1) !important;
+}
+
+/* Size variants */
+.industrial-icon-sm { width: 18px; height: 18px; }
+.industrial-icon-md { width: 24px; height: 24px; }
+.industrial-icon-lg { width: 32px; height: 32px; }
+.industrial-icon-xl { width: 48px; height: 48px; }
+.industrial-icon-2xl { width: 64px; height: 64px; }
+
+/* Color-specific container backgrounds */
+.industrial-icon-container.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+.industrial-icon-container.blue { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+.industrial-icon-container.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+.industrial-icon-container.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.industrial-icon-container.red { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+.industrial-icon-container.cyan { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+.industrial-icon-container.pink { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
+
+.industrial-icon-container.green:hover { box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); }
+.industrial-icon-container.blue:hover { box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); }
+.industrial-icon-container.purple:hover { box-shadow: 0 8px 25px rgba(139, 92, 246, 0.4); }
+.industrial-icon-container.orange:hover { box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4); }
+.industrial-icon-container.red:hover { box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4); }
+.industrial-icon-container.cyan:hover { box-shadow: 0 8px 25px rgba(6, 182, 212, 0.4); }
+.industrial-icon-container.pink:hover { box-shadow: 0 8px 25px rgba(236, 72, 153, 0.4); }
+
 /* Glassmorphism for common elements */
 .card,
 .data-table-card,

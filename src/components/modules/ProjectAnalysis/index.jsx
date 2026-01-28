@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon } from '../../common';
+import { Icon, IndustrialIcon } from '../../common';
 
 const ProjectAnalysis = ({ onNavigate }) => {
     const [cacheCleared, setCacheCleared] = useState(false);
@@ -89,27 +89,27 @@ const ProjectAnalysis = ({ onNavigate }) => {
     ];
 
     const modules = [
-        { name: 'Dashboard', desc: 'Overview & KPIs', icon: 'dashboard', version: 'v1.0', color: '#8b5cf6', status: 'Active', navKey: 'dashboard', components: 5, linesOfCode: 450, features: ['Real-time stats', 'KPI cards', 'Quick navigation', 'Activity feed'] },
-        { name: 'Staff', desc: 'Employee management', icon: 'badge', version: 'v1.0', color: '#3b82f6', status: 'Active', navKey: 'staff', components: 4, linesOfCode: 620, features: ['Employee directory', 'Role management', 'Contact info', 'Status tracking'] },
-        { name: 'Staff on Duty', desc: 'Active monitoring', icon: 'work_history', version: 'v1.0', color: '#06b6d4', status: 'Active', navKey: 'staff-duty', components: 3, linesOfCode: 380, features: ['Real-time status', 'Check-in/out', 'Time tracking', 'Shift management'] },
+        { name: 'Dashboard', desc: 'Overview & KPIs', icon: 'dashboard', industrialIcon: 'industry', version: 'v1.0', color: '#8b5cf6', status: 'Active', navKey: 'dashboard', components: 5, linesOfCode: 450, features: ['Real-time stats', 'KPI cards', 'Quick navigation', 'Activity feed'] },
+        { name: 'Staff', desc: 'Employee management', icon: 'badge', industrialIcon: 'id-card', version: 'v1.0', color: '#3b82f6', status: 'Active', navKey: 'staff', components: 4, linesOfCode: 620, features: ['Employee directory', 'Role management', 'Contact info', 'Status tracking'] },
+        { name: 'Staff on Duty', desc: 'Active monitoring', icon: 'work_history', industrialIcon: 'working', version: 'v1.0', color: '#06b6d4', status: 'Active', navKey: 'staff-duty', components: 3, linesOfCode: 380, features: ['Real-time status', 'Check-in/out', 'Time tracking', 'Shift management'] },
         { name: 'Clients', desc: 'Customer database', icon: 'group', version: 'v1.0', color: '#10b981', status: 'Active', navKey: 'clients', components: 4, linesOfCode: 580, features: ['Client profiles', 'Contact management', 'History tracking', 'Grid/Table views'] },
         { name: 'Top Clients', desc: 'Revenue ranking', icon: 'star', version: 'v1.0', color: '#f59e0b', status: 'Active', navKey: 'top-clients', components: 3, linesOfCode: 420, features: ['Revenue ranking', 'Client metrics', 'Performance tracking', 'Grid view'] },
-        { name: 'Suppliers', desc: 'Vendor directory', icon: 'local_shipping', version: 'v1.0', color: '#ef4444', status: 'Active', navKey: 'suppliers', components: 4, linesOfCode: 540, features: ['Supplier management', 'Contact info', 'Material sourcing', 'Grid/Table views'] },
-        { name: 'Materials', desc: 'Inventory control', icon: 'inventory_2', version: 'v1.0', color: '#8b5cf6', status: 'Active', navKey: 'materials', components: 5, linesOfCode: 680, features: ['Inventory tracking', 'Stock levels', 'Category filters', 'Grid view'] },
-        { name: 'Products', desc: 'Product catalog', icon: 'category', version: 'v1.0', color: '#ec4899', status: 'Active', navKey: 'products', components: 4, linesOfCode: 520, features: ['Product catalog', 'Pricing', 'Categories', 'Search & filter'] },
-        { name: 'Warehouses', desc: 'Storage locations', icon: 'warehouse', version: 'v1.0', color: '#64748b', status: 'Active', navKey: 'warehouses', components: 4, linesOfCode: 480, features: ['Location management', 'Inventory tracking', 'Stock transfers', 'Grid view'] },
-        { name: 'BOM', desc: 'Bill of Materials', icon: 'account_tree', version: 'v1.0', color: '#0891b2', status: 'Active', navKey: 'bom', components: 5, linesOfCode: 750, features: ['Product specs', 'Cost calculation', 'Component management', 'Margin analysis'] },
-        { name: 'Projects', desc: 'Work orders', icon: 'assignment', version: 'v1.0', color: '#14b8a6', status: 'Active', navKey: 'projects', components: 5, linesOfCode: 720, features: ['Project management', 'Client assignment', 'Status tracking', 'Grid view'] },
+        { name: 'Suppliers', desc: 'Vendor directory', icon: 'local_shipping', industrialIcon: 'delivery', version: 'v1.0', color: '#ef4444', status: 'Active', navKey: 'suppliers', components: 4, linesOfCode: 540, features: ['Supplier management', 'Contact info', 'Material sourcing', 'Grid/Table views'] },
+        { name: 'Materials', desc: 'Inventory control', icon: 'inventory_2', industrialIcon: 'rack', version: 'v1.0', color: '#8b5cf6', status: 'Active', navKey: 'materials', components: 5, linesOfCode: 680, features: ['Inventory tracking', 'Stock levels', 'Category filters', 'Grid view'] },
+        { name: 'Products', desc: 'Product catalog', icon: 'category', industrialIcon: 'packing-worker', version: 'v1.0', color: '#ec4899', status: 'Active', navKey: 'products', components: 4, linesOfCode: 520, features: ['Product catalog', 'Pricing', 'Categories', 'Search & filter'] },
+        { name: 'Warehouses', desc: 'Storage locations', icon: 'warehouse', industrialIcon: 'warehouse-staff', version: 'v1.0', color: '#64748b', status: 'Active', navKey: 'warehouses', components: 4, linesOfCode: 480, features: ['Location management', 'Inventory tracking', 'Stock transfers', 'Grid view'] },
+        { name: 'BOM', desc: 'Bill of Materials', icon: 'account_tree', industrialIcon: 'assembly-worker', version: 'v1.0', color: '#0891b2', status: 'Active', navKey: 'bom', components: 5, linesOfCode: 750, features: ['Product specs', 'Cost calculation', 'Component management', 'Margin analysis'] },
+        { name: 'Projects', desc: 'Work orders', icon: 'assignment', industrialIcon: 'industrial-worker', version: 'v1.0', color: '#14b8a6', status: 'Active', navKey: 'projects', components: 5, linesOfCode: 720, features: ['Project management', 'Client assignment', 'Status tracking', 'Grid view'] },
         { name: 'Quotations', desc: 'Sales quotes', icon: 'request_quote', version: 'v1.0', color: '#7c3aed', status: 'Active', navKey: 'quotations', components: 6, linesOfCode: 900, features: ['Quote generation', 'Client approval', 'Price calculation', 'PDF export'] },
-        { name: 'Requisitions', desc: 'Sales orders', icon: 'shopping_cart', version: 'v1.0', color: '#2563eb', status: 'Active', navKey: 'requisitions', components: 6, linesOfCode: 850, features: ['Order management', 'Status workflow', 'Item tracking', 'Grid/Table views'] },
-        { name: 'Operations', desc: 'Production pipeline', icon: 'engineering', version: 'v1.0', color: '#f97316', status: 'Active', navKey: 'operations', components: 6, linesOfCode: 950, features: ['Work orders', 'Stage tracking', 'Progress monitoring', 'Grid view'] },
+        { name: 'Requisitions', desc: 'Sales orders', icon: 'shopping_cart', industrialIcon: 'forklift', version: 'v1.0', color: '#2563eb', status: 'Active', navKey: 'requisitions', components: 6, linesOfCode: 850, features: ['Order management', 'Status workflow', 'Item tracking', 'Grid/Table views'] },
+        { name: 'Operations', desc: 'Production pipeline', icon: 'engineering', industrialIcon: 'operator', version: 'v1.0', color: '#f97316', status: 'Active', navKey: 'operations', components: 6, linesOfCode: 950, features: ['Work orders', 'Stage tracking', 'Progress monitoring', 'Grid view'] },
         { name: 'Reports', desc: 'Analytics & charts', icon: 'analytics', version: 'v1.0', color: '#6366f1', status: 'Active', navKey: 'reports', components: 8, linesOfCode: 1200, features: ['Time-based charts', 'Analytics dashboard', 'Export options', 'Multiple reports'] },
-        { name: 'Quality', desc: 'QC inspections', icon: 'verified', version: 'v1.0', color: '#22c55e', status: 'Active', navKey: 'quality', components: 6, linesOfCode: 1100, features: ['Inspections', 'Checklists', 'Findings tracking', 'Edit functionality'] },
+        { name: 'Quality', desc: 'QC inspections', icon: 'verified', industrialIcon: 'qc-worker', version: 'v1.0', color: '#22c55e', status: 'Active', navKey: 'quality', components: 6, linesOfCode: 1100, features: ['Inspections', 'Checklists', 'Findings tracking', 'Edit functionality'] },
         { name: 'Performance', desc: 'Team metrics', icon: 'trending_up', version: 'v1.0', color: '#a855f7', status: 'Active', navKey: 'performance', components: 4, linesOfCode: 480, features: ['Team metrics', 'Performance tracking', 'Goals monitoring', 'Analytics'] },
-        { name: 'Project Analysis', desc: 'System statistics', icon: 'science', version: 'v1.0', color: '#0ea5e9', status: 'Active', navKey: 'project-analysis', components: 3, linesOfCode: 450, features: ['Code statistics', 'Module info', 'Tech stack', 'Quick actions'] },
+        { name: 'Project Analysis', desc: 'System statistics', icon: 'science', industrialIcon: 'experiment', version: 'v1.0', color: '#0ea5e9', status: 'Active', navKey: 'project-analysis', components: 3, linesOfCode: 450, features: ['Code statistics', 'Module info', 'Tech stack', 'Quick actions'] },
         { name: 'Activity Log', desc: 'System history', icon: 'history', version: 'v1.0', color: '#78716c', status: 'Active', navKey: 'activity-log', components: 3, linesOfCode: 350, features: ['Action tracking', 'User history', 'Timestamp logs', 'Filtering'] },
-        { name: 'Categories', desc: 'Material categories', icon: 'folder', version: 'v1.0', color: '#d97706', status: 'Active', navKey: 'categories', components: 3, linesOfCode: 320, features: ['Category management', 'Hierarchy', 'Material grouping', 'CRUD operations'] },
-        { name: 'Units', desc: 'Measurement units', icon: 'straighten', version: 'v1.0', color: '#059669', status: 'Active', navKey: 'units', components: 3, linesOfCode: 280, features: ['Unit management', 'Abbreviations', 'Conversions', 'CRUD operations'] },
+        { name: 'Categories', desc: 'Material categories', icon: 'folder', industrialIcon: 'toolbox', version: 'v1.0', color: '#d97706', status: 'Active', navKey: 'categories', components: 3, linesOfCode: 320, features: ['Category management', 'Hierarchy', 'Material grouping', 'CRUD operations'] },
+        { name: 'Units', desc: 'Measurement units', icon: 'straighten', industrialIcon: 'maintenance', version: 'v1.0', color: '#059669', status: 'Active', navKey: 'units', components: 3, linesOfCode: 280, features: ['Unit management', 'Abbreviations', 'Conversions', 'CRUD operations'] },
     ];
 
     const handleModuleClick = (module) => {
@@ -348,7 +348,11 @@ const ProjectAnalysis = ({ onNavigate }) => {
                             title={`Click to open ${module.name}`}
                         >
                             <div className="pa-module-icon" style={{ background: `${module.color}15`, color: module.color }}>
-                                <Icon name={module.icon} />
+                                {module.industrialIcon ? (
+                                    <IndustrialIcon name={module.industrialIcon} size={22} color="white" />
+                                ) : (
+                                    <Icon name={module.icon} />
+                                )}
                             </div>
                             <div className="pa-module-info">
                                 <div className="pa-module-name">{module.name}</div>
@@ -375,7 +379,11 @@ const ProjectAnalysis = ({ onNavigate }) => {
                     <div className="modal-content modal-pa-module" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon" style={{ background: `${selectedModule.color}20`, color: selectedModule.color }}>
-                                <Icon name={selectedModule.icon} />
+                                {selectedModule.industrialIcon ? (
+                                    <IndustrialIcon name={selectedModule.industrialIcon} size={26} color="white" />
+                                ) : (
+                                    <Icon name={selectedModule.icon} />
+                                )}
                             </div>
                             <div className="modal-header-text">
                                 <h3>{selectedModule.name}</h3>
