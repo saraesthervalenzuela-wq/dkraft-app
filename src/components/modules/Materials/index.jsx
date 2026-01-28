@@ -88,12 +88,8 @@ const MaterialsModule = () => {
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
-    // const [selectedMaterials, setSelectedMaterials] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(8);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [activeTab, setActiveTab] = useState('materials');
-    // const [isSyncing, setIsSyncing] = useState(false);
     const [viewMode, setViewMode] = useState('table');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -363,10 +359,8 @@ const MaterialsModule = () => {
         return 0;
     });
 
-    // Pagination
-    const totalPages = Math.ceil(sortedMaterials.length / rowsPerPage);
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const paginatedMaterials = sortedMaterials.slice(startIndex, startIndex + rowsPerPage);
+    // Show all materials (no pagination)
+    const displayMaterials = sortedMaterials;
 
     const handleSort = (key) => {
         setSortConfig(prev => ({
@@ -377,7 +371,7 @@ const MaterialsModule = () => {
 
     // const handleSelectAll = (e) => {
     //     if (e.target.checked) {
-    //         setSelectedMaterials(paginatedMaterials.map(m => m.id));
+    //         setSelectedMaterials(displayMaterials.map(m => m.id));
     //     } else {
     //         setSelectedMaterials([]);
     //     }
@@ -619,7 +613,7 @@ const MaterialsModule = () => {
             ) : viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="materials-cards-grid">
-                    {paginatedMaterials.map((material) => {
+                    {displayMaterials.map((material) => {
                         const qbStatus = getQBStatusIcon(material.qbSyncStatus);
                         const statusStyle = getStatusStyle(material.status);
                         return (
@@ -685,7 +679,7 @@ const MaterialsModule = () => {
                             </div>
                         );
                     })}
-                    {paginatedMaterials.length === 0 && (
+                    {displayMaterials.length === 0 && (
                         <div className="materials-empty">
                             <Icon name="inventory_2" />
                             <p>No materials found</p>
@@ -701,7 +695,7 @@ const MaterialsModule = () => {
                                 {/* <th className="col-checkbox">
                                     <input
                                         type="checkbox"
-                                        checked={paginatedMaterials.length > 0 && selectedMaterials.length === paginatedMaterials.length}
+                                        checked={displayMaterials.length > 0 && selectedMaterials.length === displayMaterials.length}
                                         onChange={handleSelectAll}
                                     />
                                 </th> */}
@@ -770,7 +764,7 @@ const MaterialsModule = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {paginatedMaterials.map((material) => {
+                            {displayMaterials.map((material) => {
                                 const qbStatus = getQBStatusIcon(material.qbSyncStatus);
                                 const statusStyle = getStatusStyle(material.status);
                                 const isLowStock = material.stock <= material.minStock && material.stock > 0;
@@ -845,7 +839,7 @@ const MaterialsModule = () => {
                                     </tr>
                                 );
                             })}
-                            {paginatedMaterials.length === 0 && (
+                            {displayMaterials.length === 0 && (
                                 <tr>
                                     <td colSpan="11" className="empty-state">
                                         <div className="empty-content">
@@ -860,40 +854,14 @@ const MaterialsModule = () => {
                 </div>
             )}
 
-            {/* Pagination */}
-            <div className="materials-footer">
-                <div className="materials-count">
-                    Showing {sortedMaterials.length > 0 ? startIndex + 1 : 0} - {Math.min(startIndex + rowsPerPage, sortedMaterials.length)} of {sortedMaterials.length} results
-                </div>
-                <div className="materials-pagination">
-                    <div className="rows-per-page">
-                        <span>Rows per page</span>
-                        <select value={rowsPerPage} onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}>
-                            <option value={5}>5</option>
-                            <option value={8}>8</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                        </select>
-                    </div>
-                    <div className="page-info">
-                        Page {currentPage} of {totalPages || 1}
-                    </div>
-                    <div className="page-controls">
-                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
-                            <Icon name="first_page" />
-                        </button>
-                        <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>
-                            <Icon name="chevron_left" />
-                        </button>
-                        <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage >= totalPages}>
-                            <Icon name="chevron_right" />
-                        </button>
-                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage >= totalPages}>
-                            <Icon name="last_page" />
-                        </button>
+            {/* Footer */}
+            {sortedMaterials.length > 0 && (
+                <div className="materials-footer">
+                    <div className="materials-count">
+                        Showing {sortedMaterials.length} {sortedMaterials.length === 1 ? 'material' : 'materials'}
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Add/Edit Modal */}
             <Modal
