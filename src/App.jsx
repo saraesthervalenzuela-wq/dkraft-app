@@ -88,7 +88,7 @@ const AppContent = () => {
             case 'performance':
                 return <PerformanceModule />;
             case 'project-analysis':
-                return <ProjectAnalysis />;
+                return <ProjectAnalysis onNavigate={setActiveNav} />;
             case 'activity-log':
                 return <ActivityLogModule />;
             case 'categories':

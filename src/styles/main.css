@@ -14096,6 +14096,34 @@ button {
     color: var(--text-secondary);
 }
 
+.pa-module-info-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.pa-module-card:hover .pa-module-info-btn {
+    opacity: 1;
+}
+
+.pa-module-info-btn:hover {
+    background: rgba(139, 92, 246, 0.3);
+    transform: scale(1.1);
+}
+
+.pa-module-info-btn .nav-icon {
+    font-size: 14px;
+}
+
 .pa-module-dot {
     width: 8px;
     height: 8px;
