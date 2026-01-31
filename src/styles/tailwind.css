@@ -1,0 +1,330 @@
+@import "tailwindcss";
+
+/* ============================================
+   D-KRAFT ERP - TAILWIND CSS v4 THEME
+   Premium Industrial Dashboard Design System
+   ============================================ */
+
+@theme {
+    /* ========================================
+       COLOR PALETTE - BACKGROUNDS
+       ======================================== */
+    --color-bg-primary: #0a1628;
+    --color-bg-secondary: rgba(15, 35, 80, 0.8);
+    --color-bg-tertiary: rgba(20, 50, 110, 0.6);
+    --color-bg-card: rgba(15, 40, 90, 0.65);
+    --color-bg-card-hover: rgba(25, 55, 120, 0.75);
+    --color-bg-elevated: rgba(20, 50, 105, 0.8);
+    --color-bg-input: rgba(10, 30, 70, 0.6);
+
+    /* ========================================
+       COLOR PALETTE - PRIMARY ACCENT (Deep Blue)
+       ======================================== */
+    --color-accent-primary: #0033b3;
+    --color-accent-secondary: #0047e0;
+    --color-accent-tertiary: #3366ff;
+    --color-accent-dark: #001d66;
+    --color-accent-glow: rgba(0, 51, 179, 0.5);
+
+    /* ========================================
+       COLOR PALETTE - SECONDARY ACCENT (Electric Orange)
+       ======================================== */
+    --color-orange-primary: #ff6b35;
+    --color-orange-secondary: #ff8c5a;
+    --color-orange-tertiary: #ffab7a;
+    --color-orange-dark: #e65100;
+    --color-orange-glow: rgba(255, 107, 53, 0.4);
+
+    /* ========================================
+       COLOR PALETTE - TYPOGRAPHY
+       ======================================== */
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #c7d2fe;
+    --color-text-muted: #8b9dc3;
+    --color-text-accent: #ff6b35;
+    --color-text-inverse: #0f172a;
+
+    /* ========================================
+       COLOR PALETTE - STATUS
+       ======================================== */
+    --color-success: #10b981;
+    --color-success-light: #34d399;
+    --color-success-glow: rgba(16, 185, 129, 0.3);
+
+    --color-warning: #fbbf24;
+    --color-warning-light: #fcd34d;
+    --color-warning-glow: rgba(251, 191, 36, 0.3);
+
+    --color-danger: #ef4444;
+    --color-danger-light: #f87171;
+    --color-danger-glow: rgba(239, 68, 68, 0.3);
+
+    --color-info: #0047e0;
+    --color-info-light: #3b82f6;
+    --color-info-glow: rgba(0, 71, 224, 0.3);
+
+    /* ========================================
+       COLOR PALETTE - BORDERS
+       ======================================== */
+    --color-border-default: rgba(0, 71, 224, 0.4);
+    --color-border-subtle: rgba(255, 255, 255, 0.08);
+    --color-border-hover: rgba(255, 255, 255, 0.15);
+    --color-border-orange: rgba(255, 107, 53, 0.4);
+    --color-border-focus: rgba(0, 51, 179, 0.6);
+
+    /* ========================================
+       GLASSMORPHISM SYSTEM
+       ======================================== */
+    --color-glass-bg: rgba(15, 45, 100, 0.35);
+    --color-glass-bg-dark: rgba(10, 30, 70, 0.5);
+    --color-glass-bg-light: rgba(25, 60, 130, 0.3);
+    --color-glass-border: rgba(255, 255, 255, 0.12);
+    --color-glass-border-shine: rgba(255, 255, 255, 0.25);
+
+    /* Glass blur values */
+    --blur-glass: 20px;
+    --blur-glass-heavy: 32px;
+    --blur-glass-light: 12px;
+
+    /* ========================================
+       TYPOGRAPHY - FONT FAMILIES
+       ======================================== */
+    --font-family-display: 'Red Hat Display', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-family-mono: 'Coda', 'SF Mono', monospace;
+
+    /* ========================================
+       TYPOGRAPHY - FONT SIZES
+       ======================================== */
+    --font-size-xs: 0.75rem;
+    --font-size-sm: 0.875rem;
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+    --font-size-5xl: 3rem;
+
+    /* ========================================
+       SPACING SCALE
+       ======================================== */
+    --spacing-0: 0;
+    --spacing-1: 0.25rem;
+    --spacing-2: 0.5rem;
+    --spacing-3: 0.75rem;
+    --spacing-4: 1rem;
+    --spacing-5: 1.25rem;
+    --spacing-6: 1.5rem;
+    --spacing-7: 1.75rem;
+    --spacing-8: 2rem;
+    --spacing-10: 2.5rem;
+    --spacing-12: 3rem;
+    --spacing-16: 4rem;
+    --spacing-20: 5rem;
+
+    /* ========================================
+       BORDER RADIUS
+       ======================================== */
+    --radius-none: 0;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+    --radius-2xl: 32px;
+    --radius-full: 9999px;
+
+    /* ========================================
+       SHADOWS
+       ======================================== */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 16px 60px rgba(0, 0, 0, 0.7);
+    --shadow-glow: 0 0 40px rgba(0, 51, 179, 0.25);
+    --shadow-glow-orange: 0 0 30px rgba(255, 107, 53, 0.2);
+    --shadow-glow-success: 0 0 20px rgba(16, 185, 129, 0.3);
+    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+
+    /* ========================================
+       TRANSITIONS
+       ======================================== */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* ========================================
+       Z-INDEX SCALE
+       ======================================== */
+    --z-dropdown: 100;
+    --z-sticky: 200;
+    --z-fixed: 300;
+    --z-modal-backdrop: 400;
+    --z-modal: 500;
+    --z-popover: 600;
+    --z-tooltip: 700;
+}
+
+/* ============================================
+   LIGHT THEME OVERRIDES
+   ============================================ */
+[data-theme="light"] {
+    --color-bg-primary: #f0f4ff;
+    --color-bg-secondary: rgba(255, 255, 255, 0.9);
+    --color-bg-tertiary: rgba(224, 231, 255, 0.7);
+    --color-bg-card: rgba(255, 255, 255, 0.8);
+    --color-bg-card-hover: rgba(255, 255, 255, 0.95);
+    --color-bg-elevated: rgba(255, 255, 255, 0.95);
+    --color-bg-input: rgba(255, 255, 255, 0.9);
+
+    --color-accent-primary: #001d66;
+    --color-accent-secondary: #0033b3;
+    --color-accent-tertiary: #0047e0;
+
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #334155;
+    --color-text-muted: #64748b;
+    --color-text-accent: #e65100;
+
+    --color-border-default: rgba(0, 51, 179, 0.2);
+    --color-border-subtle: rgba(0, 0, 0, 0.06);
+    --color-border-hover: rgba(0, 0, 0, 0.12);
+
+    --color-glass-bg: rgba(255, 255, 255, 0.6);
+    --color-glass-bg-dark: rgba(240, 244, 255, 0.8);
+    --color-glass-bg-light: rgba(255, 255, 255, 0.7);
+    --color-glass-border: rgba(255, 255, 255, 0.8);
+    --color-glass-border-shine: rgba(255, 255, 255, 0.95);
+
+    --shadow-sm: 0 2px 8px rgba(0, 29, 102, 0.08);
+    --shadow-md: 0 4px 20px rgba(0, 29, 102, 0.12);
+    --shadow-lg: 0 8px 40px rgba(0, 29, 102, 0.15);
+    --shadow-glow: 0 0 40px rgba(0, 51, 179, 0.1);
+}
+
+/* ============================================
+   BASE LAYER - Global Resets & Typography
+   ============================================ */
+@layer base {
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    :root {
+        /* Preserve legacy CSS custom properties for backward compatibility */
+        --font-display: 'Red Hat Display', -apple-system, BlinkMacSystemFont, sans-serif;
+        --font-mono: 'Coda', 'SF Mono', monospace;
+
+        /* Legacy variable mappings */
+        --bg-primary: var(--color-bg-primary);
+        --bg-secondary: var(--color-bg-secondary);
+        --bg-tertiary: var(--color-bg-tertiary);
+        --bg-card: var(--color-bg-card);
+        --accent-primary: var(--color-accent-primary);
+        --accent-secondary: var(--color-accent-secondary);
+        --orange-primary: var(--color-orange-primary);
+        --orange-secondary: var(--color-orange-secondary);
+        --text-primary: var(--color-text-primary);
+        --text-secondary: var(--color-text-secondary);
+        --text-muted: var(--color-text-muted);
+        --border-color: var(--color-border-default);
+        --border-subtle: var(--color-border-subtle);
+        --success: var(--color-success);
+        --warning: var(--color-warning);
+        --danger: var(--color-danger);
+        --glass-bg: var(--color-glass-bg);
+        --glass-border: var(--color-glass-border);
+        --glass-blur: var(--blur-glass);
+    }
+
+    html {
+        scroll-behavior: smooth;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+        font-family: var(--font-family-display);
+        background-color: var(--color-bg-primary);
+        color: var(--color-text-primary);
+        min-height: 100vh;
+        overflow-x: hidden;
+        font-size: var(--font-size-sm);
+        line-height: 1.6;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-family-display);
+        font-weight: 700;
+        color: var(--color-text-primary);
+        line-height: 1.3;
+        letter-spacing: -0.02em;
+    }
+
+    h1 { font-size: var(--font-size-4xl); }
+    h2 { font-size: var(--font-size-3xl); }
+    h3 { font-size: var(--font-size-2xl); }
+    h4 { font-size: var(--font-size-xl); }
+    h5 { font-size: var(--font-size-lg); }
+    h6 { font-size: var(--font-size-base); }
+
+    a {
+        color: var(--color-orange-primary);
+        text-decoration: none;
+        transition: color var(--transition-fast);
+    }
+
+    a:hover {
+        color: var(--color-orange-secondary);
+    }
+
+    /* Material Symbols Configuration */
+    .material-symbols-rounded {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        transition: all var(--transition-base);
+    }
+
+    /* Scrollbar Styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--color-border-default);
+        border-radius: var(--radius-full);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--color-accent-secondary);
+    }
+
+    /* Selection styling */
+    ::selection {
+        background: var(--color-orange-primary);
+        color: white;
+    }
+}
+
+/* ============================================
+   IMPORT ANIMATIONS
+   ============================================ */
+@import "./animations.css";
+
+/* ============================================
+   IMPORT GLASSMORPHISM COMPONENTS
+   ============================================ */
+@import "./glassmorphism.css";
+
+/* ============================================
+   LEGACY CSS LAYER (Temporary - for migration)
+   ============================================ */
+@layer legacy {
+    @import "./main.css";
+}

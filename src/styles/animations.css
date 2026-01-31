@@ -1,0 +1,515 @@
+/* ============================================
+   D-KRAFT ERP - ANIMATIONS LIBRARY
+   All keyframe animations for the design system
+   ============================================ */
+
+/* ========================================
+   BACKGROUND & ATMOSPHERIC ANIMATIONS
+   ======================================== */
+
+@keyframes backgroundPulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1) translate(0, 0);
+    }
+    25% {
+        opacity: 0.8;
+        transform: scale(1.05) translate(1%, -1%);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1) translate(2%, 1%);
+    }
+    75% {
+        opacity: 0.9;
+        transform: scale(1.03) translate(-1%, 1%);
+    }
+}
+
+@keyframes floatShape {
+    0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+    25% {
+        transform: translate(30px, -30px) rotate(5deg);
+    }
+    50% {
+        transform: translate(-20px, 20px) rotate(-3deg);
+    }
+    75% {
+        transform: translate(15px, 10px) rotate(2deg);
+    }
+}
+
+@keyframes floatOrb {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    25% {
+        transform: translate(30px, -30px) scale(1.1);
+    }
+    50% {
+        transform: translate(-20px, 20px) scale(0.95);
+    }
+    75% {
+        transform: translate(20px, 10px) scale(1.05);
+    }
+}
+
+@keyframes ambientPulse {
+    0%, 100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+@keyframes gridMove {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 50px 50px;
+    }
+}
+
+/* ========================================
+   CARD & CONTAINER ANIMATIONS
+   ======================================== */
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes cardPulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(0, 51, 179, 0.1);
+    }
+    50% {
+        box-shadow: 0 8px 30px rgba(255, 107, 53, 0.15);
+    }
+}
+
+@keyframes cardShine {
+    0% {
+        left: -100%;
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.6;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        border-color: rgba(0, 71, 224, 0.4);
+        box-shadow: 0 0 20px rgba(0, 51, 179, 0.1);
+    }
+    50% {
+        border-color: rgba(255, 107, 53, 0.5);
+        box-shadow: 0 0 30px rgba(255, 107, 53, 0.15);
+    }
+}
+
+/* ========================================
+   GLASSMORPHISM ANIMATIONS
+   ======================================== */
+
+@keyframes glassShine {
+    0%, 100% {
+        left: -100%;
+        opacity: 0;
+    }
+    50% {
+        left: 100%;
+        opacity: 1;
+    }
+}
+
+@keyframes glassPulse {
+    0%, 100% {
+        box-shadow:
+            inset 0 1px 1px rgba(255, 255, 255, 0.1),
+            0 8px 32px rgba(0, 20, 60, 0.4),
+            0 0 40px rgba(0, 51, 179, 0.1);
+    }
+    50% {
+        box-shadow:
+            inset 0 1px 1px rgba(255, 255, 255, 0.1),
+            0 8px 32px rgba(0, 20, 60, 0.4),
+            0 0 60px rgba(0, 51, 179, 0.2);
+    }
+}
+
+/* ========================================
+   MODAL & OVERLAY ANIMATIONS
+   ======================================== */
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes modalShine {
+    0% {
+        transform: translateX(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(200%) rotate(45deg);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ========================================
+   FADE ANIMATIONS
+   ======================================== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   LOADING & STATUS ANIMATIONS
+   ======================================== */
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes shimmerText {
+    0% {
+        background-position: -200% center;
+    }
+    100% {
+        background-position: 200% center;
+    }
+}
+
+@keyframes statusPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 currentColor;
+    }
+    50% {
+        box-shadow: 0 0 0 4px transparent;
+    }
+}
+
+@keyframes alertBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    10%, 30%, 50% {
+        transform: translateY(-8px);
+    }
+    20%, 40% {
+        transform: translateY(-4px);
+    }
+    60% {
+        transform: translateY(0);
+    }
+}
+
+/* ========================================
+   ICON ANIMATIONS
+   ======================================== */
+
+@keyframes iconBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    25% {
+        transform: translateY(-8px);
+    }
+    50% {
+        transform: translateY(-4px);
+    }
+    75% {
+        transform: translateY(-6px);
+    }
+}
+
+@keyframes iconPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+    }
+}
+
+/* ========================================
+   BUTTON ANIMATIONS
+   ======================================== */
+
+@keyframes btnShine {
+    0% {
+        left: -100%;
+    }
+    50%, 100% {
+        left: 100%;
+    }
+}
+
+@keyframes shine {
+    0% {
+        left: -100%;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+/* ========================================
+   INDUSTRIAL ANIMATIONS (Loading States)
+   ======================================== */
+
+@keyframes gearRotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes sawSpin {
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+@keyframes sparkFly1 {
+    0%, 100% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(20px, -30px);
+    }
+}
+
+@keyframes sparkFly2 {
+    0%, 100% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-15px, -25px);
+    }
+}
+
+@keyframes sparkFly3 {
+    0%, 100% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(25px, -20px);
+    }
+}
+
+@keyframes sparkFly4 {
+    0%, 100% {
+        opacity: 0;
+        transform: translate(0, 0);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-20px, -35px);
+    }
+}
+
+@keyframes cuttingProgress {
+    0% {
+        width: 0%;
+    }
+    100% {
+        width: 100%;
+    }
+}
+
+/* ============================================
+   ANIMATION UTILITY CLASSES
+   ============================================ */
+
+@layer utilities {
+    /* Background Animations */
+    .animate-bg-pulse { animation: backgroundPulse 20s ease-in-out infinite; }
+    .animate-float-shape { animation: floatShape 30s ease-in-out infinite; }
+    .animate-float-orb { animation: floatOrb 20s ease-in-out infinite; }
+    .animate-ambient-pulse { animation: ambientPulse 4s ease-in-out infinite; }
+    .animate-grid-move { animation: gridMove 20s linear infinite; }
+
+    /* Card Animations */
+    .animate-card-entrance { animation: cardEntrance 0.6s ease-out forwards; }
+    .animate-card-pulse { animation: cardPulse 3s ease-in-out infinite; }
+    .animate-card-shine { animation: cardShine 6s ease-in-out infinite; }
+    .animate-border-glow { animation: borderGlow 3s ease-in-out infinite; }
+
+    /* Glass Animations */
+    .animate-glass-shine { animation: glassShine 4s ease-in-out infinite; }
+    .animate-glass-pulse { animation: glassPulse 3s ease-in-out infinite; }
+
+    /* Modal Animations */
+    .animate-modal-slide-up { animation: modalSlideUp 0.4s ease-out forwards; }
+    .animate-modal-shine { animation: modalShine 3s ease-in-out infinite; }
+    .animate-slide-up { animation: slideUp 0.3s ease-out forwards; }
+    .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+
+    /* Fade Animations */
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    .animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+
+    /* Loading Animations */
+    .animate-spin { animation: spin 1s linear infinite; }
+    .animate-spin-slow { animation: spin 2s linear infinite; }
+    .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+    .animate-bounce { animation: bounce 1s ease-in-out infinite; }
+    .animate-shimmer {
+        animation: shimmer 1.5s infinite;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        background-size: 200% 100%;
+    }
+    .animate-shimmer-text { animation: shimmerText 2s infinite; }
+    .animate-status-pulse { animation: statusPulse 2s ease-in-out infinite; }
+    .animate-alert-bounce { animation: alertBounce 2s ease-in-out infinite; }
+
+    /* Icon Animations */
+    .animate-icon-bounce { animation: iconBounce 0.6s ease; }
+    .animate-icon-pulse { animation: iconPulse 2s ease-in-out infinite; }
+
+    /* Button Animations */
+    .animate-btn-shine { animation: btnShine 3s ease-in-out infinite; }
+    .animate-shine { animation: shine 3s ease-in-out infinite; }
+
+    /* Industrial Animations */
+    .animate-gear-rotate { animation: gearRotate 3s linear infinite; }
+    .animate-saw-spin { animation: sawSpin 0.8s linear infinite; }
+    .animate-spark-1 { animation: sparkFly1 1s ease-out infinite; }
+    .animate-spark-2 { animation: sparkFly2 1.2s ease-out infinite 0.1s; }
+    .animate-spark-3 { animation: sparkFly3 0.9s ease-out infinite 0.2s; }
+    .animate-spark-4 { animation: sparkFly4 1.1s ease-out infinite 0.15s; }
+    .animate-cutting-progress { animation: cuttingProgress 2s ease-out forwards; }
+
+    /* Staggered Animation Delays */
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.15s; }
+    .delay-3 { animation-delay: 0.2s; }
+    .delay-4 { animation-delay: 0.25s; }
+    .delay-5 { animation-delay: 0.3s; }
+    .delay-6 { animation-delay: 0.35s; }
+    .delay-7 { animation-delay: 0.4s; }
+    .delay-8 { animation-delay: 0.45s; }
+
+    /* Animation States */
+    .animate-in { opacity: 0; }
+    .animate-in.visible { opacity: 1; }
+
+    /* Animation Play States */
+    .animate-paused { animation-play-state: paused; }
+    .animate-running { animation-play-state: running; }
+
+    /* Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}

@@ -24,8 +24,8 @@ const TopClientsModule = () => {
         <div className="module-page top-clients-page">
             <div className="page-header">
                 <div className="header-content">
-                    <div className="header-icon">
-                        <span className="material-symbols-rounded">star</span>
+                    <div className="header-icon orange">
+                        <span className="material-symbols-rounded">workspace_premium</span>
                     </div>
                     <div className="header-text">
                         <h1>Top Clients</h1>
@@ -36,8 +36,8 @@ const TopClientsModule = () => {
 
             {/* Stats Cards */}
             <div className="clients-stats-grid">
-                <div className="clients-stat-card revenue">
-                    <div className="clients-stat-icon">
+                <div className="clients-stat-card">
+                    <div className="clients-stat-icon green">
                         <Icon name="payments" />
                     </div>
                     <div className="clients-stat-info">
@@ -45,22 +45,31 @@ const TopClientsModule = () => {
                         <div className="clients-stat-label">Total Revenue</div>
                     </div>
                 </div>
-                <div className="clients-stat-card orders">
-                    <div className="clients-stat-icon">
-                        <Icon name="shopping_cart" />
+                <div className="clients-stat-card">
+                    <div className="clients-stat-icon orange">
+                        <Icon name="local_mall" />
                     </div>
                     <div className="clients-stat-info">
                         <div className="clients-stat-value">{totalOrders}</div>
                         <div className="clients-stat-label">Total Orders</div>
                     </div>
                 </div>
-                <div className="clients-stat-card avg">
-                    <div className="clients-stat-icon">
-                        <Icon name="calculate" />
+                <div className="clients-stat-card">
+                    <div className="clients-stat-icon blue">
+                        <Icon name="insights" />
                     </div>
                     <div className="clients-stat-info">
                         <div className="clients-stat-value">${Math.round(totalRevenue / totalOrders).toLocaleString()}</div>
                         <div className="clients-stat-label">Avg. Order Value</div>
+                    </div>
+                </div>
+                <div className="clients-stat-card">
+                    <div className="clients-stat-icon purple">
+                        <Icon name="workspace_premium" />
+                    </div>
+                    <div className="clients-stat-info">
+                        <div className="clients-stat-value">{topClients.length}</div>
+                        <div className="clients-stat-label">Top Performers</div>
                     </div>
                 </div>
             </div>

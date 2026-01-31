@@ -25,7 +25,7 @@ import {
     CategoriesModule,
     UnitsModule
 } from './components/modules';
-import './styles/main.css';
+import './styles/tailwind.css';
 
 // Loading spinner component - Industrial Theme
 const LoadingScreen = () => (

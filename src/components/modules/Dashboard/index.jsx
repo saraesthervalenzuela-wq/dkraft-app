@@ -210,10 +210,10 @@ const ConnectionTestCard = () => {
     const [loading, setLoading] = useState({});
 
     const modules = [
-        { key: 'clients', label: 'Clientes', icon: 'people', api: clientsApi },
-        { key: 'suppliers', label: 'Proveedores', icon: 'local_shipping', api: suppliersApi },
-        { key: 'materials', label: 'Materiales', icon: 'inventory_2', api: materialsApi },
-        { key: 'products', label: 'Productos', icon: 'category', api: productsApi },
+        { key: 'clients', label: 'Clients', icon: 'groups', api: clientsApi },
+        { key: 'suppliers', label: 'Suppliers', icon: 'local_shipping', api: suppliersApi },
+        { key: 'materials', label: 'Materials', icon: 'inventory_2', api: materialsApi },
+        { key: 'products', label: 'Products', icon: 'precision_manufacturing', api: productsApi },
     ];
 
     const testModule = async (moduleKey, api) => {
@@ -221,9 +221,9 @@ const ConnectionTestCard = () => {
         setResults(prev => ({ ...prev, [moduleKey]: null }));
 
         try {
-            console.log(`[Test] Probando ${moduleKey}...`);
+            console.log(`[Test] Testing ${moduleKey}...`);
             const data = await api.getAll();
-            console.log(`[Test] ${moduleKey} obtenidos:`, data);
+            console.log(`[Test] ${moduleKey} fetched:`, data);
 
             setResults(prev => ({
                 ...prev,
@@ -234,7 +234,7 @@ const ConnectionTestCard = () => {
                 }
             }));
         } catch (error) {
-            console.error(`[Test] Error en ${moduleKey}:`, error);
+            console.error(`[Test] Error in ${moduleKey}:`, error);
             setResults(prev => ({
                 ...prev,
                 [moduleKey]: {
@@ -248,26 +248,28 @@ const ConnectionTestCard = () => {
     };
 
     const buttonStyle = (isLoading) => ({
-        padding: '10px 16px',
-        backgroundColor: isLoading ? '#4b5563' : '#8b5cf6',
+        padding: '12px 20px',
+        background: isLoading ? 'rgba(100, 116, 139, 0.5)' : 'linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%)',
         color: 'white',
         border: 'none',
-        borderRadius: '8px',
+        borderRadius: '10px',
         cursor: isLoading ? 'not-allowed' : 'pointer',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: '600',
         display: 'flex',
         alignItems: 'center',
-        gap: '6px',
-        minWidth: '140px',
-        justifyContent: 'center'
+        gap: '8px',
+        minWidth: '150px',
+        justifyContent: 'center',
+        boxShadow: isLoading ? 'none' : '0 4px 15px rgba(255, 107, 53, 0.3)',
+        transition: 'all 0.3s ease'
     });
 
     const getResultStyle = (result) => ({
-        marginTop: '8px',
-        padding: '10px 12px',
-        borderRadius: '6px',
-        backgroundColor: result?.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+        marginTop: '12px',
+        padding: '12px 14px',
+        borderRadius: '8px',
+        backgroundColor: result?.success ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)',
         border: `1px solid ${result?.success ? '#10b981' : '#ef4444'}`,
         fontSize: '13px'
     });
@@ -277,11 +279,11 @@ const ConnectionTestCard = () => {
             <div className="card-header">
                 <div>
                     <div className="card-title">
-                        <Icon name="lan" style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-                        Prueba de Conexión API
+                        <Icon name="hub" style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                        API Connection Test
                     </div>
                     <div className="card-subtitle">
-                        API habilitada: {isApiEnabled() ? 'Sí' : 'No'} | Prueba cada módulo individualmente
+                        API Enabled: {isApiEnabled() ? 'Yes' : 'No'} | Test each module individually
                     </div>
                 </div>
             </div>
@@ -289,10 +291,11 @@ const ConnectionTestCard = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                     {modules.map(({ key, label, icon, api }) => (
                         <div key={key} style={{
-                            padding: '16px',
-                            backgroundColor: 'rgba(255,255,255,0.02)',
-                            borderRadius: '8px',
-                            border: '1px solid rgba(255,255,255,0.1)'
+                            padding: '18px',
+                            backgroundColor: 'rgba(15, 45, 100, 0.4)',
+                            borderRadius: '12px',
+                            border: '1px solid rgba(255, 255, 255, 0.12)',
+                            backdropFilter: 'blur(8px)'
                         }}>
                             <button
                                 onClick={() => testModule(key, api)}
@@ -300,10 +303,10 @@ const ConnectionTestCard = () => {
                                 style={buttonStyle(loading[key])}
                             >
                                 <Icon name={loading[key] ? 'sync' : icon} style={{
-                                    fontSize: '18px',
+                                    fontSize: '20px',
                                     animation: loading[key] ? 'spin 1s linear infinite' : 'none'
                                 }} />
-                                {loading[key] ? 'Probando...' : label}
+                                {loading[key] ? 'Testing...' : label}
                             </button>
 
                             {results[key] && (
@@ -311,19 +314,19 @@ const ConnectionTestCard = () => {
                                     <div style={{
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: '6px',
+                                        gap: '8px',
                                         color: results[key].success ? '#10b981' : '#ef4444',
                                         fontWeight: '600'
                                     }}>
-                                        <Icon name={results[key].success ? 'check_circle' : 'error'} style={{ fontSize: '16px' }} />
-                                        {results[key].success ? 'Éxito' : 'Error'}
+                                        <Icon name={results[key].success ? 'check_circle' : 'error'} style={{ fontSize: '18px' }} />
+                                        {results[key].success ? 'Success' : 'Error'}
                                     </div>
                                     {results[key].success ? (
-                                        <p style={{ margin: '6px 0 0', color: '#94a3b8' }}>
-                                            Registros: <strong style={{ color: '#f8fafc' }}>{results[key].count}</strong>
+                                        <p style={{ margin: '8px 0 0', color: '#c7d2fe' }}>
+                                            Records: <strong style={{ color: '#ffffff' }}>{results[key].count}</strong>
                                         </p>
                                     ) : (
-                                        <p style={{ margin: '6px 0 0', color: '#f87171', fontSize: '12px' }}>
+                                        <p style={{ margin: '8px 0 0', color: '#f87171', fontSize: '12px' }}>
                                             {results[key].error}
                                         </p>
                                     )}

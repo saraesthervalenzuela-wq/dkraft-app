@@ -9,64 +9,64 @@ export const navSections = [
         id: 'main',
         label: 'MAIN',
         items: [
-            { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
+            { id: 'dashboard', label: 'Dashboard', icon: 'space_dashboard' },
         ]
     },
     {
         id: 'hr',
         label: 'HUMAN RESOURCES',
         items: [
-            { id: 'staff', label: 'Staff', icon: 'badge' },
-            { id: 'staff-duty', label: 'Attendance', icon: 'work_history' },
+            { id: 'staff', label: 'Staff', icon: 'diversity_3' },
+            { id: 'staff-duty', label: 'Attendance', icon: 'schedule' },
         ]
     },
     {
         id: 'commercial',
         label: 'COMMERCIAL',
         items: [
-            { id: 'clients', label: 'Clients', icon: 'group' },
-            { id: 'top-clients', label: 'Top Clients', icon: 'star' },
-            { id: 'suppliers', label: 'Suppliers', icon: 'local_shipping' },
+            { id: 'clients', label: 'Clients', icon: 'groups' },
+            { id: 'top-clients', label: 'Top Clients', icon: 'workspace_premium' },
+            { id: 'suppliers', label: 'Suppliers', icon: 'handshake' },
         ]
     },
     {
         id: 'inventory',
         label: 'INVENTORY',
         items: [
-            { id: 'materials', label: 'Materials', icon: 'inventory_2' },
-            { id: 'products', label: 'Products', icon: 'category' },
-            { id: 'warehouses', label: 'Warehouses', icon: 'warehouse' },
-            { id: 'bom', label: 'Bill of Materials', icon: 'receipt_long' },
+            { id: 'materials', label: 'Materials', icon: 'deployed_code' },
+            { id: 'products', label: 'Products', icon: 'package_2' },
+            { id: 'warehouses', label: 'Warehouses', icon: 'domain' },
+            { id: 'bom', label: 'Bill of Materials', icon: 'account_tree' },
         ]
     },
     {
         id: 'production',
         label: 'PRODUCTION',
         items: [
-            { id: 'projects', label: 'Projects', icon: 'assignment' },
-            { id: 'quotations', label: 'Cotizaciones', icon: 'request_quote' },
-            { id: 'requisitions', label: 'Sales Orders', icon: 'shopping_cart' },
-            { id: 'operations', label: 'Operations', icon: 'engineering' },
+            { id: 'projects', label: 'Projects', icon: 'architecture' },
+            { id: 'quotations', label: 'Quotations', icon: 'request_quote' },
+            { id: 'requisitions', label: 'Sales Orders', icon: 'shopping_bag' },
+            { id: 'operations', label: 'Operations', icon: 'precision_manufacturing' },
         ]
     },
     {
         id: 'analytics',
         label: 'ANALYTICS',
         items: [
-            { id: 'reports', label: 'Reports', icon: 'analytics' },
+            { id: 'reports', label: 'Reports', icon: 'monitoring' },
             { id: 'quality', label: 'Quality', icon: 'verified' },
-            { id: 'performance', label: 'Performance', icon: 'trending_up' },
-            { id: 'project-analysis', label: 'Project Analysis', icon: 'science' },
-            { id: 'activity-log', label: 'Activity Log', icon: 'history' },
+            { id: 'performance', label: 'Performance', icon: 'speed' },
+            { id: 'project-analysis', label: 'Project Analysis', icon: 'hub' },
+            { id: 'activity-log', label: 'Activity Log', icon: 'quick_reference_all' },
         ]
     },
     {
         id: 'settings',
         label: 'SETTINGS',
         items: [
-            { id: 'categories', label: 'Categories', icon: 'label' },
-            { id: 'units', label: 'Units', icon: 'straighten' },
-            { id: 'qb-health', label: 'QB Health', icon: 'favorite' },
+            { id: 'categories', label: 'Categories', icon: 'sell' },
+            { id: 'units', label: 'Units', icon: 'square_foot' },
+            { id: 'qb-health', label: 'QB Health', icon: 'monitor_heart' },
         ]
     }
 ];

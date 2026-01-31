@@ -43,22 +43,22 @@ const QUOTATIONS_KEY = 'dkraft_quotations';
  * Status configuration with colors and icons
  */
 const STATUS_CONFIG = {
-    DRAFT: { label: 'Borrador', color: '#6c757d', icon: FaEdit },
-    PENDING_APPROVAL: { label: 'Pendiente Aprobación', color: '#ffc107', icon: FaClock },
-    APPROVED: { label: 'Aprobada', color: '#28a745', icon: FaCheckCircle },
-    REJECTED: { label: 'Rechazada', color: '#dc3545', icon: FaTimes },
-    ORDERED: { label: 'Ordenada', color: '#17a2b8', icon: FaShoppingCart },
-    PARTIALLY_FULFILLED: { label: 'Parcialmente Cumplida', color: '#fd7e14', icon: FaTruck },
-    FULFILLED: { label: 'Cumplida', color: '#20c997', icon: FaCheck },
-    CANCELLED: { label: 'Cancelada', color: '#6c757d', icon: FaTimes },
+    DRAFT: { label: 'Draft', color: '#6c757d', icon: FaEdit },
+    PENDING_APPROVAL: { label: 'Pending Approval', color: '#ffc107', icon: FaClock },
+    APPROVED: { label: 'Approved', color: '#28a745', icon: FaCheckCircle },
+    REJECTED: { label: 'Rejected', color: '#dc3545', icon: FaTimes },
+    ORDERED: { label: 'Ordered', color: '#17a2b8', icon: FaShoppingCart },
+    PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', color: '#fd7e14', icon: FaTruck },
+    FULFILLED: { label: 'Fulfilled', color: '#20c997', icon: FaCheck },
+    CANCELLED: { label: 'Cancelled', color: '#6c757d', icon: FaTimes },
 };
 
 const ITEM_STATUS_CONFIG = {
-    REQUESTED: { label: 'Solicitado', color: '#ffc107' },
-    ORDERED: { label: 'Ordenado', color: '#17a2b8' },
-    PARTIALLY_RECEIVED: { label: 'Parcialmente Recibido', color: '#fd7e14' },
-    RECEIVED: { label: 'Recibido', color: '#28a745' },
-    CANCELLED: { label: 'Cancelado', color: '#6c757d' },
+    REQUESTED: { label: 'Requested', color: '#ffc107' },
+    ORDERED: { label: 'Ordered', color: '#17a2b8' },
+    PARTIALLY_RECEIVED: { label: 'Partially Received', color: '#fd7e14' },
+    RECEIVED: { label: 'Received', color: '#28a745' },
+    CANCELLED: { label: 'Cancelled', color: '#6c757d' },
 };
 
 /**
@@ -545,7 +545,7 @@ const Requisitions = () => {
             <div className="module-container requisitions-module">
                 <div className="loading-state">
                     <FaSpinner className="spinner" />
-                    <p>Cargando requisiciones...</p>
+                    <p>Loading requisitions...</p>
                 </div>
             </div>
         );
@@ -557,7 +557,7 @@ const Requisitions = () => {
             <div className="module-container requisitions-module">
                 <div className="error-state">
                     <FaExclamationTriangle />
-                    <p>Error al cargar requisiciones: {error}</p>
+                    <p>Error al cargar requisitions: {error}</p>
                     <button onClick={fetchAll}>Reintentar</button>
                 </div>
             </div>
@@ -574,7 +574,7 @@ const Requisitions = () => {
                     <span className="local-badge">Local</span>
                 </div>
                 <button className="btn-primary" onClick={() => handleOpenModal()}>
-                    <FaPlus /> Nueva Orden
+                    <FaPlus /> New Order
                 </button>
             </div>
 
@@ -584,7 +584,7 @@ const Requisitions = () => {
                     <FaSearch />
                     <input
                         type="text"
-                        placeholder="Buscar por folio, solicitante, almacén..."
+                        placeholder="Search by folio, requester, warehouse..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -595,7 +595,7 @@ const Requisitions = () => {
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
-                        <option value="ALL">Todos los estados</option>
+                        <option value="ALL">All statuses</option>
                         {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                             <option key={key} value={key}>{config.label}</option>
                         ))}
@@ -635,7 +635,7 @@ const Requisitions = () => {
                             <span className="stat-value">
                                 {requisitions.filter(r => r.status === 'PENDING_APPROVAL').length}
                             </span>
-                            <span className="stat-label">Pendientes</span>
+                            <span className="stat-label">Pending</span>
                         </div>
                     </div>
                 </Card>
@@ -646,7 +646,7 @@ const Requisitions = () => {
                             <span className="stat-value">
                                 {requisitions.filter(r => r.status === 'APPROVED').length}
                             </span>
-                            <span className="stat-label">Aprobadas</span>
+                            <span className="stat-label">Approved</span>
                         </div>
                     </div>
                 </Card>
@@ -657,7 +657,7 @@ const Requisitions = () => {
                             <span className="stat-value">
                                 {requisitions.filter(r => r.status === 'FULFILLED').length}
                             </span>
-                            <span className="stat-label">Cumplidas</span>
+                            <span className="stat-label">Fulfilled</span>
                         </div>
                     </div>
                 </Card>
@@ -671,13 +671,13 @@ const Requisitions = () => {
                             <tr>
                                 <th></th>
                                 <th>Folio</th>
-                                <th>Solicitante</th>
-                                <th>Almacén</th>
-                                <th>Proyecto</th>
+                                <th>Requester</th>
+                                <th>Warehouse</th>
+                                <th>Project</th>
                                 <th>Items</th>
-                                <th>Fecha Requerida</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>Required Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -725,7 +725,7 @@ const Requisitions = () => {
                                                     <button
                                                         className="btn-icon edit"
                                                         onClick={() => handleOpenModal(requisition)}
-                                                        title="Editar"
+                                                        title="Edit"
                                                     >
                                                         <FaEdit />
                                                     </button>
@@ -754,7 +754,7 @@ const Requisitions = () => {
                                                         setRequisitionToDelete(requisition);
                                                         setIsDeleteModalOpen(true);
                                                     }}
-                                                    title="Eliminar"
+                                                    title="Delete"
                                                 >
                                                     <FaTrash />
                                                 </button>
@@ -770,9 +770,9 @@ const Requisitions = () => {
                                                         <thead>
                                                             <tr>
                                                                 <th>Material</th>
-                                                                <th>Cantidad</th>
-                                                                <th>Unidad</th>
-                                                                <th>Proveedor Sugerido</th>
+                                                                <th>Quantity</th>
+                                                                <th>Unit</th>
+                                                                <th>Supplier Sugerido</th>
                                                                 <th>Fecha Necesaria</th>
                                                                 <th>Estado</th>
                                                                 <th>Recibido</th>
@@ -796,7 +796,7 @@ const Requisitions = () => {
                                                     </table>
                                                     {requisition.comments && (
                                                         <div className="requisition-comments">
-                                                            <strong>Comentarios:</strong> {requisition.comments}
+                                                            <strong>Comments:</strong> {requisition.comments}
                                                         </div>
                                                     )}
                                                 </div>
@@ -810,7 +810,7 @@ const Requisitions = () => {
                     {filteredRequisitions.length === 0 && (
                         <div className="empty-state">
                             <FaClipboardList />
-                            <p>No se encontraron requisiciones</p>
+                            <p>No requisitions found</p>
                         </div>
                     )}
                 </Card>
@@ -859,7 +859,7 @@ const Requisitions = () => {
                                 </button>
                                 {requisition.status === 'DRAFT' && (
                                     <button onClick={() => handleOpenModal(requisition)}>
-                                        <FaEdit /> Editar
+                                        <FaEdit /> Edit
                                     </button>
                                 )}
                             </div>
@@ -868,7 +868,7 @@ const Requisitions = () => {
                     {filteredRequisitions.length === 0 && (
                         <div className="empty-state full-width">
                             <FaClipboardList />
-                            <p>No se encontraron requisiciones</p>
+                            <p>No results found requisitions</p>
                         </div>
                     )}
                 </div>
@@ -878,12 +878,12 @@ const Requisitions = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                title={currentRequisition.id ? 'Editar Sales Order' : 'Nueva Sales Order'}
+                title={currentRequisition.id ? 'Edit Sales Order' : 'New Sales Order'}
                 size="large"
             >
                 <div className="requisition-form" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
                     <div className="form-section">
-                        <h3>Información General</h3>
+                        <h3>General Information</h3>
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Folio</label>
@@ -909,7 +909,7 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Cotización Vinculada</label>
+                                <label>Quotation Vinculada</label>
                                 <select
                                     name="quotationId"
                                     value={currentRequisition.quotationId}
@@ -924,7 +924,7 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Entidad de Facturación *</label>
+                                <label>Billing Entity *</label>
                                 <select
                                     name="billingEntity"
                                     value={currentRequisition.billingEntity}
@@ -938,7 +938,7 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Cliente</label>
+                                <label>Client</label>
                                 <select
                                     name="customerId"
                                     value={currentRequisition.customerId}
@@ -953,7 +953,7 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Proyecto</label>
+                                <label>Project</label>
                                 <select
                                     name="projectId"
                                     value={currentRequisition.projectId}
@@ -966,14 +966,14 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Almacén Destino *</label>
+                                <label>Warehouse Destino *</label>
                                 <select
                                     name="warehouseId"
                                     value={currentRequisition.warehouseId}
                                     onChange={handleInputChange}
                                     required
                                 >
-                                    <option value="">Seleccionar almacén</option>
+                                    <option value="">Select almacén</option>
                                     {warehouses.map(wh => (
                                         <option key={wh.id} value={wh.id}>{wh.name}</option>
                                     ))}
@@ -1007,7 +1007,7 @@ const Requisitions = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Depósito ($)</label>
+                                <label>Deposit ($)</label>
                                 <input
                                     type="number"
                                     name="deposit"
@@ -1018,7 +1018,7 @@ const Requisitions = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Depósito Pagado</label>
+                                <label>Deposit Pagado</label>
                                 <select
                                     name="depositPaid"
                                     value={currentRequisition.depositPaid ? 'true' : 'false'}
@@ -1030,7 +1030,7 @@ const Requisitions = () => {
                             </div>
                         </div>
                         <div className="form-group full-width">
-                            <label>Comentarios</label>
+                            <label>Comments</label>
                             <textarea
                                 name="comments"
                                 value={currentRequisition.comments}
@@ -1055,17 +1055,17 @@ const Requisitions = () => {
                             <div className="item-form">
                                 <div className="form-grid">
                                     <div className="form-group">
-                                        <label>Descripción *</label>
+                                        <label>Description *</label>
                                         <input
                                             type="text"
                                             name="description"
                                             value={currentItem.description}
                                             onChange={handleItemInputChange}
-                                            placeholder="Descripción del producto..."
+                                            placeholder="Description del producto..."
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label>Cantidad *</label>
+                                        <label>Quantity *</label>
                                         <input
                                             type="number"
                                             name="quantity"
@@ -1076,7 +1076,7 @@ const Requisitions = () => {
                                         />
                                     </div>
                                     <div className="form-group">
-                                        <label>Precio Unitario</label>
+                                        <label>Price Unitario</label>
                                         <input
                                             type="number"
                                             name="unitPrice"
@@ -1092,7 +1092,7 @@ const Requisitions = () => {
                                     className="btn-secondary"
                                     onClick={handleAddItem}
                                 >
-                                    {editingItemIndex !== null ? 'Actualizar Item' : 'Agregar Item'}
+                                    {editingItemIndex !== null ? 'Update Item' : 'Add Item'}
                                 </button>
                             </div>
                         )}
@@ -1101,10 +1101,10 @@ const Requisitions = () => {
                             <table className="items-table">
                                 <thead>
                                     <tr>
-                                        <th>Producto</th>
-                                        <th>Descripción</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio Unit.</th>
+                                        <th>Product</th>
+                                        <th>Description</th>
+                                        <th>Quantity</th>
+                                        <th>Price Unit.</th>
                                         <th>Subtotal</th>
                                         {!currentRequisition.quotationId && <th>Acciones</th>}
                                     </tr>
@@ -1160,10 +1160,10 @@ const Requisitions = () => {
 
                     <div className="form-actions">
                         <button className="btn-secondary" onClick={handleCloseModal}>
-                            Cancelar
+                            Cancel
                         </button>
                         <button className="btn-primary" onClick={handleSave}>
-                            {currentRequisition.id ? 'Actualizar' : 'Crear'} Sales Order
+                            {currentRequisition.id ? 'Update' : 'Create'} Sales Order
                         </button>
                     </div>
                 </div>
@@ -1186,11 +1186,11 @@ const Requisitions = () => {
 
                     <div className="detail-grid">
                         <div className="detail-item">
-                            <label>Solicitante</label>
+                            <label>Requester</label>
                             <span>{currentRequisition.requesterName}</span>
                         </div>
                         <div className="detail-item">
-                            <label>Almacén Destino</label>
+                            <label>Warehouse Destino</label>
                             <span>{currentRequisition.warehouseName}</span>
                         </div>
                         <div className="detail-item">
@@ -1198,18 +1198,18 @@ const Requisitions = () => {
                             <span>{formatDate(currentRequisition.requiredAt)}</span>
                         </div>
                         <div className="detail-item">
-                            <label>Proyecto</label>
+                            <label>Project</label>
                             <span>{currentRequisition.projectName || 'N/A'}</span>
                         </div>
                         <div className="detail-item">
-                            <label>Cliente</label>
+                            <label>Client</label>
                             <span>{currentRequisition.customerName || 'N/A'}</span>
                         </div>
                     </div>
 
                     {currentRequisition.comments && (
                         <div className="detail-comments">
-                            <label>Comentarios</label>
+                            <label>Comments</label>
                             <p>{currentRequisition.comments}</p>
                         </div>
                     )}
@@ -1220,9 +1220,9 @@ const Requisitions = () => {
                             <thead>
                                 <tr>
                                     <th>Material</th>
-                                    <th>Cantidad</th>
-                                    <th>Unidad</th>
-                                    <th>Proveedor Sugerido</th>
+                                    <th>Quantity</th>
+                                    <th>Unit</th>
+                                    <th>Supplier Sugerido</th>
                                     <th>Estado</th>
                                     <th>Ordenado</th>
                                     <th>Recibido</th>
@@ -1272,21 +1272,21 @@ const Requisitions = () => {
                     </p>
                     <div className="approval-summary">
                         <div>
-                            <strong>Solicitante:</strong> {currentRequisition.requesterName}
+                            <strong>Requester:</strong> {currentRequisition.requesterName}
                         </div>
                         <div>
                             <strong>Items:</strong> {currentRequisition.items?.length || 0}
                         </div>
                         <div>
-                            <strong>Almacén:</strong> {currentRequisition.warehouseName}
+                            <strong>Warehouse:</strong> {currentRequisition.warehouseName}
                         </div>
                     </div>
                     <div className="form-group">
-                        <label>Comentarios de Aprobación</label>
+                        <label>Comments de Aprobación</label>
                         <textarea
                             id="approvalComments"
                             rows="3"
-                            placeholder="Agregar comentarios opcionales..."
+                            placeholder="Add comentarios opcionales..."
                         />
                     </div>
                     <div className="approval-actions">
@@ -1316,28 +1316,28 @@ const Requisitions = () => {
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                title="Confirmar Eliminación"
+                title="Confirm Eliminación"
                 size="small"
             >
                 <div className="delete-confirmation">
                     <FaExclamationTriangle className="warning-icon" />
                     <p>
-                        ¿Está seguro que desea eliminar la requisición{' '}
+                        Are you sure que desea you want to delete the requisition{' '}
                         <strong>{requisitionToDelete?.folio}</strong>?
                     </p>
-                    <p className="warning-text">Esta acción no se puede deshacer.</p>
+                    <p className="warning-text">This action cannot be undone.</p>
                     <div className="confirmation-actions">
                         <button
                             className="btn-secondary"
                             onClick={() => setIsDeleteModalOpen(false)}
                         >
-                            Cancelar
+                            Cancel
                         </button>
                         <button
                             className="btn-danger"
                             onClick={handleDelete}
                         >
-                            Eliminar
+                            Delete
                         </button>
                     </div>
                 </div>

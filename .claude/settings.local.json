@@ -1,30 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm create:*)",
-      "Bash(node --version:*)",
-      "Bash(npm --version:*)",
-      "Bash(npm install)",
-      "Bash(curl:*)",
-      "Bash(find:*)",
-      "Bash(ls:*)",
-      "Bash(wc:*)",
-      "Bash(lsof:*)",
-      "Bash(npm run build:*)",
-      "Bash(cat:*)",
-      "Bash(pkill:*)",
-      "Bash(npm run dev:*)",
-      "Bash(head:*)",
-      "Bash(\"/Users/concepcion/Library/CloudStorage/Dropbox/My Mac \\(Carloss-MacBook-Pro.local\\)/Downloads/D-Kraft/dkraft-app/src/styles/main.css.tmp\")",
-      "Bash(mv:*)",
-      "Bash(npx vite:*)",
-      "Bash(tree:*)",
-      "Bash(git -C /Users/concepcion/Documents/GitHub/dkraft-app log --oneline)",
-      "Bash(for f in *.svg)",
-      "Bash(do sed -i '' 's/<path /<path fill=\"\"currentColor\"\" /g' \"$f\")",
-      "Bash(done)",
-      "Bash(npm install:*)",
-      "Bash(node:*)"
+      "Bash(timeout 8 npm run dev:*)"
     ]
   }
 }
