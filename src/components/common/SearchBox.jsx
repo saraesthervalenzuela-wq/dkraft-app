@@ -11,7 +11,6 @@ const SearchBox = ({
     className = ''
 }) => {
     return (
-        <div className={`search-box glass-input flex items-center gap-3 ${sizeClasses[size]} ${className}`}>
         <div className={`search-box ${className}`}>
             <Icon name="search" className="search-icon" />
             <input
