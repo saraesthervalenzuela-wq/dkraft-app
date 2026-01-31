@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Icon } from '../../common';
+import { Icon, Button } from '../../common';
 import {
     qaInspectionsData,
     qaChecklistTemplates,
@@ -1078,10 +1078,9 @@ const QualityModule = () => {
                         <p>Manage inspections, checklists, and quality control</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={handleNewInspection}>
-                    <span className="material-symbols-rounded">add</span>
+                <Button variant="orange" icon="add" onClick={handleNewInspection}>
                     New Inspection
-                </button>
+                </Button>
             </div>
 
             {renderMetrics()}

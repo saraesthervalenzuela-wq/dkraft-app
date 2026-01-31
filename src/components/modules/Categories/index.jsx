@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, Button } from '../../common';
 
 const initialCategories = [
     { id: 1, name: 'Woods', description: 'All types of wood and plywood materials' },
@@ -101,10 +101,9 @@ const CategoriesModule = () => {
                         <p>Organize your materials into categories</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={() => setShowModal(true)}>
-                    <span className="material-symbols-rounded">add</span>
+                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
                     Add new category
-                </button>
+                </Button>
             </div>
 
             <div className="catalog-toolbar">
@@ -115,10 +114,9 @@ const CategoriesModule = () => {
                     className="catalog-search"
                 />
                 {selectedCategories.length > 0 && (
-                    <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                        <Icon name="delete" />
+                    <Button variant="danger" icon="delete" size="sm" onClick={handleDeleteSelected}>
                         Delete ({selectedCategories.length})
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -210,17 +208,17 @@ const CategoriesModule = () => {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn-modal-cancel" onClick={resetForm}>
+                            <Button variant="secondary" onClick={resetForm}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-modal-save"
+                            </Button>
+                            <Button
+                                variant="success"
+                                icon="save"
                                 onClick={editingCategory ? handleUpdateCategory : handleCreateCategory}
                                 disabled={!newCategory.name}
                             >
-                                <span className="material-symbols-rounded">save</span>
                                 {editingCategory ? 'Update category' : 'Create category'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
 import { isApiEnabled, clientsApi, productsApi } from '../../../services/api';
 import { clientsData as initialClientsData, productsData as initialProductsData } from '../../../data/initialData';
 import './styles.css';
@@ -512,10 +512,9 @@ const QuotationsModule = () => {
                         <p>Manage quotations and estimates for clients</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={() => handleOpenModal('add')}>
-                    <Icon name="add" />
+                <Button variant="orange" icon="add" onClick={() => handleOpenModal('add')}>
                     New Quotation
-                </button>
+                </Button>
             </div>
 
             {/* Stats */}
@@ -604,10 +603,7 @@ const QuotationsModule = () => {
 
             {/* Content */}
             {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading quotations...</p>
-                </div>
+                viewMode === 'table' ? <TableSkeleton rows={5} columns={8} /> : <CardSkeleton count={4} />
             ) : viewMode === 'table' ? (
                 <div className="quotations-table-container">
                     <table className="quotations-table">
@@ -1087,13 +1083,12 @@ const QuotationsModule = () => {
                         {/* Actions */}
                         {modalMode !== 'view' && (
                             <div className="modal-actions">
-                                <button className="btn-cancel" onClick={handleCloseModal}>
+                                <Button variant="secondary" onClick={handleCloseModal}>
                                     Cancel
-                                </button>
-                                <button className="btn-save" onClick={handleSave}>
-                                    <Icon name="save" />
+                                </Button>
+                                <Button variant="success" icon="save" onClick={handleSave}>
                                     {currentQuotation.id ? 'Update' : 'Create'} Quotation
-                                </button>
+                                </Button>
                             </div>
                         )}
                     </div>

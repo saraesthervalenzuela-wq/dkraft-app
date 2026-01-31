@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
 import { useDataService } from '../../../hooks/useService';
 import './styles.css';
 
@@ -82,6 +82,8 @@ const WarehousesModule = () => {
     const [currentWarehouse, setCurrentWarehouse] = useState(emptyWarehouse);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [warehouseToDelete, setWarehouseToDelete] = useState(null);
+    const [showInventoryModal, setShowInventoryModal] = useState(false);
+    const [selectedWarehouseInventory, setSelectedWarehouseInventory] = useState(null);
 
     // Service
     const { data, loading, error, fetchAll, create, update, remove, isApiEnabled } = useDataService('warehouses');
@@ -197,6 +199,23 @@ const WarehousesModule = () => {
         setShowDeleteModal(true);
     };
 
+    // Inventory modal handler
+    const handleViewInventory = (warehouse) => {
+        setSelectedWarehouseInventory({
+            ...warehouse,
+            inventory: demoInventory[warehouse.id] || []
+        });
+        setShowInventoryModal(true);
+    };
+
+    // Get stock status
+    const getStockStatus = (item) => {
+        const ratio = item.qty / item.minStock;
+        if (ratio <= 0.5) return { status: 'critical', label: 'Critical', color: 'red' };
+        if (ratio <= 1) return { status: 'low', label: 'Low Stock', color: 'orange' };
+        return { status: 'ok', label: 'In Stock', color: 'green' };
+    };
+
     // Format date
     const formatDate = (dateString) => {
         if (!dateString) return '-';
@@ -220,10 +239,9 @@ const WarehousesModule = () => {
                         <p>Manage storage locations and inventory zones</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={() => handleOpenModal('add')}>
-                    <Icon name="add" />
+                <Button variant="orange" icon="add" onClick={() => handleOpenModal('add')}>
                     New Warehouse
-                </button>
+                </Button>
             </div>
 
             {/* Stats */}
@@ -266,10 +284,11 @@ const WarehousesModule = () => {
 
             {/* Content */}
             {isLoading || loading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading warehouses...</p>
-                </div>
+                viewMode === 'grid' ? (
+                    <CardSkeleton count={4} />
+                ) : (
+                    <TableSkeleton rows={5} columns={4} />
+                )
             ) : error ? (
                 <div className="materials-error">
                     <Icon name="error" />
@@ -298,6 +317,13 @@ const WarehousesModule = () => {
                                 </div>
                             </div>
                             <div className="card-actions">
+                                <button
+                                    className="btn-action inventory"
+                                    onClick={() => handleViewInventory(warehouse)}
+                                    title="View Inventory"
+                                >
+                                    <Icon name="inventory_2" />
+                                </button>
                                 <button
                                     className="btn-action"
                                     onClick={() => handleOpenModal('edit', warehouse)}
@@ -354,6 +380,13 @@ const WarehousesModule = () => {
                                     </td>
                                     <td>{formatDate(warehouse.createdAt)}</td>
                                     <td className="actions-cell">
+                                        <button
+                                            className="btn-action inventory"
+                                            onClick={() => handleViewInventory(warehouse)}
+                                            title="View Inventory"
+                                        >
+                                            <Icon name="inventory_2" />
+                                        </button>
                                         <button
                                             className="btn-action"
                                             onClick={() => handleOpenModal('edit', warehouse)}
@@ -421,18 +454,18 @@ const WarehousesModule = () => {
                                 rows="3"
                             />
                         </div>
-                        <div className="modal-actions">
-                            <button className="btn-cancel" onClick={handleCloseModal}>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <Button variant="secondary" onClick={handleCloseModal}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-save"
+                            </Button>
+                            <Button
+                                variant="success"
+                                icon="save"
                                 onClick={handleSave}
                                 disabled={!currentWarehouse.name || !currentWarehouse.location}
                             >
-                                <Icon name="save" />
                                 {currentWarehouse.id ? 'Update' : 'Create'} Warehouse
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </Modal>
@@ -456,18 +489,138 @@ const WarehousesModule = () => {
                             <strong>{warehouseToDelete?.name}</strong>?
                         </p>
                         <p className="warning-text">This action cannot be undone.</p>
-                        <div className="modal-actions">
-                            <button
-                                className="btn-cancel"
-                                onClick={() => setShowDeleteModal(false)}
-                            >
+                        <div className="flex justify-end gap-3 mt-4">
+                            <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
                                 Cancel
-                            </button>
-                            <button className="btn-delete" onClick={handleDelete}>
-                                <Icon name="delete" />
+                            </Button>
+                            <Button variant="danger" icon="delete" onClick={handleDelete}>
                                 Delete
-                            </button>
+                            </Button>
                         </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Inventory Modal */}
+            {showInventoryModal && selectedWarehouseInventory && (
+                <Modal
+                    isOpen={showInventoryModal}
+                    onClose={() => setShowInventoryModal(false)}
+                    title={`Inventory - ${selectedWarehouseInventory.name}`}
+                    subtitle={selectedWarehouseInventory.location}
+                    icon="inventory_2"
+                    size="lg"
+                >
+                    <div className="space-y-4">
+                        {/* Summary Stats */}
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                            <div className="bg-slate-800/50 rounded-xl p-4 border border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                                        <Icon name="category" className="text-white text-lg" />
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl font-bold text-white">
+                                            {selectedWarehouseInventory.inventory.length}
+                                        </div>
+                                        <div className="text-xs text-slate-400">Total Items</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-slate-800/50 rounded-xl p-4 border border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                                        <Icon name="check_circle" className="text-white text-lg" />
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl font-bold text-white">
+                                            {selectedWarehouseInventory.inventory.filter(i => getStockStatus(i).status === 'ok').length}
+                                        </div>
+                                        <div className="text-xs text-slate-400">In Stock</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-slate-800/50 rounded-xl p-4 border border-white/10">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                                        <Icon name="warning" className="text-white text-lg" />
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl font-bold text-white">
+                                            {selectedWarehouseInventory.inventory.filter(i => getStockStatus(i).status !== 'ok').length}
+                                        </div>
+                                        <div className="text-xs text-slate-400">Low Stock</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Inventory Table */}
+                        {selectedWarehouseInventory.inventory.length > 0 ? (
+                            <div className="bg-slate-800/30 rounded-xl border border-white/10 overflow-hidden">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="border-b border-white/10">
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-blue-400 uppercase tracking-wider">Material</th>
+                                            <th className="px-4 py-3 text-left text-xs font-semibold text-blue-400 uppercase tracking-wider">Category</th>
+                                            <th className="px-4 py-3 text-right text-xs font-semibold text-blue-400 uppercase tracking-wider">Quantity</th>
+                                            <th className="px-4 py-3 text-right text-xs font-semibold text-blue-400 uppercase tracking-wider">Min Stock</th>
+                                            <th className="px-4 py-3 text-center text-xs font-semibold text-blue-400 uppercase tracking-wider">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {selectedWarehouseInventory.inventory.map((item) => {
+                                            const stockStatus = getStockStatus(item);
+                                            return (
+                                                <tr key={item.id} className="hover:bg-white/5 transition-colors">
+                                                    <td className="px-4 py-3">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-600 to-slate-700 flex items-center justify-center">
+                                                                <Icon name="package_2" className="text-slate-300 text-sm" />
+                                                            </div>
+                                                            <span className="font-medium text-white">{item.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-4 py-3">
+                                                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-slate-700/50 text-slate-300">
+                                                            {item.category}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right">
+                                                        <span className="font-bold text-white">{item.qty}</span>
+                                                        <span className="text-slate-400 ml-1 text-sm">{item.unit}</span>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-right text-slate-400">
+                                                        {item.minStock} {item.unit}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-center">
+                                                        <span className={`
+                                                            inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold
+                                                            ${stockStatus.color === 'green' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : ''}
+                                                            ${stockStatus.color === 'orange' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : ''}
+                                                            ${stockStatus.color === 'red' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : ''}
+                                                        `}>
+                                                            <span className={`w-1.5 h-1.5 rounded-full
+                                                                ${stockStatus.color === 'green' ? 'bg-green-400' : ''}
+                                                                ${stockStatus.color === 'orange' ? 'bg-orange-400' : ''}
+                                                                ${stockStatus.color === 'red' ? 'bg-red-400' : ''}
+                                                            `}></span>
+                                                            {stockStatus.label}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-12 text-slate-400">
+                                <Icon name="inventory_2" className="text-5xl mb-3 opacity-50" />
+                                <p className="text-lg font-medium">No inventory items</p>
+                                <p className="text-sm">This warehouse is empty</p>
+                            </div>
+                        )}
                     </div>
                 </Modal>
             )}

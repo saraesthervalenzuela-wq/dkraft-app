@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
 import { materialsApi, suppliersApi, categoriesApi, unitsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
@@ -504,10 +504,9 @@ const MaterialsModule = () => {
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
                     </button> */}
-                    <button className="btn-primary-action" onClick={handleAdd}>
-                        <span className="material-symbols-rounded">add</span>
+                    <Button variant="orange" icon="add" onClick={handleAdd}>
                         Add material
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -606,10 +605,11 @@ const MaterialsModule = () => {
             </div>
 
             {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading materials...</p>
-                </div>
+                viewMode === 'grid' ? (
+                    <CardSkeleton count={6} />
+                ) : (
+                    <TableSkeleton rows={8} columns={6} />
+                )
             ) : viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="materials-cards-grid">
@@ -623,10 +623,13 @@ const MaterialsModule = () => {
                                         <Icon name="inventory_2" />
                                     </div>
                                     <div className="material-card-badges">
-                                        <span className={`status-badge ${statusStyle.color}`}>
-                                            <span className="status-dot"></span>
+                                        <Badge
+                                            variant={statusStyle.color === 'green' ? 'success' : statusStyle.color === 'orange' ? 'warning' : 'default'}
+                                            size="sm"
+                                            dot
+                                        >
                                             {statusStyle.label}
-                                        </span>
+                                        </Badge>
                                         <span className="qb-status-badge" style={{ color: qbStatus.color }} title={qbStatus.label}>
                                             <Icon name={qbStatus.icon} />
                                         </span>
@@ -798,10 +801,13 @@ const MaterialsModule = () => {
                                         </td>
                                         <td className="col-supplier">{getSupplierName(material.supplierId)}</td>
                                         <td className="col-status">
-                                            <span className={`status-badge ${statusStyle.color}`}>
-                                                <span className="status-dot"></span>
+                                            <Badge
+                                                variant={statusStyle.color === 'green' ? 'success' : statusStyle.color === 'orange' ? 'warning' : 'default'}
+                                                size="sm"
+                                                dot
+                                            >
                                                 {statusStyle.label}
-                                            </span>
+                                            </Badge>
                                         </td>
                                         <td className="col-stock">
                                             <div className="stock-info">
@@ -1032,16 +1038,17 @@ const MaterialsModule = () => {
 
                     {modalMode !== 'view' && (
                         <div className="form-actions">
-                            <button className="btn-secondary" onClick={() => setShowModal(false)}>
+                            <Button variant="secondary" onClick={() => setShowModal(false)}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-primary"
+                            </Button>
+                            <Button
+                                variant="success"
+                                icon={modalMode === 'add' ? 'add' : 'save'}
                                 onClick={handleSave}
                                 disabled={!currentMaterial.name || !currentMaterial.categoryId || !currentMaterial.unitId || !currentMaterial.supplierId}
                             >
                                 {modalMode === 'add' ? 'Add Material' : 'Save Changes'}
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -1059,12 +1066,12 @@ const MaterialsModule = () => {
                     <p>Are you sure you want to delete <strong>{materialToDelete?.name}</strong>?</p>
                     <p className="text-muted">This action cannot be undone.</p>
                     <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
+                        <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
                             Cancel
-                        </button>
-                        <button className="btn-danger" onClick={confirmDelete}>
+                        </Button>
+                        <Button variant="danger" icon="delete" onClick={confirmDelete}>
                             Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>

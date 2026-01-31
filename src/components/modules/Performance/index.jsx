@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Button } from '../../common';
 import {
     staffData,
     attendanceData,
@@ -329,10 +330,9 @@ const PerformanceModule = () => {
                         Quarter
                     </button>
                 </div>
-                <button className="btn-primary-action" onClick={() => setShowAttendanceModal(true)}>
-                    <span className="material-symbols-rounded">add</span>
+                <Button variant="orange" icon="add" onClick={() => setShowAttendanceModal(true)}>
                     Record Entry
-                </button>
+                </Button>
             </div>
 
             <div className="perf-attendance-grid">
@@ -513,10 +513,9 @@ const PerformanceModule = () => {
                             </div>
                         ))}
                     </div>
-                    <button className="btn-primary-action" onClick={() => setShowBonusModal(true)}>
-                        <span className="material-symbols-rounded">add</span>
+                    <Button variant="orange" icon="add" onClick={() => setShowBonusModal(true)}>
                         Add Bonus
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="perf-bonuses-list">

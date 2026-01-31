@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, Button } from '../../common';
 import './styles.css';
 import {
     operationsData,
@@ -335,10 +335,9 @@ const OperationsModule = () => {
                         <p>Manage production workflow and track progress</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={() => setShowModal(true)}>
-                    <span className="material-symbols-rounded">add</span>
+                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
                     New Operation
-                </button>
+                </Button>
             </div>
 
             {/* Numeralia Stats */}
@@ -436,10 +435,9 @@ const OperationsModule = () => {
                     </button>
                 </div>
                 {selectedOperations.length > 0 && (
-                    <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                        <Icon name="delete" />
+                    <Button variant="danger" icon="delete" size="sm" onClick={handleDeleteSelected}>
                         Delete ({selectedOperations.length})
-                    </button>
+                    </Button>
                 )}
             </div>
 

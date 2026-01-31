@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon } from '../common';
+import { Icon, ThemeToggle } from '../common';
 import { navSections } from '../../data/initialData';
 
 /**
@@ -149,10 +149,7 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
             </nav>
 
             <div className="themes-section">
-                <div className="themes-toggle" onClick={toggleTheme}>
-                    <Icon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} />
-                    <span className="nav-label">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                </div>
+                <ThemeToggle />
             </div>
 
             <div className="user-section">

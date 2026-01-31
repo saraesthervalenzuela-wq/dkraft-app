@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from '../../common';
+import { Icon, Button, Badge } from '../../common';
 import { statsData, chartData, quickActions, recentOrders, staffOnDuty, topClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
 import { clientsApi, suppliersApi, materialsApi, productsApi, isApiEnabled } from '../../../services/api';
 
@@ -462,6 +462,201 @@ const CommunicationCard = ({ onRefresh, onExport }) => (
 );
 
 /**
+ * LiveActivityFeed Component - Real-time activity ticker
+ */
+const LiveActivityFeed = ({ onNavigate }) => {
+    const [activities] = useState([
+        { id: 1, type: 'order', icon: 'receipt_long', text: 'New order #OP-2025-042 created', time: '2 min ago', color: 'orange' },
+        { id: 2, type: 'production', icon: 'precision_manufacturing', text: 'Assembly completed for Project ABC', time: '5 min ago', color: 'success' },
+        { id: 3, type: 'material', icon: 'inventory_2', text: 'Plywood stock running low (15 units)', time: '12 min ago', color: 'warning' },
+        { id: 4, type: 'staff', icon: 'person', text: 'Carlos M. started shift at CNC Station', time: '18 min ago', color: 'info' },
+        { id: 5, type: 'quality', icon: 'verified', text: 'QA inspection passed for WO-2025-038', time: '25 min ago', color: 'success' },
+    ]);
+
+    return (
+        <div className="bg-slate-800/40 rounded-2xl border border-white/10 p-5 animate-in delay-2">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                        <Icon name="bolt" className="text-orange-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-semibold">Live Activity</h3>
+                        <p className="text-slate-400 text-xs">Real-time updates</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    <span className="text-xs text-slate-400">Live</span>
+                </div>
+            </div>
+
+            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-2 scrollbar-thin">
+                {activities.map((activity, index) => (
+                    <div
+                        key={activity.id}
+                        className="flex items-start gap-3 p-3 rounded-xl bg-slate-900/50 hover:bg-slate-800/50 transition-all cursor-pointer group"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                        <div className={`
+                            w-8 h-8 rounded-lg flex items-center justify-center shrink-0
+                            ${activity.color === 'orange' ? 'bg-orange-500/20 text-orange-400' :
+                              activity.color === 'success' ? 'bg-green-500/20 text-green-400' :
+                              activity.color === 'warning' ? 'bg-amber-500/20 text-amber-400' :
+                              'bg-blue-500/20 text-blue-400'}
+                        `}>
+                            <Icon name={activity.icon} size="sm" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm text-slate-200 truncate group-hover:text-white transition-colors">
+                                {activity.text}
+                            </p>
+                            <p className="text-xs text-slate-500">{activity.time}</p>
+                        </div>
+                        <Icon name="chevron_right" className="text-slate-600 group-hover:text-orange-400 transition-colors" size="sm" />
+                    </div>
+                ))}
+            </div>
+
+            <Button
+                variant="ghost"
+                size="sm"
+                icon="history"
+                className="w-full mt-4"
+                onClick={() => onNavigate?.('activity-log')}
+            >
+                View All Activity
+            </Button>
+        </div>
+    );
+};
+
+/**
+ * InventoryAlertsWidget Component - Material stock alerts
+ */
+const InventoryAlertsWidget = ({ onNavigate }) => {
+    const [alerts] = useState([
+        { id: 1, material: 'Birch Plywood 3/4"', current: 12, min: 25, unit: 'sheets', severity: 'critical' },
+        { id: 2, material: 'Soft Close Hinges', current: 45, min: 50, unit: 'pairs', severity: 'warning' },
+        { id: 3, material: 'Edge Banding White', current: 180, min: 200, unit: 'ft', severity: 'warning' },
+        { id: 4, material: 'Drawer Slides 18"', current: 8, min: 30, unit: 'pairs', severity: 'critical' },
+    ]);
+
+    const getSeverityColor = (severity) => {
+        return severity === 'critical' ? 'danger' : 'warning';
+    };
+
+    const getPercentage = (current, min) => {
+        return Math.min((current / min) * 100, 100);
+    };
+
+    return (
+        <div className="bg-slate-800/40 rounded-2xl border border-white/10 p-5 animate-in delay-3">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center">
+                        <Icon name="warning" className="text-red-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-white font-semibold">Inventory Alerts</h3>
+                        <p className="text-slate-400 text-xs">{alerts.length} items need attention</p>
+                    </div>
+                </div>
+                <Badge variant="danger" size="sm" dot pulse>
+                    {alerts.filter(a => a.severity === 'critical').length} Critical
+                </Badge>
+            </div>
+
+            <div className="space-y-3">
+                {alerts.map((alert) => (
+                    <div
+                        key={alert.id}
+                        className="p-3 rounded-xl bg-slate-900/50 hover:bg-slate-800/50 transition-all cursor-pointer group"
+                    >
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm text-slate-200 font-medium truncate flex-1">
+                                {alert.material}
+                            </span>
+                            <Badge variant={getSeverityColor(alert.severity)} size="sm">
+                                {alert.severity}
+                            </Badge>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                        alert.severity === 'critical' ? 'bg-red-500' : 'bg-amber-500'
+                                    }`}
+                                    style={{ width: `${getPercentage(alert.current, alert.min)}%` }}
+                                />
+                            </div>
+                            <span className="text-xs text-slate-400 whitespace-nowrap">
+                                {alert.current}/{alert.min} {alert.unit}
+                            </span>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="flex gap-2 mt-4">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    icon="inventory_2"
+                    className="flex-1"
+                    onClick={() => onNavigate?.('materials')}
+                >
+                    View Inventory
+                </Button>
+                <Button
+                    variant="orange"
+                    size="sm"
+                    icon="add_shopping_cart"
+                    onClick={() => onNavigate?.('requisitions')}
+                >
+                    Reorder
+                </Button>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * QuickStatsWidget Component - Mini stats with sparklines
+ */
+const QuickStatsWidget = () => {
+    const [stats] = useState([
+        { label: 'Efficiency', value: '94%', trend: '+2.3%', icon: 'speed', color: 'green' },
+        { label: 'On-Time', value: '87%', trend: '-1.2%', icon: 'schedule', color: 'amber' },
+        { label: 'Quality', value: '99%', trend: '+0.5%', icon: 'verified', color: 'green' },
+    ]);
+
+    return (
+        <div className="grid grid-cols-3 gap-4 animate-in delay-1">
+            {stats.map((stat, index) => (
+                <div
+                    key={stat.label}
+                    className="bg-slate-800/40 rounded-2xl border border-white/10 p-4 hover:bg-slate-800/60 transition-all group cursor-pointer"
+                >
+                    <div className="flex items-center gap-2 mb-2">
+                        <Icon name={stat.icon} className="text-slate-400 group-hover:text-orange-400 transition-colors" size="sm" />
+                        <span className="text-xs text-slate-400 uppercase tracking-wider">{stat.label}</span>
+                    </div>
+                    <div className="flex items-end justify-between">
+                        <span className="text-2xl font-bold text-white">{stat.value}</span>
+                        <span className={`text-xs font-medium ${
+                            stat.trend.startsWith('+') ? 'text-green-400' : 'text-red-400'
+                        }`}>
+                            {stat.trend}
+                        </span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+/**
  * Dashboard Module Component
  */
 const Dashboard = ({ onNavigate }) => {
@@ -545,6 +740,15 @@ const Dashboard = ({ onNavigate }) => {
                     <span>{notification.message}</span>
                 </div>
             )}
+
+            {/* Quick Stats Row */}
+            <QuickStatsWidget />
+
+            {/* Live Activity & Inventory Alerts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
+                <LiveActivityFeed onNavigate={handleNavigate} />
+                <InventoryAlertsWidget onNavigate={handleNavigate} />
+            </div>
 
             {/* API Connection Test */}
             <ConnectionTestCard />

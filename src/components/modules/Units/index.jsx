@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, Button } from '../../common';
 
 const initialUnits = [
     { id: 1, name: 'Sheet', description: 'Full sheet of material (4x8 ft typical)' },
@@ -104,10 +104,9 @@ const UnitsModule = () => {
                         <p>Manage units of measurement for materials</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={() => setShowModal(true)}>
-                    <span className="material-symbols-rounded">add</span>
+                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
                     Add new unit
-                </button>
+                </Button>
             </div>
 
             <div className="catalog-toolbar">
@@ -118,10 +117,9 @@ const UnitsModule = () => {
                     className="catalog-search"
                 />
                 {selectedUnits.length > 0 && (
-                    <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                        <Icon name="delete" />
+                    <Button variant="danger" icon="delete" size="sm" onClick={handleDeleteSelected}>
                         Delete ({selectedUnits.length})
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -213,17 +211,17 @@ const UnitsModule = () => {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn-modal-cancel" onClick={resetForm}>
+                            <Button variant="secondary" onClick={resetForm}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-modal-save"
+                            </Button>
+                            <Button
+                                variant="success"
+                                icon="save"
                                 onClick={editingUnit ? handleUpdateUnit : handleCreateUnit}
                                 disabled={!newUnit.name}
                             >
-                                <span className="material-symbols-rounded">save</span>
                                 {editingUnit ? 'Update unit' : 'Create unit'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

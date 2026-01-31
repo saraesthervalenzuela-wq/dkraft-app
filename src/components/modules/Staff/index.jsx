@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
 import { isApiEnabled, usersApi, registerToBackend } from '../../../services/api';
 
 // Role colors for avatars and badges
@@ -16,6 +16,22 @@ const ROLE_COLORS = {
 };
 
 const getRoleStyle = (role) => ROLE_COLORS[role] || ROLE_COLORS['USER'];
+
+// Map roles to Badge variants
+const getRoleBadgeVariant = (role) => {
+    const variants = {
+        'ADMIN_DEV': 'purple',
+        'ADMIN': 'info',
+        'MANAGEMENT': 'success',
+        'SALES': 'warning',
+        'COST': 'info',
+        'STORE': 'purple',
+        'REQUISITOR': 'orange',
+        'USER': 'default',
+        'VIEWER': 'default',
+    };
+    return variants[role] || 'default';
+};
 
 // Demo data for showcase when API is empty
 const demoStaffData = [
@@ -217,10 +233,9 @@ const StaffModule = () => {
                         <p>Manage your team members</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={() => setShowModal(true)}>
-                    <span className="material-symbols-rounded">add</span>
+                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
                     Add new user
-                </button>
+                </Button>
             </div>
 
             {/* Numeralia Stats */}
@@ -288,19 +303,19 @@ const StaffModule = () => {
                         </button>
                     </div>
                     {selectedUsers.length > 0 && (
-                        <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                            <Icon name="delete" />
+                        <Button variant="danger" icon="delete" size="sm" onClick={handleDeleteSelected}>
                             Delete ({selectedUsers.length})
-                        </button>
+                        </Button>
                     )}
                 </div>
             </div>
 
             {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading users...</p>
-                </div>
+                viewMode === 'table' ? (
+                    <TableSkeleton rows={6} columns={4} />
+                ) : (
+                    <CardSkeleton count={6} />
+                )
             ) : viewMode === 'table' ? (
                 <div className="staff-table-container">
                     <div className="staff-table">
@@ -339,7 +354,11 @@ const StaffModule = () => {
                                     </span>
                                     <span className="col-username">{user.username}</span>
                                     <span className="col-email">{user.email}</span>
-                                    <span className="col-role">{user.role}</span>
+                                    <span className="col-role">
+                                        <Badge variant={getRoleBadgeVariant(user.role)} size="sm">
+                                            {ROLE_COLORS[user.role]?.label || user.role}
+                                        </Badge>
+                                    </span>
                                     <span className="col-actions">
                                         <button className="btn-action-edit" onClick={() => handleEditUser(user)}>
                                             <Icon name="edit" />
@@ -380,16 +399,9 @@ const StaffModule = () => {
                                     </div>
                                     <div className="staff-card-body">
                                         <h4 className="staff-card-name">{user.username}</h4>
-                                        <span
-                                            className="staff-card-role"
-                                            style={{
-                                                background: `${roleStyle.bg}20`,
-                                                color: roleStyle.bg,
-                                                border: `1px solid ${roleStyle.bg}40`
-                                            }}
-                                        >
+                                        <Badge variant={getRoleBadgeVariant(user.role)} size="sm">
                                             {roleStyle.label}
-                                        </span>
+                                        </Badge>
                                         <div className="staff-card-email">
                                             <Icon name="mail" />
                                             <span>{user.email}</span>
@@ -490,17 +502,17 @@ const StaffModule = () => {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn-modal-cancel" onClick={closeModal}>
+                            <Button variant="secondary" onClick={closeModal}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-modal-save"
+                            </Button>
+                            <Button
+                                variant="success"
+                                icon="save"
                                 onClick={editingUser ? handleUpdateUser : handleCreateUser}
                                 disabled={!newUser.username || !newUser.email || !newUser.role || (!editingUser && !newUser.password)}
                             >
-                                <span className="material-symbols-rounded">save</span>
                                 {editingUser ? 'Update user' : 'Create user'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

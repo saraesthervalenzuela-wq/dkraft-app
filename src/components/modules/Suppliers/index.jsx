@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
 import { suppliersApi } from '../../../services/api';
 
 /**
@@ -463,10 +463,9 @@ const SuppliersModule = () => {
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
                     </button>
-                    <button className="btn-primary-action" onClick={handleAdd}>
-                        <span className="material-symbols-rounded">add</span>
+                    <Button variant="orange" icon="add" onClick={handleAdd}>
                         Add new supplier
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -511,10 +510,9 @@ const SuppliersModule = () => {
                 />
                 <div className="toolbar-actions">
                     {selectedSuppliers.length > 0 && (
-                        <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                            <Icon name="delete" />
+                        <Button variant="danger" icon="delete" size="sm" onClick={handleDeleteSelected}>
                             Delete ({selectedSuppliers.length})
-                        </button>
+                        </Button>
                     )}
                     <div className="view-toggle-buttons">
                         <button
@@ -536,10 +534,7 @@ const SuppliersModule = () => {
             </div>
 
             {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading suppliers...</p>
-                </div>
+                viewMode === 'grid' ? <CardSkeleton count={6} /> : <TableSkeleton rows={6} columns={5} />
             ) : viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="suppliers-cards-grid">
@@ -889,16 +884,12 @@ const SuppliersModule = () => {
 
                     {modalMode !== 'view' && (
                         <div className="form-actions">
-                            <button className="btn-secondary" onClick={() => setShowModal(false)}>
+                            <Button variant="secondary" onClick={() => setShowModal(false)}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-primary"
-                                onClick={handleSave}
-                            >
-                                <Icon name="save" />
+                            </Button>
+                            <Button variant="success" icon="save" onClick={handleSave}>
                                 {modalMode === 'add' ? 'Create supplier' : 'Save changes'}
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -916,12 +907,12 @@ const SuppliersModule = () => {
                     <p>Are you sure you want to delete <strong>{supplierToDelete?.name}</strong>?</p>
                     <p className="text-muted">This action cannot be undone.</p>
                     <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
+                        <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
                             Cancel
-                        </button>
-                        <button className="btn-danger" onClick={confirmDelete}>
+                        </Button>
+                        <Button variant="danger" icon="delete" onClick={confirmDelete}>
                             Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>

@@ -243,6 +243,18 @@
     grid-column: 1 / -1;
 }
 
+/* Inventory Button */
+.warehouses-module .btn-action.inventory {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+}
+
+.warehouses-module .btn-action.inventory:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: scale(1.05);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .warehouses-module .warehouses-grid {

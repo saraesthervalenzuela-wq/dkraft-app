@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
 import { bomApi, productsApi, materialsApi } from '../../../services/api';
 import { bomData, bomStatusOptions, productsData, materialsData } from '../../../data/initialData';
 
@@ -365,10 +365,9 @@ const BOMModule = () => {
                     </div>
                 </div>
                 <div className="header-actions">
-                    <button className="btn-primary-action" onClick={handleAdd}>
-                        <span className="material-symbols-rounded">add</span>
+                    <Button variant="orange" icon="add" onClick={handleAdd}>
                         New BOM
-                    </button>
+                    </Button>
                 </div>
             </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
 import { productsApi, materialsApi, productMaterialsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
@@ -668,10 +668,9 @@ const ProductsModule = () => {
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
                     </button> */}
-                    <button className="btn-primary-action" onClick={handleAdd}>
-                        <span className="material-symbols-rounded">add</span>
+                    <Button variant="orange" icon="add" onClick={handleAdd}>
                         Add new product
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -725,10 +724,9 @@ const ProductsModule = () => {
                 />
                 <div className="toolbar-actions">
                     {selectedProducts.length > 0 && (
-                        <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                            <Icon name="delete" />
+                        <Button variant="danger" icon="delete" size="sm" onClick={handleDeleteSelected}>
                             Delete ({selectedProducts.length})
-                        </button>
+                        </Button>
                     )}
                     <div className="view-toggle">
                         <button
@@ -750,10 +748,7 @@ const ProductsModule = () => {
             </div>
 
             {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading products...</p>
-                </div>
+                viewMode === 'grid' ? <CardSkeleton count={6} /> : <TableSkeleton rows={6} columns={6} />
             ) : viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="materials-cards-grid">
@@ -1244,17 +1239,17 @@ const ProductsModule = () => {
 
                     {modalMode !== 'view' && activeTab === 'general' && (
                       <div className="form-actions">
-                          <button className="btn-secondary" onClick={() => setShowModal(false)}>
+                          <Button variant="secondary" onClick={() => setShowModal(false)}>
                               Cancel
-                          </button>
-                          <button
-                              className="btn-primary"
+                          </Button>
+                          <Button
+                              variant="success"
+                              icon="save"
                               onClick={handleSave}
                               disabled={!currentProduct.name}
                           >
-                              <Icon name="save" />
                               {modalMode === 'add' ? 'Create product' : 'Save changes'}
-                          </button>
+                          </Button>
                       </div>
                     )}
                 </div>
@@ -1272,12 +1267,12 @@ const ProductsModule = () => {
                     <p>Are you sure you want to delete <strong>{productToDelete?.name}</strong>?</p>
                     <p className="text-muted">This action cannot be undone.</p>
                     <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
+                        <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
                             Cancel
-                        </button>
-                        <button className="btn-danger" onClick={confirmDelete}>
+                        </Button>
+                        <Button variant="danger" icon="delete" onClick={confirmDelete}>
                             Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>

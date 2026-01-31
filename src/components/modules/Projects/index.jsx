@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, Button, Badge } from '../../common';
 
 const initialProjectsData = [
     { id: 1, name: 'ABC Corporate Office', description: 'Corporate office furniture project', status: 'Active', client: 'ABC Corporation', poNumber: 'PO-2024-001', workOrder: 'WO-001', estimateNumber: 'EST-001', terms: 'Net 30', nameAddress: 'ABC Corporation, 123 Main Ave', shipTo: 'North Industrial Zone', contact: 'John Smith - 664 123 4567', salesRep: 'Carlos Mendoza', csr: 'Ana Garcia', subtotal: 45000, tax: 7200, total: 52200 },
@@ -150,10 +150,9 @@ const ProjectsModule = () => {
                         <p>Manage your projects</p>
                     </div>
                 </div>
-                <button className="btn-primary-action" onClick={() => setShowModal(true)}>
-                    <span className="material-symbols-rounded">add</span>
+                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
                     Add new project
-                </button>
+                </Button>
             </div>
 
             {/* Numeralia Stats */}
@@ -220,10 +219,9 @@ const ProjectsModule = () => {
                     </button>
                 </div>
                 {selectedProjects.length > 0 && (
-                    <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                        <Icon name="delete" />
+                    <Button variant="danger" icon="delete" size="sm" onClick={handleDeleteSelected}>
                         Delete ({selectedProjects.length})
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -565,17 +563,17 @@ const ProjectsModule = () => {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn-modal-cancel" onClick={resetForm}>
+                            <Button variant="secondary" onClick={resetForm}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-modal-save"
+                            </Button>
+                            <Button
+                                variant="success"
+                                icon="save"
                                 onClick={editingProject ? handleUpdateProject : handleCreateProject}
                                 disabled={!newProject.name}
                             >
-                                <span className="material-symbols-rounded">save</span>
                                 {editingProject ? 'Update project' : 'Create project'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
