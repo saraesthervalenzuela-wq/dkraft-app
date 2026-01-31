@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Icon } from '../../common';
 import { statsData, chartData, quickActions, recentOrders, staffOnDuty, topClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
 import { clientsApi, suppliersApi, materialsApi, productsApi, isApiEnabled } from '../../../services/api';
@@ -62,19 +63,28 @@ const CardMenu = ({ onRefresh, onExport, title = 'Data' }) => {
 };
 
 /**
- * StatCard Component
+ * StatCard Component - Enhanced with Tailwind
  */
-const StatCard = ({ label, value, icon, delay }) => (
-    <div className={`stat-card animate-in delay-${delay}`}>
-        <div className="stat-label">{label}</div>
-        <div className="stat-value">{value}</div>
-        <div className="stat-footer">
-            <div className="stat-icon">
-                <Icon name={icon} />
+const StatCard = ({ label, value, icon, delay, onClick }) => (
+    <div className={`stat-card group relative overflow-hidden rounded-xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl animate-in delay-${delay}`}>
+        {/* Background glow on hover */}
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-blue-500/0 group-hover:from-orange-500/10 group-hover:to-blue-500/5 transition-all duration-500" />
+
+        <div className="relative z-10">
+            <div className="stat-label text-sm font-semibold uppercase tracking-wider text-slate-300 mb-2">{label}</div>
+            <div className="stat-value text-4xl font-bold text-orange-400 mb-6">{value}</div>
+            <div className="stat-footer flex items-center justify-between mt-4 pt-4 border-t border-white/10">
+                <div className="stat-icon w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                    <Icon name={icon} />
+                </div>
+                <button
+                    onClick={onClick}
+                    className="stat-link flex items-center gap-2 text-sm font-medium text-white/70 hover:text-orange-400 transition-all duration-300 group-hover:translate-x-1"
+                >
+                    View details
+                    <Icon name="arrow_forward" className="text-lg transition-transform duration-300 group-hover:translate-x-1" />
+                </button>
             </div>
-            <span className="stat-link">
-                View details <Icon name="arrow_forward" />
-            </span>
         </div>
     </div>
 );
@@ -178,14 +188,25 @@ const ProductionChart = () => {
 /**
  * ActionCard Component
  */
-const ActionCard = ({ title, desc, progress }) => (
-    <div className="action-card">
-        <div className="action-title">{title}</div>
-        <div className="action-desc">{desc}</div>
-        <div className="action-progress">
-            <div className="action-progress-bar" style={{ width: `${progress}%` }}></div>
+const ActionCard = ({ title, desc, progress, onClick }) => (
+    <div className="action-card group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-orange-500/30">
+        {/* Hover glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:via-transparent group-hover:to-blue-500/5 transition-all duration-500" />
+
+        <div className="relative z-10">
+            <div className="action-title text-lg font-bold text-white mb-2">{title}</div>
+            <div className="action-desc text-sm text-slate-400 mb-4">{desc}</div>
+            <div className="action-progress h-1.5 bg-white/10 rounded-full overflow-hidden mb-4">
+                <div
+                    className="action-progress-bar h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-700"
+                    style={{ width: `${progress}%` }}
+                />
+            </div>
         </div>
-        <button className="action-btn">
+        <button
+            onClick={onClick}
+            className="action-btn absolute bottom-4 right-4 w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 group-hover:shadow-lg group-hover:shadow-orange-500/30"
+        >
             <Icon name="arrow_forward" />
         </button>
     </div>
@@ -194,14 +215,14 @@ const ActionCard = ({ title, desc, progress }) => (
 /**
  * StaffOnDutyCard Component
  */
-const StaffOnDutyCard = () => (
+const StaffOnDutyCard = ({ onViewAll }) => (
     <div className="staff-duty-card animate-in delay-5">
         <div className="card-header">
             <div>
                 <div className="card-title">Staff on Duty</div>
                 <div className="card-subtitle">{staffOnDuty.filter(s => s.status === 'working').length} actively working</div>
             </div>
-            <button className="btn-secondary">
+            <button className="btn-secondary" onClick={onViewAll}>
                 View All <Icon name="arrow_forward" />
             </button>
         </div>
@@ -229,14 +250,14 @@ const StaffOnDutyCard = () => (
 /**
  * TopClientsCard Component
  */
-const TopClientsCard = () => (
+const TopClientsCard = ({ onViewAll }) => (
     <div className="top-clients-card animate-in delay-6">
         <div className="card-header">
             <div>
                 <div className="card-title">Top Clients</div>
                 <div className="card-subtitle">By total revenue</div>
             </div>
-            <button className="btn-secondary">
+            <button className="btn-secondary" onClick={onViewAll}>
                 View All <Icon name="arrow_forward" />
             </button>
         </div>
@@ -306,14 +327,15 @@ const ConnectionTestCard = () => {
     };
 
     const buttonStyle = (isLoading) => ({
-        padding: '12px 20px',
+        padding: '14px 24px',
         background: isLoading ? 'rgba(100, 116, 139, 0.5)' : 'linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%)',
-        color: 'white',
+        color: '#ffffff',
         border: 'none',
         borderRadius: '10px',
+        textShadow: '0 1px 2px rgba(0,0,0,0.2)',
         cursor: isLoading ? 'not-allowed' : 'pointer',
-        fontSize: '14px',
-        fontWeight: '600',
+        fontSize: '15px',
+        fontWeight: '700',
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
@@ -444,8 +466,23 @@ const CommunicationCard = ({ onRefresh, onExport }) => (
  * Dashboard Module Component
  */
 const Dashboard = () => {
+    const navigate = useNavigate();
     const [refreshKey, setRefreshKey] = useState(0);
     const [notification, setNotification] = useState(null);
+
+    // Map stats to navigation routes
+    const statRoutes = {
+        'Orders Produced': '/operations',
+        'Products Delivered': '/products',
+        'Materials Cadence': '/materials',
+    };
+
+    // Map quick actions to navigation routes
+    const actionRoutes = {
+        'Register Product': '/products',
+        'New Order': '/quotations',
+        'Assign Staff': '/staff-duty',
+    };
 
     const showNotification = (message, type = 'success') => {
         setNotification({ message, type });
@@ -529,6 +566,7 @@ const Dashboard = () => {
                             value={stat.value}
                             icon={stat.icon}
                             delay={index + 1}
+                            onClick={() => navigate(statRoutes[stat.label] || '/')}
                         />
                     ))}
                 </div>
@@ -551,6 +589,7 @@ const Dashboard = () => {
                         title={action.title}
                         desc={action.desc}
                         progress={action.progress}
+                        onClick={() => navigate(actionRoutes[action.title] || '/')}
                     />
                 ))}
             </div>
@@ -564,7 +603,7 @@ const Dashboard = () => {
                             <div className="card-title">Recent Orders</div>
                             <div className="card-subtitle">Latest project orders and their status</div>
                         </div>
-                        <button className="btn-secondary">
+                        <button className="btn-secondary" onClick={() => navigate('/operations')}>
                             View All <Icon name="arrow_forward" />
                         </button>
                     </div>
@@ -599,8 +638,8 @@ const Dashboard = () => {
 
             {/* Staff & Clients Section */}
             <div className="dashboard-staff-clients-grid">
-                <StaffOnDutyCard />
-                <TopClientsCard />
+                <StaffOnDutyCard onViewAll={() => navigate('/staff-duty')} />
+                <TopClientsCard onViewAll={() => navigate('/top-clients')} />
             </div>
         </div>
     );

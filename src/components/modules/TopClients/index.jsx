@@ -2,6 +2,20 @@ import { useState } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { topClients } from '../../../data/initialData';
 
+// Avatar colors for variety
+const AVATAR_COLORS = [
+    { bg: '#10b981', text: '#ffffff' }, // Green
+    { bg: '#3b82f6', text: '#ffffff' }, // Blue
+    { bg: '#8b5cf6', text: '#ffffff' }, // Purple
+    { bg: '#f59e0b', text: '#ffffff' }, // Orange
+    { bg: '#ec4899', text: '#ffffff' }, // Pink
+    { bg: '#06b6d4', text: '#ffffff' }, // Cyan
+    { bg: '#ef4444', text: '#ffffff' }, // Red
+    { bg: '#6366f1', text: '#ffffff' }, // Indigo
+];
+
+const getAvatarColor = (index) => AVATAR_COLORS[index % AVATAR_COLORS.length];
+
 const TopClientsModule = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('revenue');
@@ -34,42 +48,42 @@ const TopClientsModule = () => {
                 </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="clients-stats-grid">
-                <div className="clients-stat-card">
-                    <div className="clients-stat-icon green">
+            {/* Stats Cards - Same style as Staff */}
+            <div className="module-stats-row">
+                <div className="module-stat-card">
+                    <div className="stat-icon green">
                         <Icon name="payments" />
                     </div>
-                    <div className="clients-stat-info">
-                        <div className="clients-stat-value">${totalRevenue.toLocaleString()}</div>
-                        <div className="clients-stat-label">Total Revenue</div>
+                    <div className="stat-info">
+                        <span className="stat-value">${totalRevenue.toLocaleString()}</span>
+                        <span className="stat-label">Total Revenue</span>
                     </div>
                 </div>
-                <div className="clients-stat-card">
-                    <div className="clients-stat-icon orange">
+                <div className="module-stat-card">
+                    <div className="stat-icon orange">
                         <Icon name="local_mall" />
                     </div>
-                    <div className="clients-stat-info">
-                        <div className="clients-stat-value">{totalOrders}</div>
-                        <div className="clients-stat-label">Total Orders</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{totalOrders}</span>
+                        <span className="stat-label">Total Orders</span>
                     </div>
                 </div>
-                <div className="clients-stat-card">
-                    <div className="clients-stat-icon blue">
+                <div className="module-stat-card">
+                    <div className="stat-icon blue">
                         <Icon name="insights" />
                     </div>
-                    <div className="clients-stat-info">
-                        <div className="clients-stat-value">${Math.round(totalRevenue / totalOrders).toLocaleString()}</div>
-                        <div className="clients-stat-label">Avg. Order Value</div>
+                    <div className="stat-info">
+                        <span className="stat-value">${Math.round(totalRevenue / totalOrders).toLocaleString()}</span>
+                        <span className="stat-label">Avg. Order Value</span>
                     </div>
                 </div>
-                <div className="clients-stat-card">
-                    <div className="clients-stat-icon purple">
+                <div className="module-stat-card">
+                    <div className="stat-icon purple">
                         <Icon name="workspace_premium" />
                     </div>
-                    <div className="clients-stat-info">
-                        <div className="clients-stat-value">{topClients.length}</div>
-                        <div className="clients-stat-label">Top Performers</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{topClients.length}</span>
+                        <span className="stat-label">Top Performers</span>
                     </div>
                 </div>
             </div>
@@ -129,7 +143,7 @@ const TopClientsModule = () => {
                                 </div>
                             </div>
                             <div className="top-client-card-body">
-                                <div className="top-client-avatar">
+                                <div className="top-client-avatar" style={{ background: getAvatarColor(index).bg, color: getAvatarColor(index).text }}>
                                     {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                 </div>
                                 <h3 className="top-client-name">{client.name}</h3>

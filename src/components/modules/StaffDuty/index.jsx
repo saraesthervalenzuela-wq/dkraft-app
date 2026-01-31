@@ -104,42 +104,42 @@ const StaffDutyModule = () => {
                 </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="duty-stats-grid">
-                <div className="duty-stat-card working">
-                    <div className="duty-stat-icon">
+            {/* Stats Cards - Same style as Staff module */}
+            <div className="module-stats-row">
+                <div className="module-stat-card">
+                    <div className="stat-icon green">
                         <Icon name="engineering" />
                     </div>
-                    <div className="duty-stat-info">
-                        <div className="duty-stat-value">{workingCount}</div>
-                        <div className="duty-stat-label">Currently Working</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{workingCount}</span>
+                        <span className="stat-label">Currently Working</span>
                     </div>
                 </div>
-                <div className="duty-stat-card break">
-                    <div className="duty-stat-icon">
+                <div className="module-stat-card">
+                    <div className="stat-icon orange">
                         <Icon name="coffee" />
                     </div>
-                    <div className="duty-stat-info">
-                        <div className="duty-stat-value">{breakCount}</div>
-                        <div className="duty-stat-label">On Break</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{breakCount}</span>
+                        <span className="stat-label">On Break</span>
                     </div>
                 </div>
-                <div className="duty-stat-card offline">
-                    <div className="duty-stat-icon">
+                <div className="module-stat-card">
+                    <div className="stat-icon gray">
                         <Icon name="person_off" />
                     </div>
-                    <div className="duty-stat-info">
-                        <div className="duty-stat-value">{offlineCount}</div>
-                        <div className="duty-stat-label">Offline</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{offlineCount}</span>
+                        <span className="stat-label">Offline</span>
                     </div>
                 </div>
-                <div className="duty-stat-card total">
-                    <div className="duty-stat-icon">
+                <div className="module-stat-card">
+                    <div className="stat-icon blue">
                         <Icon name="groups" />
                     </div>
-                    <div className="duty-stat-info">
-                        <div className="duty-stat-value">{staffList.length}</div>
-                        <div className="duty-stat-label">Total Staff</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{staffList.length}</span>
+                        <span className="stat-label">Total Staff</span>
                     </div>
                 </div>
             </div>

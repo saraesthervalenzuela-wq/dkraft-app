@@ -5,6 +5,20 @@ import { clientsApi } from '../../../services/api';
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
 
+// Avatar colors for variety
+const AVATAR_COLORS = [
+    { bg: '#10b981', text: '#ffffff' }, // Green
+    { bg: '#3b82f6', text: '#ffffff' }, // Blue
+    { bg: '#8b5cf6', text: '#ffffff' }, // Purple
+    { bg: '#f59e0b', text: '#ffffff' }, // Orange
+    { bg: '#ec4899', text: '#ffffff' }, // Pink
+    { bg: '#06b6d4', text: '#ffffff' }, // Cyan
+    { bg: '#ef4444', text: '#ffffff' }, // Red
+    { bg: '#6366f1', text: '#ffffff' }, // Indigo
+];
+
+const getAvatarColor = (index) => AVATAR_COLORS[index % AVATAR_COLORS.length];
+
 /**
  * Initial clients data matching MySQL schema
  * Fields: id, name, email, phone, address, city, state, country, zipCode,
@@ -591,14 +605,15 @@ const ClientsModule = () => {
             ) : viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="clients-cards-grid">
-                    {sortedClients.map((client) => {
+                    {sortedClients.map((client, index) => {
                         const statusStyle = getStatusStyle(client.status);
                         const qbStatus = getQBStatusIcon(client.qbSyncStatus);
+                        const avatarColor = getAvatarColor(index);
 
                         return (
                             <div key={client.id} className="client-card">
                                 <div className="client-card-header">
-                                    <div className="client-avatar">
+                                    <div className="client-avatar" style={{ background: avatarColor.bg, color: avatarColor.text }}>
                                         {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                     </div>
                                     <div className="client-card-badges">

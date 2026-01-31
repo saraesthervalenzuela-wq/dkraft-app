@@ -36,6 +36,30 @@ const initialWarehousesData = [
 ];
 
 /**
+ * Demo inventory data per warehouse
+ */
+const demoInventory = {
+    1: [ // Main Warehouse
+        { id: 1, name: 'MDF 18mm Natural', category: 'Wood', qty: 150, unit: 'sheets', minStock: 50 },
+        { id: 2, name: 'Plywood 3/4"', category: 'Wood', qty: 85, unit: 'sheets', minStock: 30 },
+        { id: 3, name: 'Edge Banding White', category: 'Finishing', qty: 500, unit: 'meters', minStock: 100 },
+        { id: 4, name: 'Hardware Kit A', category: 'Hardware', qty: 45, unit: 'kits', minStock: 20 },
+        { id: 5, name: 'Lacquer White', category: 'Finishing', qty: 25, unit: 'gallons', minStock: 10 },
+        { id: 6, name: 'Hinges Soft-Close', category: 'Hardware', qty: 200, unit: 'pcs', minStock: 50 },
+    ],
+    2: [ // Production Warehouse
+        { id: 7, name: 'Solid Oak Boards', category: 'Wood', qty: 40, unit: 'boards', minStock: 15 },
+        { id: 8, name: 'Drawer Slides 18"', category: 'Hardware', qty: 80, unit: 'pairs', minStock: 30 },
+        { id: 9, name: 'Screws #8 x 1.5"', category: 'Hardware', qty: 2000, unit: 'pcs', minStock: 500 },
+        { id: 10, name: 'Wood Glue', category: 'Finishing', qty: 15, unit: 'gallons', minStock: 5 },
+    ],
+    3: [ // Temporary Warehouse
+        { id: 11, name: 'Melamine White', category: 'Wood', qty: 60, unit: 'sheets', minStock: 20 },
+        { id: 12, name: 'Veneer Walnut', category: 'Wood', qty: 30, unit: 'sheets', minStock: 10 },
+    ],
+};
+
+/**
  * Empty warehouse template matching API schema
  */
 const emptyWarehouse = {

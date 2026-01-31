@@ -2,6 +2,21 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, usersApi, registerToBackend } from '../../../services/api';
 
+// Role colors for avatars and badges
+const ROLE_COLORS = {
+    'ADMIN_DEV': { bg: '#8b5cf6', text: '#ffffff', label: 'Dev Admin' },
+    'ADMIN': { bg: '#3b82f6', text: '#ffffff', label: 'Admin' },
+    'MANAGEMENT': { bg: '#10b981', text: '#ffffff', label: 'Management' },
+    'SALES': { bg: '#f59e0b', text: '#ffffff', label: 'Sales' },
+    'COST': { bg: '#06b6d4', text: '#ffffff', label: 'Cost' },
+    'STORE': { bg: '#ec4899', text: '#ffffff', label: 'Store' },
+    'REQUISITOR': { bg: '#6366f1', text: '#ffffff', label: 'Requisitor' },
+    'USER': { bg: '#64748b', text: '#ffffff', label: 'User' },
+    'VIEWER': { bg: '#94a3b8', text: '#ffffff', label: 'Viewer' },
+};
+
+const getRoleStyle = (role) => ROLE_COLORS[role] || ROLE_COLORS['USER'];
+
 // Demo data for showcase when API is empty
 const demoStaffData = [
     { id: 1, username: 'Carlos Martinez', email: 'carlos.martinez@dkraft.com', role: 'ADMIN_DEV', status: 'active' },
@@ -345,33 +360,44 @@ const StaffModule = () => {
             ) : (
                 <div className="staff-list-container">
                     <div className="staff-cards-grid">
-                        {sortedUsers.map((user) => (
-                            <div key={user.id} className={`staff-card ${selectedUsers.includes(user.id) ? 'selected' : ''}`}>
-                                <div className="staff-card-header">
-                                    <input
-                                        type="checkbox"
-                                        checked={selectedUsers.includes(user.id)}
-                                        onChange={() => handleSelectUser(user.id)}
-                                    />
-                                    <div className="staff-avatar">
-                                        <Icon name="person" />
+                        {sortedUsers.map((user) => {
+                            const roleStyle = getRoleStyle(user.role);
+                            const initials = user.username.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+                            return (
+                                <div key={user.id} className={`staff-card ${selectedUsers.includes(user.id) ? 'selected' : ''}`}>
+                                    <div className="staff-card-header">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedUsers.includes(user.id)}
+                                            onChange={() => handleSelectUser(user.id)}
+                                        />
+                                        <div className="staff-avatar" style={{ background: roleStyle.bg, color: roleStyle.text }}>
+                                            {initials}
+                                        </div>
+                                        <button className="btn-action-edit" onClick={() => handleEditUser(user)}>
+                                            <Icon name="edit" />
+                                        </button>
                                     </div>
-                                    <button className="btn-action-edit" onClick={() => handleEditUser(user)}>
-                                        <Icon name="edit" />
-                                    </button>
-                                </div>
-                                <div className="staff-card-body">
-                                    <h4 className="staff-card-name">{user.username}</h4>
-                                    <span className={`staff-card-role role-${user.role.toLowerCase().replace('_', '-')}`}>
-                                        {user.role}
-                                    </span>
-                                    <div className="staff-card-email">
-                                        <Icon name="mail" />
-                                        <span>{user.email}</span>
+                                    <div className="staff-card-body">
+                                        <h4 className="staff-card-name">{user.username}</h4>
+                                        <span
+                                            className="staff-card-role"
+                                            style={{
+                                                background: `${roleStyle.bg}20`,
+                                                color: roleStyle.bg,
+                                                border: `1px solid ${roleStyle.bg}40`
+                                            }}
+                                        >
+                                            {roleStyle.label}
+                                        </span>
+                                        <div className="staff-card-email">
+                                            <Icon name="mail" />
+                                            <span>{user.email}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         {sortedUsers.length === 0 && (
                             <div className="staff-empty">

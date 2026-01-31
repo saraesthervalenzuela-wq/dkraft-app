@@ -1550,23 +1550,28 @@ button {
     font-family: inherit;
 }
 
-/* Scrollbar Styling */
+/* Scrollbar Styling - White/Light */
 ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--accent-primary);
-    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent-secondary);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
 }
 
 /* ============================================ */
@@ -4069,7 +4074,7 @@ button {
 
 .clients-table-header {
     display: grid;
-    grid-template-columns: 0.7fr 0.9fr 1.2fr 1.8fr 1.1fr 1.3fr 0.9fr 1fr;
+    grid-template-columns: 50px 50px 1.2fr 1fr 1.5fr 1fr 0.8fr 100px 120px;
     padding: 14px 28px;
     background: rgba(0, 51, 179, 0.04);
     font-size: 12px;
@@ -4098,7 +4103,7 @@ button {
 
 .clients-table-row {
     display: grid;
-    grid-template-columns: 0.7fr 0.9fr 1.2fr 1.8fr 1.1fr 1.3fr 0.9fr 1fr;
+    grid-template-columns: 50px 50px 1.2fr 1fr 1.5fr 1fr 0.8fr 100px 120px;
     padding: 16px 28px;
     border-bottom: 1px solid var(--border-subtle);
     align-items: center;
@@ -6107,8 +6112,8 @@ button {
 
 .materials-table-row .col-code {
     font-size: 13px;
-    font-weight: 600;
-    color: var(--accent-secondary);
+    font-weight: 700;
+    color: #60a5fa;
 }
 
 .materials-table-row .col-status-qb {
@@ -6119,26 +6124,41 @@ button {
 
 .materials-table-row .col-material {
     font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.materials-table-row .col-material .material-desc {
+    font-size: 12px;
+    font-weight: 400;
+    color: #94a3b8;
+    margin-top: 2px;
 }
 
 .materials-table-row .col-unit {
     font-size: 13px;
-    color: var(--text-secondary);
+    font-weight: 500;
+    color: #e2e8f0;
 }
 
 .materials-table-row .col-supplier {
     font-size: 13px;
-    color: var(--text-secondary);
+    font-weight: 500;
+    color: #e2e8f0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
+.materials-table-row .col-category {
+    font-size: 13px;
+    font-weight: 500;
+    color: #e2e8f0;
+}
+
 .materials-table-row .col-warehouse {
     font-size: 12px;
-    color: var(--text-muted);
+    color: #cbd5e1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6684,7 +6704,7 @@ button {
     vertical-align: middle;
 }
 
-/* Column widths - Percentage based for 100% table width */
+/* Column widths - Total = 100% */
 .products-table-modern .col-checkbox {
     width: 4%;
     text-align: center;
@@ -6697,6 +6717,7 @@ button {
 
 .products-table-modern .col-name {
     width: 28%;
+    min-width: 180px;
 }
 
 .products-table-modern .col-category {
@@ -6704,27 +6725,28 @@ button {
 }
 
 .products-table-modern .col-cost {
-    width: 11%;
+    width: 12%;
     text-align: right;
 }
 
 .products-table-modern .col-price {
-    width: 11%;
+    width: 12%;
     text-align: right;
 }
 
 .products-table-modern .col-margin {
-    width: 13%;
+    width: 12%;
     text-align: center;
 }
 
 .products-table-modern .col-status {
-    width: 10%;
+    width: 12%;
     text-align: center;
 }
 
 .products-table-modern .col-actions {
-    width: 11%;
+    width: 18%;
+    min-width: 130px;
     text-align: center;
 }
 
@@ -7858,7 +7880,7 @@ button {
 .projects-table-header,
 .projects-table-row {
     display: grid;
-    grid-template-columns: 50px 1fr 2fr 140px 80px;
+    grid-template-columns: 50px 1.5fr 1fr 1.5fr 120px 80px;
     align-items: center;
     padding: 0 20px;
     gap: 16px;
@@ -16595,6 +16617,7 @@ button {
 .stat-icon.cyan { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
 .stat-icon.pink { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
 .stat-icon.indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
+.stat-icon.gray { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
 
 .stat-info {
     display: flex;

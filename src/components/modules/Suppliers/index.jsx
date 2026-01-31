@@ -3,9 +3,25 @@ import { Icon, SearchBox, Modal } from '../../common';
 import { suppliersApi } from '../../../services/api';
 
 /**
+ * Supplier Categories with colors
+ */
+const SUPPLIER_CATEGORIES = [
+    { value: 'WOOD', label: 'Wood / Madera', color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.15)' },
+    { value: 'HARDWARE', label: 'Hardware / Herrajes', color: '#f59e0b', bgColor: 'rgba(245, 158, 11, 0.15)' },
+    { value: 'FINISHING', label: 'Finishing / Acabados', color: '#3b82f6', bgColor: 'rgba(59, 130, 246, 0.15)' },
+    { value: 'PACKAGING', label: 'Packaging / Empaque', color: '#8b5cf6', bgColor: 'rgba(139, 92, 246, 0.15)' },
+    { value: 'OTHER', label: 'Other / Otros', color: '#64748b', bgColor: 'rgba(100, 116, 139, 0.15)' },
+];
+
+const getCategoryStyle = (category) => {
+    const cat = SUPPLIER_CATEGORIES.find(c => c.value === category);
+    return cat || SUPPLIER_CATEGORIES[4]; // Default to OTHER
+};
+
+/**
  * Initial suppliers data matching MySQL schema
  * Fields: id, name, email, phone, address, city, state, country, zipCode,
- *         rfc, contactName, website, status, qbListId, qbSyncStatus, notes
+ *         rfc, contactName, website, status, qbListId, qbSyncStatus, notes, category
  */
 const initialSuppliersData = [
     {
@@ -22,6 +38,7 @@ const initialSuppliersData = [
         contactName: 'John Smith',
         website: 'https://northernwoods.com',
         status: 'ACTIVE',
+        category: 'WOOD',
         qbSyncStatus: 'synced',
         notes: 'Primary wood supplier'
     },
@@ -39,6 +56,7 @@ const initialSuppliersData = [
         contactName: 'Maria Garcia',
         website: 'https://boardsupplier.com',
         status: 'ACTIVE',
+        category: 'WOOD',
         qbSyncStatus: 'synced',
         notes: ''
     },
@@ -56,6 +74,7 @@ const initialSuppliersData = [
         contactName: 'Carlos Rodriguez',
         website: 'https://indhardware.com',
         status: 'ACTIVE',
+        category: 'HARDWARE',
         qbSyncStatus: 'pending',
         notes: 'Hardware and fasteners'
     },
@@ -73,8 +92,45 @@ const initialSuppliersData = [
         contactName: 'Ana Martinez',
         website: 'https://blum.com/mx',
         status: 'ACTIVE',
+        category: 'HARDWARE',
         qbSyncStatus: 'synced',
         notes: 'Premium hinges and slides'
+    },
+    {
+        id: '5',
+        name: 'Lacas y Barnices SA',
+        email: 'ventas@lacasbarnices.mx',
+        phone: '664 555 5566',
+        address: '321 Finish Ave',
+        city: 'Tijuana',
+        state: 'Baja California',
+        country: 'Mexico',
+        zipCode: '22300',
+        rfc: 'LYB654321JKL',
+        contactName: 'Roberto Sanchez',
+        website: 'https://lacasbarnices.mx',
+        status: 'ACTIVE',
+        category: 'FINISHING',
+        qbSyncStatus: 'synced',
+        notes: 'Lacquers and varnishes'
+    },
+    {
+        id: '6',
+        name: 'Empaques del Norte',
+        email: 'info@empaquesnorte.mx',
+        phone: '664 555 6677',
+        address: '555 Packaging Blvd',
+        city: 'Tijuana',
+        state: 'Baja California',
+        country: 'Mexico',
+        zipCode: '22400',
+        rfc: 'EDN789012MNO',
+        contactName: 'Laura Torres',
+        website: 'https://empaquesnorte.mx',
+        status: 'ACTIVE',
+        category: 'PACKAGING',
+        qbSyncStatus: 'pending',
+        notes: 'Cardboard and packaging materials'
     },
 ];
 
@@ -150,10 +206,22 @@ const SuppliersModule = () => {
     };
 
     /**
+     * Guess category from supplier name
+     */
+    const guessCategory = (name) => {
+        const n = (name || '').toLowerCase();
+        if (n.includes('wood') || n.includes('madera') || n.includes('board') || n.includes('mdf') || n.includes('plywood')) return 'WOOD';
+        if (n.includes('hardware') || n.includes('herraje') || n.includes('blum') || n.includes('hinge') || n.includes('slide')) return 'HARDWARE';
+        if (n.includes('lacquer') || n.includes('laca') || n.includes('finish') || n.includes('paint') || n.includes('barniz')) return 'FINISHING';
+        if (n.includes('pack') || n.includes('empaque') || n.includes('box') || n.includes('carton')) return 'PACKAGING';
+        return 'OTHER';
+    };
+
+    /**
      * Normalize supplier data to match MySQL schema
      */
     const normalizeSupplier = (s) => {
-        if (s.contactName !== undefined && s.qbSyncStatus !== undefined) return s;
+        if (s.contactName !== undefined && s.qbSyncStatus !== undefined && s.category) return s;
 
         return {
             id: s.id,
@@ -169,6 +237,7 @@ const SuppliersModule = () => {
             contactName: s.contact || s.contactName || '',
             website: s.website || '',
             status: normalizeStatus(s.status),
+            category: s.category || guessCategory(s.name),
             qbSyncStatus: s.qbSyncStatus || 'pending',
             qbListId: s.qbListId || null,
             notes: s.notes || '',
@@ -477,11 +546,12 @@ const SuppliersModule = () => {
                     {sortedSuppliers.map((supplier) => {
                         const statusStyle = getStatusStyle(supplier.status);
                         const qbStatus = getQBStatusIcon(supplier.qbSyncStatus);
+                        const categoryStyle = getCategoryStyle(supplier.category);
 
                         return (
                             <div key={supplier.id} className="supplier-card">
                                 <div className="supplier-card-header">
-                                    <div className="supplier-avatar">
+                                    <div className="supplier-avatar" style={{ background: categoryStyle.color }}>
                                         {supplier.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                     </div>
                                     <div className="supplier-card-badges">

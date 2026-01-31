@@ -652,45 +652,45 @@ const Requisitions = () => {
             {/* Stats Cards */}
             <div className="module-stats-row">
                 <div className="module-stat-card">
-                    <div className="icon-box icon-box-md icon-box-blue">
+                    <div className="stat-icon blue">
                         <Icon name="receipt_long" />
                     </div>
-                    <div className="module-stat-info">
-                        <span className="module-stat-value">{requisitions.length}</span>
-                        <span className="module-stat-label">Total Orders</span>
+                    <div className="stat-info">
+                        <span className="stat-value">{requisitions.length}</span>
+                        <span className="stat-label">Total</span>
                     </div>
                 </div>
                 <div className="module-stat-card">
-                    <div className="icon-box icon-box-md icon-box-warning">
+                    <div className="stat-icon orange">
                         <Icon name="schedule" />
                     </div>
-                    <div className="module-stat-info">
-                        <span className="module-stat-value">
+                    <div className="stat-info">
+                        <span className="stat-value">
                             {requisitions.filter(r => r.status === 'PENDING_APPROVAL').length}
                         </span>
-                        <span className="module-stat-label">Pending</span>
+                        <span className="stat-label">Pending</span>
                     </div>
                 </div>
                 <div className="module-stat-card">
-                    <div className="icon-box icon-box-md icon-box-success">
+                    <div className="stat-icon green">
                         <Icon name="check_circle" />
                     </div>
-                    <div className="module-stat-info">
-                        <span className="module-stat-value">
+                    <div className="stat-info">
+                        <span className="stat-value">
                             {requisitions.filter(r => r.status === 'APPROVED').length}
                         </span>
-                        <span className="module-stat-label">Approved</span>
+                        <span className="stat-label">Approved</span>
                     </div>
                 </div>
                 <div className="module-stat-card">
-                    <div className="icon-box icon-box-md icon-box-orange">
+                    <div className="stat-icon purple">
                         <Icon name="verified" />
                     </div>
-                    <div className="module-stat-info">
-                        <span className="module-stat-value">
+                    <div className="stat-info">
+                        <span className="stat-value">
                             {requisitions.filter(r => r.status === 'FULFILLED').length}
                         </span>
-                        <span className="module-stat-label">Fulfilled</span>
+                        <span className="stat-label">Fulfilled</span>
                     </div>
                 </div>
             </div>

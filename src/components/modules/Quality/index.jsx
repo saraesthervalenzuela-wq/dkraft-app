@@ -332,59 +332,41 @@ const QualityModule = () => {
 
     // Render Metrics Dashboard
     const renderMetrics = () => (
-        <div className="qa-metrics-grid">
-            <div className="qa-metric-card primary">
-                <div className="metric-icon">
+        <div className="module-stats-row">
+            <div className="module-stat-card">
+                <div className="stat-icon purple">
                     <Icon name="verified" />
                 </div>
-                <div className="metric-content">
-                    <div className="metric-value">{metrics.passRate}%</div>
-                    <div className="metric-label">Pass Rate</div>
+                <div className="stat-info">
+                    <span className="stat-value">{metrics.passRate}%</span>
+                    <span className="stat-label">Pass Rate</span>
                 </div>
             </div>
-            <div className="qa-metric-card success">
-                <div className="metric-icon">
+            <div className="module-stat-card">
+                <div className="stat-icon green">
                     <Icon name="check_circle" />
                 </div>
-                <div className="metric-content">
-                    <div className="metric-value">{metrics.passed}</div>
-                    <div className="metric-label">Passed</div>
+                <div className="stat-info">
+                    <span className="stat-value">{metrics.passed}</span>
+                    <span className="stat-label">Passed</span>
                 </div>
             </div>
-            <div className="qa-metric-card danger">
-                <div className="metric-icon">
+            <div className="module-stat-card">
+                <div className="stat-icon red">
                     <Icon name="cancel" />
                 </div>
-                <div className="metric-content">
-                    <div className="metric-value">{metrics.failed}</div>
-                    <div className="metric-label">Failed</div>
+                <div className="stat-info">
+                    <span className="stat-value">{metrics.failed}</span>
+                    <span className="stat-label">Failed</span>
                 </div>
             </div>
-            <div className="qa-metric-card warning">
-                <div className="metric-icon">
+            <div className="module-stat-card">
+                <div className="stat-icon orange">
                     <Icon name="report_problem" />
                 </div>
-                <div className="metric-content">
-                    <div className="metric-value">{metrics.openFindings}</div>
-                    <div className="metric-label">Open Findings</div>
-                </div>
-            </div>
-            <div className="qa-metric-card info">
-                <div className="metric-icon">
-                    <Icon name="build" />
-                </div>
-                <div className="metric-content">
-                    <div className="metric-value">{metrics.reworkRequired}</div>
-                    <div className="metric-label">Rework Items</div>
-                </div>
-            </div>
-            <div className="qa-metric-card neutral">
-                <div className="metric-icon">
-                    <Icon name="assignment" />
-                </div>
-                <div className="metric-content">
-                    <div className="metric-value">{metrics.total}</div>
-                    <div className="metric-label">Total Inspections</div>
+                <div className="stat-info">
+                    <span className="stat-value">{metrics.openFindings}</span>
+                    <span className="stat-label">Open Findings</span>
                 </div>
             </div>
         </div>
