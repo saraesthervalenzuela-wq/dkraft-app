@@ -25,6 +25,7 @@ import {
     CategoriesModule,
     UnitsModule
 } from './components/modules';
+import SupabaseTest from './components/SupabaseTest';
 import './styles/tailwind.css';
 
 // Loading spinner component - Industrial Theme
@@ -142,6 +143,8 @@ const AppContent = () => {
                 return <CategoriesModule />;
             case 'units':
                 return <UnitsModule />;
+            case 'supabase-test':
+                return <SupabaseTest />;
             case 'dashboard':
             default:
                 return <Dashboard />;

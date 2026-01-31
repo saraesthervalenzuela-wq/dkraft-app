@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(timeout 8 npm run dev:*)"
+      "Bash(timeout 8 npm run dev:*)",
+      "Bash(pbcopy)"
     ]
   }
 }

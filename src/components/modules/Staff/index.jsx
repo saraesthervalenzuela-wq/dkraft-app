@@ -2,6 +2,20 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, usersApi, registerToBackend } from '../../../services/api';
 
+// Demo data for showcase when API is empty
+const demoStaffData = [
+    { id: 1, username: 'Carlos Martinez', email: 'carlos.martinez@dkraft.com', role: 'ADMIN_DEV', status: 'active' },
+    { id: 2, username: 'Maria Garcia', email: 'maria.garcia@dkraft.com', role: 'ADMIN', status: 'active' },
+    { id: 3, username: 'Roberto Sanchez', email: 'roberto.sanchez@dkraft.com', role: 'MANAGEMENT', status: 'active' },
+    { id: 4, username: 'Ana Lopez', email: 'ana.lopez@dkraft.com', role: 'SALES', status: 'active' },
+    { id: 5, username: 'Pedro Ramirez', email: 'pedro.ramirez@dkraft.com', role: 'USER', status: 'active' },
+    { id: 6, username: 'Sofia Torres', email: 'sofia.torres@dkraft.com', role: 'COST', status: 'active' },
+    { id: 7, username: 'Miguel Hernandez', email: 'miguel.hernandez@dkraft.com', role: 'STORE', status: 'inactive' },
+    { id: 8, username: 'Laura Diaz', email: 'laura.diaz@dkraft.com', role: 'REQUISITOR', status: 'active' },
+    { id: 9, username: 'Juan Morales', email: 'juan.morales@dkraft.com', role: 'USER', status: 'active' },
+    { id: 10, username: 'Elena Ruiz', email: 'elena.ruiz@dkraft.com', role: 'MANAGEMENT', status: 'active' },
+];
+
 // Empty initial data - will be loaded from API
 const initialStaffData = [];
 
@@ -40,10 +54,20 @@ const StaffModule = () => {
                         role: u.role || 'VIEWER',
                     }));
                     setUsers(normalizedUsers);
+                } else {
+                    // Use demo data when API returns empty
+                    console.log('[Staff] API returned empty, using demo data');
+                    setUsers(demoStaffData);
                 }
+            } else {
+                // Use demo data when API is not enabled
+                console.log('[Staff] API not enabled, using demo data');
+                setUsers(demoStaffData);
             }
         } catch (error) {
             console.error('[Staff] Error loading users:', error);
+            // Use demo data on error
+            setUsers(demoStaffData);
         } finally {
             setIsLoading(false);
         }

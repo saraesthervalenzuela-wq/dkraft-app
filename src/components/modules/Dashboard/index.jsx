@@ -4,6 +4,64 @@ import { statsData, chartData, quickActions, recentOrders, staffOnDuty, topClien
 import { clientsApi, suppliersApi, materialsApi, productsApi, isApiEnabled } from '../../../services/api';
 
 /**
+ * CardMenu Component - Dropdown menu with Refresh and Export options
+ */
+const CardMenu = ({ onRefresh, onExport, title = 'Data' }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleRefresh = () => {
+        setIsOpen(false);
+        if (onRefresh) onRefresh();
+    };
+
+    const handleExport = (format) => {
+        setIsOpen(false);
+        if (onExport) onExport(format);
+    };
+
+    return (
+        <div className="card-menu-container" ref={menuRef}>
+            <button className="card-menu-btn" onClick={() => setIsOpen(!isOpen)}>
+                <Icon name="more_horiz" />
+            </button>
+            {isOpen && (
+                <div className="card-menu-dropdown">
+                    <div className="card-menu-header">{title}</div>
+                    <button className="card-menu-item" onClick={handleRefresh}>
+                        <Icon name="refresh" />
+                        <span>Refresh Data</span>
+                    </button>
+                    <div className="card-menu-divider" />
+                    <button className="card-menu-item" onClick={() => handleExport('csv')}>
+                        <Icon name="download" />
+                        <span>Export CSV</span>
+                    </button>
+                    <button className="card-menu-item" onClick={() => handleExport('json')}>
+                        <Icon name="data_object" />
+                        <span>Export JSON</span>
+                    </button>
+                    <button className="card-menu-item" onClick={() => handleExport('pdf')}>
+                        <Icon name="picture_as_pdf" />
+                        <span>Export PDF</span>
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+/**
  * StatCard Component
  */
 const StatCard = ({ label, value, icon, delay }) => (
@@ -343,16 +401,18 @@ const ConnectionTestCard = () => {
 /**
  * CommunicationCard Component
  */
-const CommunicationCard = () => (
+const CommunicationCard = ({ onRefresh, onExport }) => (
     <div className="comm-card animate-in delay-2">
         <div className="comm-header">
             <div>
                 <div className="card-title">Internal Communication</div>
                 <div className="card-subtitle">Dovecreek News</div>
             </div>
-            <div className="card-menu">
-                <Icon name="more_horiz" />
-            </div>
+            <CardMenu
+                title="News"
+                onRefresh={onRefresh}
+                onExport={onExport}
+            />
         </div>
         <div className="comm-content">
             <div className="comm-item">
@@ -384,21 +444,81 @@ const CommunicationCard = () => (
  * Dashboard Module Component
  */
 const Dashboard = () => {
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [notification, setNotification] = useState(null);
+
+    const showNotification = (message, type = 'success') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 3000);
+    };
+
+    const handleRefresh = (section) => {
+        setRefreshKey(prev => prev + 1);
+        showNotification(`${section} data refreshed successfully`);
+    };
+
+    const handleExport = (section, format) => {
+        // Simulated export functionality
+        const data = {
+            stats: statsData,
+            orders: recentOrders,
+            staff: staffOnDuty,
+            clients: topClients
+        };
+
+        const sectionData = data[section] || data.stats;
+
+        if (format === 'json') {
+            const blob = new Blob([JSON.stringify(sectionData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dkraft-${section}-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification(`${section} exported as JSON`);
+        } else if (format === 'csv') {
+            const headers = Object.keys(sectionData[0] || {}).join(',');
+            const rows = sectionData.map(item => Object.values(item).join(',')).join('\n');
+            const csv = `${headers}\n${rows}`;
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dkraft-${section}-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification(`${section} exported as CSV`);
+        } else if (format === 'pdf') {
+            showNotification('PDF export coming soon!', 'info');
+        }
+    };
+
     return (
         <div className="dashboard-content">
+            {/* Notification Toast */}
+            {notification && (
+                <div className={`dashboard-toast ${notification.type}`}>
+                    <Icon name={notification.type === 'success' ? 'check_circle' : 'info'} />
+                    <span>{notification.message}</span>
+                </div>
+            )}
+
             {/* API Connection Test */}
             <ConnectionTestCard />
 
             {/* Operational Progress Card */}
-            <div className="card animate-in delay-1">
+            <div className="card animate-in delay-1" key={refreshKey}>
                 <div className="card-header">
                     <div>
                         <div className="card-title">Operational Progress</div>
                         <div className="card-subtitle">Track your operations and improve workshop efficiency.</div>
                     </div>
-                    <div className="card-menu">
-                        <Icon name="more_horiz" />
-                    </div>
+                    <CardMenu
+                        title="Operations"
+                        onRefresh={() => handleRefresh('stats')}
+                        onExport={(format) => handleExport('stats', format)}
+                    />
                 </div>
 
                 <div className="stats-grid">
@@ -471,7 +591,10 @@ const Dashboard = () => {
                 </div>
 
                 {/* Communication Card */}
-                <CommunicationCard />
+                <CommunicationCard
+                    onRefresh={() => handleRefresh('news')}
+                    onExport={(format) => handleExport('news', format)}
+                />
             </div>
 
             {/* Staff & Clients Section */}

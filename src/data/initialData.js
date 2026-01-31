@@ -67,6 +67,7 @@ export const navSections = [
             { id: 'categories', label: 'Categories', icon: 'sell' },
             { id: 'units', label: 'Units', icon: 'square_foot' },
             { id: 'qb-health', label: 'QB Health', icon: 'monitor_heart' },
+            { id: 'supabase-test', label: 'DB Test', icon: 'cable' },
         ]
     }
 ];

@@ -201,13 +201,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Demo mode - bypass authentication for testing
+  // Demo mode - DISABLED IN PRODUCTION
   const loginAsDemo = () => {
+    // Only allow demo mode in development
+    if (import.meta.env.PROD) {
+      console.warn('[Auth] Demo mode disabled in production');
+      setError('Demo mode is disabled in production');
+      return;
+    }
+
     const demoUser = {
       id: 'demo-user',
       email: 'demo@dkraft.com',
       displayName: 'Usuario Demo',
-      role: 'ADMIN'
+      role: 'VIEWER' // Limited role for demo, not ADMIN
     };
     localStorage.setItem(USER_KEY, JSON.stringify(demoUser));
     setUser(demoUser);
