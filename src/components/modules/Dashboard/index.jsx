@@ -37,8 +37,8 @@ const ProductionChart = () => {
             }
 
             const gradient = ctx.createLinearGradient(0, 0, 0, 280);
-            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
-            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+            gradient.addColorStop(0, 'rgba(0, 51, 179, 0.4)');
+            gradient.addColorStop(1, 'rgba(0, 51, 179, 0.0)');
 
             chartInstance.current = new window.Chart(ctx, {
                 type: 'line',
@@ -46,13 +46,13 @@ const ProductionChart = () => {
                     labels: chartData.labels,
                     datasets: [{
                         data: chartData.values,
-                        borderColor: '#8b5cf6',
+                        borderColor: '#ff6b35',
                         borderWidth: 3,
                         backgroundColor: gradient,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#8b5cf6',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: '#ff6b35',
+                        pointBorderColor: '#0033b3',
                         pointBorderWidth: 2,
                         pointRadius: 5,
                         pointHoverRadius: 7,
@@ -64,10 +64,10 @@ const ProductionChart = () => {
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: '#1a1a25',
+                            backgroundColor: '#020817',
                             titleColor: '#f8fafc',
                             bodyColor: '#94a3b8',
-                            borderColor: 'rgba(139, 92, 246, 0.3)',
+                            borderColor: 'rgba(255, 107, 53, 0.5)',
                             borderWidth: 1,
                             padding: 12,
                             displayColors: false,

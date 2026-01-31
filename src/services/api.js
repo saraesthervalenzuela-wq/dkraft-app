@@ -1,13 +1,30 @@
 /* eslint-disable no-unused-vars */
 /**
  * API Service for D-Kraft MRP/ERP
- * Connects to backend at https://dkraft.com.mx/api
- *
- * Response format: { success: boolean, data: any, message: string, error: string }
+ * Supports: Supabase (primary) or REST API (legacy)
  */
 
-// In production (Netlify), use direct backend URL
-// In development, use /api which goes through Vite proxy
+import {
+    clientsService,
+    suppliersService,
+    materialsService,
+    productsService,
+    projectsService,
+    quotationsService,
+    requisitionsService,
+    operationsService,
+    bomService,
+    warehousesService,
+    categoriesService,
+    unitsService,
+    profilesService,
+    attendanceService,
+    activityLogService,
+    db
+} from '../lib/supabase';
+
+// Feature flags
+const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE === 'true';
 const isProduction = import.meta.env.PROD || !window.location.hostname.includes('localhost');
 const API_BASE_URL = isProduction
     ? 'https://api.dkraft.com.mx/api'
@@ -313,7 +330,19 @@ export const checkApiHealth = async () => {
 // ============================================
 // MATERIALS API
 // ============================================
-export const materialsApi = {
+export const materialsApi = USE_SUPABASE ? {
+    getAll: (params = {}) => materialsService.getAll(params),
+    getById: (id) => materialsService.getById(id),
+    create: (data) => materialsService.create(data),
+    update: (id, data) => materialsService.update(id, data),
+    delete: (id) => materialsService.delete(id),
+    getStock: (id) => materialsService.getById(id).then(m => ({ stock: m?.stock || 0 })),
+    updateStock: (id, warehouseId, quantity) => materialsService.updateStock(id, quantity, 'set'),
+    getByCategory: (categoryId) => materialsService.getAll({ category_id: categoryId }),
+    getBySupplier: (supplierId) => materialsService.getAll({ supplier_id: supplierId }),
+    getLowStock: () => materialsService.getLowStock(),
+    search: (term) => materialsService.search(term),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/materials${query ? `?${query}` : ''}`);
@@ -342,7 +371,15 @@ export const materialsApi = {
 // ============================================
 // PRODUCTS API
 // ============================================
-export const productsApi = {
+export const productsApi = USE_SUPABASE ? {
+    getAll: (params = {}) => productsService.getAll(params),
+    getById: (id) => productsService.getById(id),
+    create: (data) => productsService.create(data),
+    update: (id, data) => productsService.update(id, data),
+    delete: (id) => productsService.delete(id),
+    search: (term) => productsService.search(term),
+    syncToQB: (id) => productsService.update(id, { sync_status: 'pending_push' }),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/products${query ? `?${query}` : ''}`);
@@ -383,7 +420,15 @@ export const productMaterialsApi = {
 // ============================================
 // SUPPLIERS API
 // ============================================
-export const suppliersApi = {
+export const suppliersApi = USE_SUPABASE ? {
+    getAll: (params = {}) => suppliersService.getAll(params),
+    getById: (id) => suppliersService.getById(id),
+    create: (data) => suppliersService.create(data),
+    update: (id, data) => suppliersService.update(id, data),
+    delete: (id) => suppliersService.delete(id),
+    search: (term) => suppliersService.search(term),
+    getMaterials: (id) => materialsService.getAll({ supplier_id: id }),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/suppliers${query ? `?${query}` : ''}`);
@@ -404,7 +449,17 @@ export const suppliersApi = {
 // ============================================
 // CLIENTS API
 // ============================================
-export const clientsApi = {
+export const clientsApi = USE_SUPABASE ? {
+    getAll: (params = {}) => clientsService.getAll(params),
+    getById: (id) => clientsService.getById(id),
+    create: (data) => clientsService.create(data),
+    update: (id, data) => clientsService.update(id, data),
+    delete: (id) => clientsService.delete(id),
+    search: (term) => clientsService.search(term),
+    syncToQB: (id) => clientsService.update(id, { sync_status: 'pending_push' }),
+    getQuotations: (id) => quotationsService.getAll({ client_id: id }),
+    getRequisitions: (id) => requisitionsService.getAll({ client_id: id }),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/clients${query ? `?${query}` : ''}`);
@@ -427,7 +482,16 @@ export const clientsApi = {
 // ============================================
 // WAREHOUSES API
 // ============================================
-export const warehousesApi = {
+export const warehousesApi = USE_SUPABASE ? {
+    getAll: () => warehousesService.getAll(),
+    getById: (id) => warehousesService.getById(id),
+    create: (data) => warehousesService.create(data),
+    update: (id, data) => warehousesService.update(id, data),
+    delete: (id) => warehousesService.delete(id),
+    getSections: () => Promise.resolve([]),
+    createSection: () => Promise.resolve(null),
+    getStock: (id) => materialsService.getAll({ warehouse_id: id }),
+} : {
     getAll: () => request('/warehouses'),
     getById: (id) => request(`/warehouses/${id}`),
     create: (data) => request('/warehouses', {
@@ -450,7 +514,13 @@ export const warehousesApi = {
 // ============================================
 // CATEGORIES API
 // ============================================
-export const categoriesApi = {
+export const categoriesApi = USE_SUPABASE ? {
+    getAll: () => categoriesService.getAll(),
+    getById: (id) => categoriesService.getById(id),
+    create: (data) => categoriesService.create(data),
+    update: (id, data) => categoriesService.update(id, data),
+    delete: (id) => categoriesService.delete(id),
+} : {
     getAll: () => request('/categories'),
     getById: (id) => request(`/categories/${id}`),
     create: (data) => request('/categories', {
@@ -467,7 +537,13 @@ export const categoriesApi = {
 // ============================================
 // UNITS API
 // ============================================
-export const unitsApi = {
+export const unitsApi = USE_SUPABASE ? {
+    getAll: () => unitsService.getAll(),
+    getById: (id) => unitsService.getById(id),
+    create: (data) => unitsService.create(data),
+    update: (id, data) => unitsService.update(id, data),
+    delete: (id) => unitsService.delete(id),
+} : {
     getAll: () => request('/units'),
     getById: (id) => request(`/units/${id}`),
     create: (data) => request('/units', {
@@ -484,7 +560,22 @@ export const unitsApi = {
 // ============================================
 // REQUISITIONS API
 // ============================================
-export const requisitionsApi = {
+export const requisitionsApi = USE_SUPABASE ? {
+    getAll: (params = {}) => requisitionsService.getAll(params),
+    getById: (id) => requisitionsService.getById(id),
+    create: (data) => requisitionsService.create(data),
+    update: (id, data) => requisitionsService.update(id, data),
+    delete: (id) => requisitionsService.delete(id),
+    submit: (id) => requisitionsService.submit(id),
+    approve: (id) => requisitionsService.approve(id),
+    reject: (id, reason) => requisitionsService.reject(id, reason),
+    cancel: (id) => requisitionsService.cancel(id),
+    addItem: (id, item) => db.create('requisition_items', { ...item, requisition_id: id }),
+    updateItem: (id, itemId, data) => db.update('requisition_items', itemId, data),
+    removeItem: (id, itemId) => db.delete('requisition_items', itemId),
+    getPending: () => requisitionsService.getAll({ status: 'PENDING_APPROVAL' }),
+    getByRequester: (userId) => requisitionsService.getAll({ requester_id: userId }),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/requisitions${query ? `?${query}` : ''}`);
@@ -499,8 +590,6 @@ export const requisitionsApi = {
         body: JSON.stringify(data)
     }),
     delete: (id) => request(`/requisitions/${id}`, { method: 'DELETE' }),
-
-    // Workflow actions
     submit: (id) => request(`/requisitions/${id}/submit`, { method: 'POST' }),
     approve: (id, notes) => request(`/requisitions/${id}/approve`, {
         method: 'POST',
@@ -511,8 +600,6 @@ export const requisitionsApi = {
         body: JSON.stringify({ reason })
     }),
     cancel: (id) => request(`/requisitions/${id}/cancel`, { method: 'POST' }),
-
-    // Items
     addItem: (id, item) => request(`/requisitions/${id}/items`, {
         method: 'POST',
         body: JSON.stringify(item)
@@ -524,8 +611,6 @@ export const requisitionsApi = {
     removeItem: (id, itemId) => request(`/requisitions/${id}/items/${itemId}`, {
         method: 'DELETE'
     }),
-
-    // Reports
     getPending: () => request('/requisitions?status=PENDING_APPROVAL'),
     getByRequester: (userId) => request(`/requisitions?requesterId=${userId}`),
 };
@@ -533,7 +618,23 @@ export const requisitionsApi = {
 // ============================================
 // QUOTATIONS API
 // ============================================
-export const quotationsApi = {
+export const quotationsApi = USE_SUPABASE ? {
+    getAll: (params = {}) => quotationsService.getAll(params),
+    getById: (id) => quotationsService.getById(id),
+    create: (data) => quotationsService.create(data),
+    update: (id, data) => quotationsService.update(id, data),
+    delete: (id) => quotationsService.delete(id),
+    getWithItems: (id) => quotationsService.getWithItems(id),
+    sendToClient: (id) => quotationsService.update(id, { status: 'Sent' }),
+    approve: (id) => quotationsService.update(id, { status: 'Approved' }),
+    reject: (id, reason) => quotationsService.update(id, { status: 'Rejected', notes: reason }),
+    sendToQB: (id, type = 'ESTIMATE') => quotationsService.update(id, { sync_status: 'pending_push', qb_type: type }),
+    createSalesOrder: (id) => quotationsService.update(id, { status: 'Converted' }),
+    addItem: (id, item) => quotationsService.addItem(id, item),
+    updateItem: (id, itemId, data) => db.update('quotation_items', itemId, data),
+    removeItem: (id, itemId) => db.delete('quotation_items', itemId),
+    recalculateTotals: (id) => quotationsService.recalculateTotals(id),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/quotations${query ? `?${query}` : ''}`);
@@ -548,16 +649,12 @@ export const quotationsApi = {
         body: JSON.stringify(data)
     }),
     delete: (id) => request(`/quotations/${id}`, { method: 'DELETE' }),
-
-    // Workflow
     sendToClient: (id) => request(`/quotations/${id}/send`, { method: 'POST' }),
     approve: (id) => request(`/quotations/${id}/approve`, { method: 'POST' }),
     reject: (id, reason) => request(`/quotations/${id}/reject`, {
         method: 'POST',
         body: JSON.stringify({ reason })
     }),
-
-    // QuickBooks integration
     sendToQB: (id, type = 'ESTIMATE') => request(`/quotations/${id}/send-to-qb`, {
         method: 'POST',
         body: JSON.stringify({ type })
@@ -565,8 +662,6 @@ export const quotationsApi = {
     createSalesOrder: (id) => request(`/quotations/${id}/create-sales-order`, {
         method: 'POST'
     }),
-
-    // Items
     addItem: (id, item) => request(`/quotations/${id}/items`, {
         method: 'POST',
         body: JSON.stringify(item)
@@ -583,7 +678,16 @@ export const quotationsApi = {
 // ============================================
 // PROJECTS API
 // ============================================
-export const projectsApi = {
+export const projectsApi = USE_SUPABASE ? {
+    getAll: (params = {}) => projectsService.getAll(params),
+    getById: (id) => projectsService.getById(id),
+    create: (data) => projectsService.create(data),
+    update: (id, data) => projectsService.update(id, data),
+    delete: (id) => projectsService.delete(id),
+    getWithDetails: (id) => projectsService.getWithDetails(id),
+    getRequisitions: (id) => requisitionsService.getAll({ project_id: id }),
+    getQuotations: (id) => quotationsService.getAll({ project_id: id }),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/projects${query ? `?${query}` : ''}`);
@@ -605,7 +709,20 @@ export const projectsApi = {
 // ============================================
 // BOM (Bill of Materials) API
 // ============================================
-export const bomApi = {
+export const bomApi = USE_SUPABASE ? {
+    getAll: (params = {}) => bomService.getAll(params),
+    getById: (id) => bomService.getById(id),
+    create: (data) => bomService.create(data),
+    update: (id, data) => bomService.update(id, data),
+    delete: (id) => bomService.delete(id),
+    getByProduct: (productId) => bomService.getAll({ product_id: productId }),
+    getWithComponents: (id) => bomService.getWithComponents(id),
+    addComponent: (id, component) => bomService.addComponent(id, component),
+    updateComponent: (id, componentId, data) => db.update('bom_components', componentId, data),
+    removeComponent: (id, componentId) => db.delete('bom_components', componentId),
+    calculateCosts: (id) => bomService.calculateCosts(id),
+    checkStock: () => Promise.resolve({ available: true }),
+} : {
     getAll: (params = {}) => {
         const query = new URLSearchParams(params).toString();
         return request(`/bom${query ? `?${query}` : ''}`);
@@ -621,8 +738,6 @@ export const bomApi = {
     }),
     delete: (id) => request(`/bom/${id}`, { method: 'DELETE' }),
     getByProduct: (productId) => request(`/bom?productId=${productId}`),
-
-    // Components
     addComponent: (id, component) => request(`/bom/${id}/components`, {
         method: 'POST',
         body: JSON.stringify(component)
@@ -634,8 +749,6 @@ export const bomApi = {
     removeComponent: (id, componentId) => request(`/bom/${id}/components/${componentId}`, {
         method: 'DELETE'
     }),
-
-    // Cost calculation
     calculateCosts: (id) => request(`/bom/${id}/calculate-costs`, { method: 'POST' }),
     checkStock: (id, quantity = 1) => request(`/bom/${id}/check-stock?quantity=${quantity}`),
 };

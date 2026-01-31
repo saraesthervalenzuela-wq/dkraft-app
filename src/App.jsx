@@ -27,15 +27,62 @@ import {
 } from './components/modules';
 import './styles/main.css';
 
-// Loading spinner component
+// Loading spinner component - Industrial Theme
 const LoadingScreen = () => (
     <div className="loading-screen">
+        {/* Animated Background Grid */}
+        <div className="loading-grid"></div>
+
         <div className="loading-content">
-            <div className="loading-logo">
-                <span className="logo-icon">D</span>
+            {/* Industrial Machine Animation */}
+            <div className="industrial-loader">
+                {/* Main Gear */}
+                <div className="gear gear-large">
+                    <div className="gear-inner"></div>
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="gear-tooth" style={{ transform: `rotate(${i * 45}deg)` }}></div>
+                    ))}
+                </div>
+
+                {/* Secondary Gear */}
+                <div className="gear gear-medium">
+                    <div className="gear-inner"></div>
+                    {[...Array(6)].map((_, i) => (
+                        <div key={i} className="gear-tooth" style={{ transform: `rotate(${i * 60}deg)` }}></div>
+                    ))}
+                </div>
+
+                {/* Saw Blade */}
+                <div className="saw-blade">
+                    <div className="saw-center"></div>
+                    {[...Array(12)].map((_, i) => (
+                        <div key={i} className="saw-tooth" style={{ transform: `rotate(${i * 30}deg)` }}></div>
+                    ))}
+                </div>
+
+                {/* Sparks */}
+                <div className="sparks">
+                    <div className="spark spark-1"></div>
+                    <div className="spark spark-2"></div>
+                    <div className="spark spark-3"></div>
+                    <div className="spark spark-4"></div>
+                </div>
+
+                {/* Progress Bar (cutting line) */}
+                <div className="cutting-line">
+                    <div className="cutting-progress"></div>
+                </div>
             </div>
-            <div className="loading-spinner"></div>
-            <p>Cargando...</p>
+
+            {/* Branding */}
+            <div className="loading-brand">
+                <h1 className="loading-title">D-KRAFT</h1>
+                <p className="loading-subtitle">Manufacturing Excellence</p>
+                <div className="loading-status">
+                    <span className="status-dot"></span>
+                    <span>Initializing system...</span>
+                </div>
+            </div>
         </div>
     </div>
 );
@@ -102,19 +149,31 @@ const AppContent = () => {
     };
 
     return (
-        <div className="app-container">
-            <Sidebar
-                activeNav={activeNav}
-                setActiveNav={setActiveNav}
-                theme={theme}
-                setTheme={setTheme}
-                user={user}
-                onLogout={logout}
-            />
-            <main className="main-content">
-                {renderContent()}
-            </main>
-        </div>
+        <>
+            {/* Animated Background Shapes */}
+            <div className="floating-shapes">
+                <div className="shape shape-1"></div>
+                <div className="shape shape-2"></div>
+                <div className="shape shape-3"></div>
+                <div className="shape shape-4"></div>
+                <div className="shape shape-5"></div>
+                <div className="shape shape-6"></div>
+            </div>
+
+            <div className="app-container">
+                <Sidebar
+                    activeNav={activeNav}
+                    setActiveNav={setActiveNav}
+                    theme={theme}
+                    setTheme={setTheme}
+                    user={user}
+                    onLogout={logout}
+                />
+                <main className="main-content">
+                    {renderContent()}
+                </main>
+            </div>
+        </>
     );
 };
 

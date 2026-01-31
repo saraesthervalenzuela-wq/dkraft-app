@@ -86,11 +86,22 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
             <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                 <div className="logo-section">
                 <div className="logo-container">
-                    <div className="logo-icon">DC</div>
-                    <div className="logo-text">
-                        <span className="logo-title">DOVECREEK</span>
-                        <span className="logo-subtitle">Lifetime Masterpieces</span>
+                    <div className="logo-icon">
+                        <span className="logo-d">D</span>
+                        <span className="logo-k">K</span>
                     </div>
+                    <div className="logo-text">
+                        <span className="logo-title">D-KRAFT</span>
+                        <span className="logo-subtitle">Resource Assignment & Flow Tracking</span>
+                    </div>
+                </div>
+                <div className="logo-acronym">
+                    <span><b>D</b>ovecreek</span>
+                    <span><b>K</b>nowledge-based</span>
+                    <span><b>R</b>esource</span>
+                    <span><b>A</b>ssignment &</span>
+                    <span><b>F</b>low</span>
+                    <span><b>T</b>racking</span>
                 </div>
             </div>
 
