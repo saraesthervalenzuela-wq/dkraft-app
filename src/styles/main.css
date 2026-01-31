@@ -20283,3 +20283,251 @@ button {
 }
 
 
+
+
+/* ============================================
+   GLOBAL MODULE ANIMATIONS
+   Auto-apply animations to common components
+   ============================================ */
+
+/* Module pages fade in */
+.module-page {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stats row cards animate in with stagger */
+.module-stats-row {
+    display: flex;
+    gap: 20px;
+}
+
+.module-stats-row .module-stat-card {
+    animation: cardSlideIn 0.5s ease-out forwards;
+    opacity: 0;
+}
+
+.module-stats-row .module-stat-card:nth-child(1) { animation-delay: 0.1s; }
+.module-stats-row .module-stat-card:nth-child(2) { animation-delay: 0.15s; }
+.module-stats-row .module-stat-card:nth-child(3) { animation-delay: 0.2s; }
+.module-stats-row .module-stat-card:nth-child(4) { animation-delay: 0.25s; }
+.module-stats-row .module-stat-card:nth-child(5) { animation-delay: 0.3s; }
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Staff cards grid animation */
+.staff-cards-grid .staff-card,
+.duty-staff-grid .duty-staff-card,
+.suppliers-cards-grid .supplier-card,
+.top-clients-cards-grid .top-client-card {
+    animation: cardEntrance 0.4s ease-out forwards;
+    opacity: 0;
+}
+
+/* Stagger card animations */
+.staff-cards-grid .staff-card:nth-child(1),
+.duty-staff-grid .duty-staff-card:nth-child(1),
+.suppliers-cards-grid .supplier-card:nth-child(1),
+.top-clients-cards-grid .top-client-card:nth-child(1) { animation-delay: 0.05s; }
+
+.staff-cards-grid .staff-card:nth-child(2),
+.duty-staff-grid .duty-staff-card:nth-child(2),
+.suppliers-cards-grid .supplier-card:nth-child(2),
+.top-clients-cards-grid .top-client-card:nth-child(2) { animation-delay: 0.1s; }
+
+.staff-cards-grid .staff-card:nth-child(3),
+.duty-staff-grid .duty-staff-card:nth-child(3),
+.suppliers-cards-grid .supplier-card:nth-child(3),
+.top-clients-cards-grid .top-client-card:nth-child(3) { animation-delay: 0.15s; }
+
+.staff-cards-grid .staff-card:nth-child(4),
+.duty-staff-grid .duty-staff-card:nth-child(4),
+.suppliers-cards-grid .supplier-card:nth-child(4),
+.top-clients-cards-grid .top-client-card:nth-child(4) { animation-delay: 0.2s; }
+
+.staff-cards-grid .staff-card:nth-child(5),
+.duty-staff-grid .duty-staff-card:nth-child(5),
+.suppliers-cards-grid .supplier-card:nth-child(5),
+.top-clients-cards-grid .top-client-card:nth-child(5) { animation-delay: 0.25s; }
+
+.staff-cards-grid .staff-card:nth-child(6),
+.duty-staff-grid .duty-staff-card:nth-child(6),
+.suppliers-cards-grid .supplier-card:nth-child(6),
+.top-clients-cards-grid .top-client-card:nth-child(6) { animation-delay: 0.3s; }
+
+.staff-cards-grid .staff-card:nth-child(n+7),
+.duty-staff-grid .duty-staff-card:nth-child(n+7),
+.suppliers-cards-grid .supplier-card:nth-child(n+7),
+.top-clients-cards-grid .top-client-card:nth-child(n+7) { animation-delay: 0.35s; }
+
+@keyframes cardEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Table rows animation */
+.materials-table-body .materials-table-row,
+.products-table-modern tbody tr,
+.clients-table-body .clients-table-row,
+.projects-table-body .project-row {
+    animation: rowSlideIn 0.3s ease-out forwards;
+    opacity: 0;
+}
+
+.materials-table-body .materials-table-row:nth-child(1),
+.products-table-modern tbody tr:nth-child(1),
+.clients-table-body .clients-table-row:nth-child(1),
+.projects-table-body .project-row:nth-child(1) { animation-delay: 0.05s; }
+
+.materials-table-body .materials-table-row:nth-child(2),
+.products-table-modern tbody tr:nth-child(2),
+.clients-table-body .clients-table-row:nth-child(2),
+.projects-table-body .project-row:nth-child(2) { animation-delay: 0.08s; }
+
+.materials-table-body .materials-table-row:nth-child(3),
+.products-table-modern tbody tr:nth-child(3),
+.clients-table-body .clients-table-row:nth-child(3),
+.projects-table-body .project-row:nth-child(3) { animation-delay: 0.11s; }
+
+.materials-table-body .materials-table-row:nth-child(4),
+.products-table-modern tbody tr:nth-child(4),
+.clients-table-body .clients-table-row:nth-child(4),
+.projects-table-body .project-row:nth-child(4) { animation-delay: 0.14s; }
+
+.materials-table-body .materials-table-row:nth-child(5),
+.products-table-modern tbody tr:nth-child(5),
+.clients-table-body .clients-table-row:nth-child(5),
+.projects-table-body .project-row:nth-child(5) { animation-delay: 0.17s; }
+
+.materials-table-body .materials-table-row:nth-child(n+6),
+.products-table-modern tbody tr:nth-child(n+6),
+.clients-table-body .clients-table-row:nth-child(n+6),
+.projects-table-body .project-row:nth-child(n+6) { animation-delay: 0.2s; }
+
+@keyframes rowSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Page header animation */
+.page-header {
+    animation: headerSlideDown 0.5s ease-out;
+}
+
+@keyframes headerSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Toolbar animation */
+.module-toolbar,
+.staff-toolbar,
+.duty-toolbar,
+.top-clients-toolbar,
+.suppliers-toolbar,
+.materials-toolbar,
+.products-toolbar,
+.clients-toolbar {
+    animation: toolbarFadeIn 0.4s ease-out 0.2s forwards;
+    opacity: 0;
+}
+
+@keyframes toolbarFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Card hover micro-interactions */
+.module-stat-card,
+.staff-card,
+.duty-staff-card,
+.supplier-card,
+.top-client-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.module-stat-card:hover,
+.staff-card:hover,
+.duty-staff-card:hover,
+.supplier-card:hover,
+.top-client-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 0 20px rgba(255, 107, 53, 0.1);
+}
+
+/* Stat icon pulse on hover */
+.module-stat-card:hover .stat-icon {
+    animation: iconPulse 0.6s ease;
+}
+
+@keyframes iconPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .module-page,
+    .module-stat-card,
+    .staff-card,
+    .duty-staff-card,
+    .supplier-card,
+    .top-client-card,
+    .materials-table-row,
+    .clients-table-row,
+    .project-row,
+    .page-header,
+    .module-toolbar,
+    .staff-toolbar,
+    .duty-toolbar {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
+

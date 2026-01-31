@@ -147,7 +147,7 @@ const AppContent = () => {
                 return <SupabaseTest />;
             case 'dashboard':
             default:
-                return <Dashboard />;
+                return <Dashboard onNavigate={setActiveNav} />;
         }
     };
 

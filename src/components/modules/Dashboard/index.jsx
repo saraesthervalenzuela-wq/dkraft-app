@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Icon } from '../../common';
 import { statsData, chartData, quickActions, recentOrders, staffOnDuty, topClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
 import { clientsApi, suppliersApi, materialsApi, productsApi, isApiEnabled } from '../../../services/api';
@@ -465,23 +464,29 @@ const CommunicationCard = ({ onRefresh, onExport }) => (
 /**
  * Dashboard Module Component
  */
-const Dashboard = () => {
-    const navigate = useNavigate();
+const Dashboard = ({ onNavigate }) => {
     const [refreshKey, setRefreshKey] = useState(0);
     const [notification, setNotification] = useState(null);
 
-    // Map stats to navigation routes
+    // Map stats to navigation keys (matches activeNav values)
     const statRoutes = {
-        'Orders Produced': '/operations',
-        'Products Delivered': '/products',
-        'Materials Cadence': '/materials',
+        'Orders Produced': 'operations',
+        'Products Delivered': 'products',
+        'Materials Cadence': 'materials',
     };
 
-    // Map quick actions to navigation routes
+    // Map quick actions to navigation keys
     const actionRoutes = {
-        'Register Product': '/products',
-        'New Order': '/quotations',
-        'Assign Staff': '/staff-duty',
+        'Register Product': 'products',
+        'New Order': 'quotations',
+        'Assign Staff': 'staff-duty',
+    };
+
+    // Navigation handler
+    const handleNavigate = (navKey) => {
+        if (onNavigate) {
+            onNavigate(navKey);
+        }
     };
 
     const showNotification = (message, type = 'success') => {
@@ -566,7 +571,7 @@ const Dashboard = () => {
                             value={stat.value}
                             icon={stat.icon}
                             delay={index + 1}
-                            onClick={() => navigate(statRoutes[stat.label] || '/')}
+                            onClick={() => handleNavigate(statRoutes[stat.label] || 'dashboard')}
                         />
                     ))}
                 </div>
@@ -589,7 +594,7 @@ const Dashboard = () => {
                         title={action.title}
                         desc={action.desc}
                         progress={action.progress}
-                        onClick={() => navigate(actionRoutes[action.title] || '/')}
+                        onClick={() => handleNavigate(actionRoutes[action.title] || 'dashboard')}
                     />
                 ))}
             </div>
@@ -603,7 +608,7 @@ const Dashboard = () => {
                             <div className="card-title">Recent Orders</div>
                             <div className="card-subtitle">Latest project orders and their status</div>
                         </div>
-                        <button className="btn-secondary" onClick={() => navigate('/operations')}>
+                        <button className="btn-secondary" onClick={() => handleNavigate('operations')}>
                             View All <Icon name="arrow_forward" />
                         </button>
                     </div>
@@ -638,8 +643,8 @@ const Dashboard = () => {
 
             {/* Staff & Clients Section */}
             <div className="dashboard-staff-clients-grid">
-                <StaffOnDutyCard onViewAll={() => navigate('/staff-duty')} />
-                <TopClientsCard onViewAll={() => navigate('/top-clients')} />
+                <StaffOnDutyCard onViewAll={() => handleNavigate('staff-duty')} />
+                <TopClientsCard onViewAll={() => handleNavigate('top-clients')} />
             </div>
         </div>
     );
