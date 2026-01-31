@@ -44,7 +44,7 @@
 }
 
 .operations-page .header-text h1 {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-display);
     font-size: 32px;
     font-weight: 700;
     color: var(--text-primary);
@@ -98,12 +98,15 @@
     align-items: center;
     gap: 20px;
     padding: 24px 28px;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-subtle);
+    background: linear-gradient(145deg,
+        rgba(30, 55, 110, 0.45) 0%,
+        rgba(20, 45, 90, 0.4) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 20px;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(12px);
 }
 
 .operations-page .module-stat-card::before {
@@ -185,7 +188,7 @@
 }
 
 .operations-page .stat-value {
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-display);
     font-size: 36px;
     font-weight: 700;
     color: var(--text-primary);
@@ -214,14 +217,17 @@
     display: flex;
     flex-direction: column;
     padding: 24px;
-    background: var(--bg-secondary);
-    border: 2px solid var(--border-subtle);
+    background: linear-gradient(145deg,
+        rgba(25, 50, 100, 0.4) 0%,
+        rgba(18, 40, 85, 0.35) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
     min-height: 170px;
+    backdrop-filter: blur(10px);
 }
 
 .operations-page .operations-tab-card::before {
@@ -264,20 +270,32 @@
 }
 
 .operations-page .operations-tab-card.active.cyan {
-    border-color: rgba(6, 182, 212, 0.5);
-    box-shadow: 0 12px 40px rgba(6, 182, 212, 0.25);
+    border-color: rgba(6, 182, 212, 0.6);
+    box-shadow: 0 12px 40px rgba(6, 182, 212, 0.3);
+    background: linear-gradient(145deg,
+        rgba(6, 182, 212, 0.15) 0%,
+        rgba(8, 145, 178, 0.1) 100%);
 }
 .operations-page .operations-tab-card.active.blue {
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.6);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.3);
+    background: linear-gradient(145deg,
+        rgba(59, 130, 246, 0.15) 0%,
+        rgba(37, 99, 235, 0.1) 100%);
 }
 .operations-page .operations-tab-card.active.orange {
-    border-color: rgba(245, 158, 11, 0.5);
-    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.25);
+    border-color: rgba(245, 158, 11, 0.6);
+    box-shadow: 0 12px 40px rgba(245, 158, 11, 0.3);
+    background: linear-gradient(145deg,
+        rgba(245, 158, 11, 0.15) 0%,
+        rgba(217, 119, 6, 0.1) 100%);
 }
 .operations-page .operations-tab-card.active.green {
-    border-color: rgba(16, 185, 129, 0.5);
-    box-shadow: 0 12px 40px rgba(16, 185, 129, 0.25);
+    border-color: rgba(16, 185, 129, 0.6);
+    box-shadow: 0 12px 40px rgba(16, 185, 129, 0.3);
+    background: linear-gradient(145deg,
+        rgba(16, 185, 129, 0.15) 0%,
+        rgba(5, 150, 105, 0.1) 100%);
 }
 
 .operations-page .operations-tab-top {
@@ -475,17 +493,25 @@
 }
 
 .operations-page .operation-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-subtle);
+    background: linear-gradient(145deg,
+        rgba(30, 50, 100, 0.5) 0%,
+        rgba(20, 40, 85, 0.45) 50%,
+        rgba(15, 35, 75, 0.5) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.15);
     border-radius: 20px;
     overflow: hidden;
     transition: all 0.3s ease;
+    backdrop-filter: blur(12px);
 }
 
 .operations-page .operation-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
-    border-color: rgba(139, 92, 246, 0.3);
+    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.4);
+    background: linear-gradient(145deg,
+        rgba(40, 60, 120, 0.55) 0%,
+        rgba(30, 50, 100, 0.5) 50%,
+        rgba(25, 45, 90, 0.55) 100%);
 }
 
 .operations-page .operation-card-header {
@@ -553,7 +579,7 @@
     font-weight: 700;
     color: #a78bfa;
     margin: 0 0 4px 0;
-    font-family: 'Space Grotesk', sans-serif;
+    font-family: var(--font-display);
 }
 
 .operations-page .operation-card-project {
@@ -608,16 +634,18 @@
 
 .operations-page .progress-bar {
     height: 8px;
-    background: var(--bg-tertiary);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 4px;
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .operations-page .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #8b5cf6, #a855f7);
+    background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc);
     border-radius: 4px;
     transition: width 0.3s ease;
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
 }
 
 .operations-page .operation-card-details {
@@ -703,11 +731,14 @@
    TABLE VIEW
    ================================ */
 .operations-page .operations-table-container {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-subtle);
+    background: linear-gradient(145deg,
+        rgba(30, 50, 100, 0.45) 0%,
+        rgba(20, 40, 85, 0.4) 100%);
+    border: 1px solid rgba(139, 92, 246, 0.15);
     border-radius: 20px;
     overflow: hidden;
     margin-bottom: 24px;
+    backdrop-filter: blur(12px);
 }
 
 .operations-page .operations-table {
@@ -807,6 +838,349 @@
     text-align: right;
     font-size: 14px;
     color: var(--text-muted);
+}
+
+/* ================================
+   PRODUCTION PIPELINE - ENHANCED
+   ================================ */
+.operations-page .stage-pipeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 12px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 16px;
+    margin-bottom: 24px;
+}
+
+.operations-page .stage-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.operations-page .stage-node::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0.7;
+}
+
+.operations-page .stage-node:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.operations-page .stage-node.selected {
+    border-color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.15);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.operations-page .stage-node .nav-icon,
+.operations-page .stage-node .material-symbols-rounded {
+    font-size: 28px;
+    transition: transform 0.3s ease;
+}
+
+.operations-page .stage-node:hover .nav-icon,
+.operations-page .stage-node:hover .material-symbols-rounded {
+    transform: scale(1.15);
+}
+
+.operations-page .stage-node .stage-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+    color: var(--text-primary);
+}
+
+.operations-page .stage-node .stage-status-text {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+/* Stage Status Colors */
+.operations-page .stage-node.stage-pending {
+    background: linear-gradient(145deg, rgba(251, 191, 36, 0.08), rgba(245, 158, 11, 0.05));
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.operations-page .stage-node.stage-pending::before {
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+}
+
+.operations-page .stage-node.stage-pending .nav-icon,
+.operations-page .stage-node.stage-pending .material-symbols-rounded {
+    color: #fbbf24;
+}
+
+.operations-page .stage-node.stage-pending .stage-status-text {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fcd34d;
+}
+
+.operations-page .stage-node.stage-in-progress {
+    background: linear-gradient(145deg, rgba(59, 130, 246, 0.12), rgba(37, 99, 235, 0.08));
+    border-color: rgba(59, 130, 246, 0.4);
+}
+
+.operations-page .stage-node.stage-in-progress::before {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.operations-page .stage-node.stage-in-progress .nav-icon,
+.operations-page .stage-node.stage-in-progress .material-symbols-rounded {
+    color: #60a5fa;
+}
+
+.operations-page .stage-node.stage-in-progress .stage-status-text {
+    background: rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+}
+
+.operations-page .stage-node.stage-completed {
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.08));
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.operations-page .stage-node.stage-completed::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.operations-page .stage-node.stage-completed .nav-icon,
+.operations-page .stage-node.stage-completed .material-symbols-rounded {
+    color: #34d399;
+}
+
+.operations-page .stage-node.stage-completed .stage-status-text {
+    background: rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+}
+
+.operations-page .stage-node.stage-skipped {
+    background: linear-gradient(145deg, rgba(107, 114, 128, 0.08), rgba(75, 85, 99, 0.05));
+    border-color: rgba(107, 114, 128, 0.3);
+    opacity: 0.6;
+}
+
+.operations-page .stage-node.stage-skipped::before {
+    background: linear-gradient(90deg, #6b7280, #4b5563);
+}
+
+.operations-page .stage-node.stage-skipped .nav-icon,
+.operations-page .stage-node.stage-skipped .material-symbols-rounded {
+    color: #9ca3af;
+}
+
+.operations-page .stage-node.stage-skipped .stage-status-text {
+    background: rgba(107, 114, 128, 0.2);
+    color: #d1d5db;
+}
+
+/* Stage Type Specific Colors (when not selected) */
+.operations-page .stage-node[data-stage="roughMill"] .nav-icon { color: #f97316 !important; }
+.operations-page .stage-node[data-stage="fineMill"] .nav-icon { color: #fb923c !important; }
+.operations-page .stage-node[data-stage="metal"] .nav-icon { color: #64748b !important; }
+.operations-page .stage-node[data-stage="assembly"] .nav-icon { color: #8b5cf6 !important; }
+.operations-page .stage-node[data-stage="preHanging"] .nav-icon { color: #06b6d4 !important; }
+.operations-page .stage-node[data-stage="sanding"] .nav-icon { color: #eab308 !important; }
+.operations-page .stage-node[data-stage="glazing"] .nav-icon { color: #22d3ee !important; }
+.operations-page .stage-node[data-stage="filling"] .nav-icon { color: #a855f7 !important; }
+.operations-page .stage-node[data-stage="painting"] .nav-icon { color: #ec4899 !important; }
+.operations-page .stage-node[data-stage="qc"] .nav-icon { color: #10b981 !important; }
+.operations-page .stage-node[data-stage="shipping"] .nav-icon { color: #3b82f6 !important; }
+
+/* Stage Editor */
+.operations-page .stage-editor {
+    background: rgba(139, 92, 246, 0.08);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 16px;
+}
+
+.operations-page .stage-hint {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+/* Materials Tab Enhancements */
+.operations-page .materials-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.operations-page .btn-add-material {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.operations-page .btn-add-material:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+}
+
+.operations-page .materials-table-mini {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.operations-page .materials-table-mini-header {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 80px 60px;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(139, 92, 246, 0.1);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #a78bfa;
+    letter-spacing: 0.5px;
+}
+
+.operations-page .materials-table-mini-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 80px 60px;
+    gap: 12px;
+    padding: 12px 16px;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.operations-page .materials-table-mini-row:last-child {
+    border-bottom: none;
+}
+
+.operations-page .materials-table-mini-row select,
+.operations-page .materials-table-mini-row input {
+    width: 100%;
+    padding: 8px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 13px;
+}
+
+.operations-page .btn-remove-material {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.operations-page .btn-remove-material:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+
+.operations-page .materials-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.operations-page .materials-empty-state .nav-icon {
+    font-size: 48px;
+    opacity: 0.3;
+    margin-bottom: 12px;
+}
+
+/* Team Tab */
+.operations-page .team-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.operations-page .team-stage-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+}
+
+.operations-page .team-stage-name {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    min-width: 150px;
+    color: #a78bfa;
+}
+
+.operations-page .team-stage-members {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.operations-page .team-member-badge {
+    padding: 6px 12px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.operations-page .team-empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.operations-page .team-empty-state .nav-icon {
+    font-size: 48px;
+    opacity: 0.3;
+    margin-bottom: 12px;
+}
+
+.operations-page .team-empty-state .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 8px;
 }
 
 /* ================================

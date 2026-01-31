@@ -2,35 +2,11 @@
  * Sales Orders Module (Requisitions)
  * Manages sales orders in MRP flow - converted from approved quotations
  * Uses localStorage for offline functionality
+ * Updated with Tailwind CSS and Material Symbols
  */
 
 import { useState, useEffect } from 'react';
-import {
-    FaClipboardList,
-    FaPlus,
-    FaEdit,
-    FaTrash,
-    FaEye,
-    FaCheck,
-    FaTimes,
-    FaSearch,
-    FaFilter,
-    FaTh,
-    FaList,
-    FaChevronDown,
-    FaChevronRight,
-    FaBoxOpen,
-    FaUserCheck,
-    FaWarehouse,
-    FaCalendarAlt,
-    FaSpinner,
-    FaExclamationTriangle,
-    FaCheckCircle,
-    FaClock,
-    FaShoppingCart,
-    FaTruck,
-} from 'react-icons/fa';
-import Card from '../../common/Card';
+import { Icon, SearchBox, Card } from '../../common';
 import Modal from '../../common/Modal';
 import { isApiEnabled, clientsApi, warehousesApi, projectsApi } from '../../../services/api';
 import './styles.css';
@@ -40,25 +16,25 @@ const STORAGE_KEY = 'dkraft_sales_orders';
 const QUOTATIONS_KEY = 'dkraft_quotations';
 
 /**
- * Status configuration with colors and icons
+ * Status configuration with colors and Material Symbol icons
  */
 const STATUS_CONFIG = {
-    DRAFT: { label: 'Draft', color: '#6c757d', icon: FaEdit },
-    PENDING_APPROVAL: { label: 'Pending Approval', color: '#ffc107', icon: FaClock },
-    APPROVED: { label: 'Approved', color: '#28a745', icon: FaCheckCircle },
-    REJECTED: { label: 'Rejected', color: '#dc3545', icon: FaTimes },
-    ORDERED: { label: 'Ordered', color: '#17a2b8', icon: FaShoppingCart },
-    PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', color: '#fd7e14', icon: FaTruck },
-    FULFILLED: { label: 'Fulfilled', color: '#20c997', icon: FaCheck },
-    CANCELLED: { label: 'Cancelled', color: '#6c757d', icon: FaTimes },
+    DRAFT: { label: 'Draft', color: 'neutral', icon: 'edit_note' },
+    PENDING_APPROVAL: { label: 'Pending Approval', color: 'warning', icon: 'schedule' },
+    APPROVED: { label: 'Approved', color: 'success', icon: 'check_circle' },
+    REJECTED: { label: 'Rejected', color: 'danger', icon: 'cancel' },
+    ORDERED: { label: 'Ordered', color: 'info', icon: 'shopping_cart' },
+    PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', color: 'orange', icon: 'local_shipping' },
+    FULFILLED: { label: 'Fulfilled', color: 'success', icon: 'verified' },
+    CANCELLED: { label: 'Cancelled', color: 'neutral', icon: 'block' },
 };
 
 const ITEM_STATUS_CONFIG = {
-    REQUESTED: { label: 'Requested', color: '#ffc107' },
-    ORDERED: { label: 'Ordered', color: '#17a2b8' },
-    PARTIALLY_RECEIVED: { label: 'Partially Received', color: '#fd7e14' },
-    RECEIVED: { label: 'Received', color: '#28a745' },
-    CANCELLED: { label: 'Cancelled', color: '#6c757d' },
+    REQUESTED: { label: 'Requested', color: 'warning' },
+    ORDERED: { label: 'Ordered', color: 'info' },
+    PARTIALLY_RECEIVED: { label: 'Partially Received', color: 'orange' },
+    RECEIVED: { label: 'Received', color: 'success' },
+    CANCELLED: { label: 'Cancelled', color: 'neutral' },
 };
 
 /**
@@ -148,14 +124,70 @@ const emptyItem = {
     subtotal: 0,
 };
 
+// Demo data for showcase
+const demoRequisitions = [
+    {
+        id: 'REQ-001',
+        folio: 'SO-2025-001',
+        requesterName: 'Carlos Mendoza',
+        status: 'APPROVED',
+        warehouseName: 'Main Warehouse',
+        projectName: 'ABC Corporate Office',
+        requiredAt: '2025-02-15',
+        items: [
+            { id: 1, materialName: 'MDF 18mm Natural', quantity: 50, unitPrice: 45, subtotal: 2250 },
+            { id: 2, materialName: 'Hardware Kit A', quantity: 10, unitPrice: 120, subtotal: 1200 },
+        ]
+    },
+    {
+        id: 'REQ-002',
+        folio: 'SO-2025-002',
+        requesterName: 'Maria Garcia',
+        status: 'PENDING_APPROVAL',
+        warehouseName: 'Production Warehouse',
+        projectName: 'Pine Grove Residential',
+        requiredAt: '2025-02-20',
+        items: [
+            { id: 1, materialName: 'Plywood 3/4"', quantity: 30, unitPrice: 85, subtotal: 2550 },
+        ]
+    },
+    {
+        id: 'REQ-003',
+        folio: 'SO-2025-003',
+        requesterName: 'Roberto Sanchez',
+        status: 'FULFILLED',
+        warehouseName: 'Main Warehouse',
+        projectName: 'Tech Office Renovation',
+        requiredAt: '2025-01-30',
+        items: [
+            { id: 1, materialName: 'Lacquer White', quantity: 20, unitPrice: 65, subtotal: 1300 },
+            { id: 2, materialName: 'Edge Banding', quantity: 100, unitPrice: 3, subtotal: 300 },
+        ]
+    },
+    {
+        id: 'REQ-004',
+        folio: 'SO-2025-004',
+        requesterName: 'Ana Lopez',
+        status: 'ORDERED',
+        warehouseName: 'Production Warehouse',
+        projectName: 'Downtown Restaurant',
+        requiredAt: '2025-02-25',
+        items: [
+            { id: 1, materialName: 'Solid Oak Boards', quantity: 25, unitPrice: 150, subtotal: 3750 },
+        ]
+    },
+];
+
 const Requisitions = () => {
     // LocalStorage functions
     const loadFromStorage = () => {
         try {
             const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? JSON.parse(saved) : [];
+            const data = saved ? JSON.parse(saved) : [];
+            // Return demo data if empty
+            return data.length > 0 ? data : demoRequisitions;
         } catch {
-            return [];
+            return demoRequisitions;
         }
     };
 
@@ -511,29 +543,22 @@ const Requisitions = () => {
         return Math.round((received / items.length) * 100);
     };
 
-    // Render status badge
+    // Render status badge with Tailwind classes
     const renderStatusBadge = (status) => {
         const config = STATUS_CONFIG[status] || STATUS_CONFIG.DRAFT;
-        const Icon = config.icon;
         return (
-            <span
-                className="status-badge"
-                style={{ backgroundColor: config.color }}
-            >
-                <Icon size={12} />
+            <span className={`badge badge-${config.color}`}>
+                <Icon name={config.icon} style={{ fontSize: '14px' }} />
                 {config.label}
             </span>
         );
     };
 
-    // Render item status badge
+    // Render item status badge with Tailwind classes
     const renderItemStatusBadge = (status) => {
         const config = ITEM_STATUS_CONFIG[status] || ITEM_STATUS_CONFIG.REQUESTED;
         return (
-            <span
-                className="item-status-badge"
-                style={{ backgroundColor: config.color }}
-            >
+            <span className={`badge badge-${config.color}`}>
                 {config.label}
             </span>
         );
@@ -542,10 +567,10 @@ const Requisitions = () => {
     // Render loading state
     if (loading && requisitions.length === 0) {
         return (
-            <div className="module-container requisitions-module">
-                <div className="loading-state">
-                    <FaSpinner className="spinner" />
-                    <p>Loading requisitions...</p>
+            <div className="module-page requisitions-module">
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <Icon name="sync" className="animate-spin text-4xl text-accent-primary" />
+                    <p className="text-text-muted">Loading sales orders...</p>
                 </div>
             </div>
         );
@@ -554,113 +579,120 @@ const Requisitions = () => {
     // Render error state
     if (error) {
         return (
-            <div className="module-container requisitions-module">
-                <div className="error-state">
-                    <FaExclamationTriangle />
-                    <p>Error al cargar requisitions: {error}</p>
-                    <button onClick={fetchAll}>Reintentar</button>
+            <div className="module-page requisitions-module">
+                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                    <div className="icon-box icon-box-lg icon-box-danger">
+                        <Icon name="error" />
+                    </div>
+                    <p className="text-text-primary">Error loading sales orders: {error}</p>
+                    <button className="btn btn-primary" onClick={loadData}>Retry</button>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="module-container requisitions-module">
+        <div className="module-page requisitions-module">
             {/* Header */}
-            <div className="module-header">
-                <div className="header-title">
-                    <FaShoppingCart className="module-icon" />
-                    <h1>Sales Orders</h1>
-                    <span className="local-badge">Local</span>
+            <div className="page-header">
+                <div className="header-content">
+                    <div className="header-icon orange">
+                        <Icon name="shopping_cart" />
+                    </div>
+                    <div className="header-text">
+                        <h1>Sales Orders</h1>
+                        <p>Manage sales orders converted from approved quotations</p>
+                    </div>
                 </div>
-                <button className="btn-primary" onClick={() => handleOpenModal()}>
-                    <FaPlus /> New Order
+                <button className="btn btn-orange" onClick={() => handleOpenModal()}>
+                    <Icon name="add" /> New Order
                 </button>
             </div>
 
             {/* Filters and Search */}
-            <div className="module-filters">
-                <div className="search-box">
-                    <FaSearch />
-                    <input
-                        type="text"
-                        placeholder="Search by folio, requester, warehouse..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            <div className="module-toolbar">
+                <SearchBox
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    placeholder="Search by folio, client, warehouse..."
+                />
+                <div className="toolbar-filters">
+                    <div className="filter-select">
+                        <Icon name="filter_list" />
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="form-input form-select py-2"
+                        >
+                            <option value="ALL">All statuses</option>
+                            {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+                                <option key={key} value={key}>{config.label}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
-                <div className="filter-group">
-                    <FaFilter />
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                    >
-                        <option value="ALL">All statuses</option>
-                        {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-                            <option key={key} value={key}>{config.label}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="view-toggle">
+                <div className="view-toggle-buttons">
                     <button
-                        className={viewMode === 'table' ? 'active' : ''}
+                        className={`view-toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
                         onClick={() => setViewMode('table')}
+                        title="Table view"
                     >
-                        <FaList />
+                        <Icon name="view_list" />
                     </button>
                     <button
-                        className={viewMode === 'grid' ? 'active' : ''}
+                        className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
                         onClick={() => setViewMode('grid')}
+                        title="Grid view"
                     >
-                        <FaTh />
+                        <Icon name="grid_view" />
                     </button>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="stats-row">
-                <Card className="stat-card">
-                    <div className="stat-content">
-                        <FaClipboardList className="stat-icon" />
-                        <div>
-                            <span className="stat-value">{requisitions.length}</span>
-                            <span className="stat-label">Total</span>
-                        </div>
+            <div className="module-stats-row">
+                <div className="module-stat-card">
+                    <div className="icon-box icon-box-md icon-box-blue">
+                        <Icon name="receipt_long" />
                     </div>
-                </Card>
-                <Card className="stat-card pending">
-                    <div className="stat-content">
-                        <FaClock className="stat-icon" />
-                        <div>
-                            <span className="stat-value">
-                                {requisitions.filter(r => r.status === 'PENDING_APPROVAL').length}
-                            </span>
-                            <span className="stat-label">Pending</span>
-                        </div>
+                    <div className="module-stat-info">
+                        <span className="module-stat-value">{requisitions.length}</span>
+                        <span className="module-stat-label">Total Orders</span>
                     </div>
-                </Card>
-                <Card className="stat-card approved">
-                    <div className="stat-content">
-                        <FaCheckCircle className="stat-icon" />
-                        <div>
-                            <span className="stat-value">
-                                {requisitions.filter(r => r.status === 'APPROVED').length}
-                            </span>
-                            <span className="stat-label">Approved</span>
-                        </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="icon-box icon-box-md icon-box-warning">
+                        <Icon name="schedule" />
                     </div>
-                </Card>
-                <Card className="stat-card fulfilled">
-                    <div className="stat-content">
-                        <FaCheck className="stat-icon" />
-                        <div>
-                            <span className="stat-value">
-                                {requisitions.filter(r => r.status === 'FULFILLED').length}
-                            </span>
-                            <span className="stat-label">Fulfilled</span>
-                        </div>
+                    <div className="module-stat-info">
+                        <span className="module-stat-value">
+                            {requisitions.filter(r => r.status === 'PENDING_APPROVAL').length}
+                        </span>
+                        <span className="module-stat-label">Pending</span>
                     </div>
-                </Card>
+                </div>
+                <div className="module-stat-card">
+                    <div className="icon-box icon-box-md icon-box-success">
+                        <Icon name="check_circle" />
+                    </div>
+                    <div className="module-stat-info">
+                        <span className="module-stat-value">
+                            {requisitions.filter(r => r.status === 'APPROVED').length}
+                        </span>
+                        <span className="module-stat-label">Approved</span>
+                    </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="icon-box icon-box-md icon-box-orange">
+                        <Icon name="verified" />
+                    </div>
+                    <div className="module-stat-info">
+                        <span className="module-stat-value">
+                            {requisitions.filter(r => r.status === 'FULFILLED').length}
+                        </span>
+                        <span className="module-stat-label">Fulfilled</span>
+                    </div>
+                </div>
             </div>
 
             {/* Content */}
@@ -689,7 +721,7 @@ const Requisitions = () => {
                                                 className="expand-btn"
                                                 onClick={() => toggleRowExpansion(requisition.id)}
                                             >
-                                                {expandedRows[requisition.id] ? <FaChevronDown /> : <FaChevronRight />}
+                                                {expandedRows[requisition.id] ? <Icon name="expand_more" /> : <Icon name="chevron_right" />}
                                             </button>
                                         </td>
                                         <td className="folio-cell">
@@ -697,18 +729,18 @@ const Requisitions = () => {
                                         </td>
                                         <td>{requisition.requesterName}</td>
                                         <td>
-                                            <FaWarehouse className="cell-icon" />
+                                            <Icon name="warehouse" className="cell-icon" />
                                             {requisition.warehouseName}
                                         </td>
                                         <td>{requisition.projectName || '-'}</td>
                                         <td>
                                             <span className="items-count">
-                                                <FaBoxOpen />
+                                                <Icon name="inventory_2" />
                                                 {calculateItemsTotal(requisition.items)}
                                             </span>
                                         </td>
                                         <td>
-                                            <FaCalendarAlt className="cell-icon" />
+                                            <Icon name="calendar_month" className="cell-icon" />
                                             {formatDate(requisition.requiredAt)}
                                         </td>
                                         <td>{renderStatusBadge(requisition.status)}</td>
@@ -718,7 +750,7 @@ const Requisitions = () => {
                                                 onClick={() => handleViewRequisition(requisition)}
                                                 title="Ver detalle"
                                             >
-                                                <FaEye />
+                                                <Icon name="visibility" />
                                             </button>
                                             {requisition.status === 'DRAFT' && (
                                                 <>
@@ -727,14 +759,14 @@ const Requisitions = () => {
                                                         onClick={() => handleOpenModal(requisition)}
                                                         title="Edit"
                                                     >
-                                                        <FaEdit />
+                                                        <Icon name="edit" />
                                                     </button>
                                                     <button
                                                         className="btn-icon approve"
                                                         onClick={() => handleSubmitForApproval(requisition)}
                                                         title="Enviar a aprobación"
                                                     >
-                                                        <FaUserCheck />
+                                                        <Icon name="how_to_reg" />
                                                     </button>
                                                 </>
                                             )}
@@ -744,7 +776,7 @@ const Requisitions = () => {
                                                     onClick={() => handleOpenApprovalModal(requisition)}
                                                     title="Aprobar/Rechazar"
                                                 >
-                                                    <FaUserCheck />
+                                                    <Icon name="how_to_reg" />
                                                 </button>
                                             )}
                                             {['DRAFT', 'REJECTED'].includes(requisition.status) && (
@@ -756,7 +788,7 @@ const Requisitions = () => {
                                                     }}
                                                     title="Delete"
                                                 >
-                                                    <FaTrash />
+                                                    <Icon name="delete" />
                                                 </button>
                                             )}
                                         </td>
@@ -809,7 +841,7 @@ const Requisitions = () => {
                     </table>
                     {filteredRequisitions.length === 0 && (
                         <div className="empty-state">
-                            <FaClipboardList />
+                            <Icon name="assignment" />
                             <p>No requisitions found</p>
                         </div>
                     )}
@@ -824,25 +856,25 @@ const Requisitions = () => {
                             </div>
                             <div className="card-body">
                                 <div className="info-row">
-                                    <FaUserCheck className="info-icon" />
+                                    <Icon name="person" className="info-icon" />
                                     <span>{requisition.requesterName}</span>
                                 </div>
                                 <div className="info-row">
-                                    <FaWarehouse className="info-icon" />
+                                    <Icon name="warehouse" className="info-icon" />
                                     <span>{requisition.warehouseName}</span>
                                 </div>
                                 {requisition.projectName && (
                                     <div className="info-row">
-                                        <FaClipboardList className="info-icon" />
+                                        <Icon name="assignment" className="info-icon" />
                                         <span>{requisition.projectName}</span>
                                     </div>
                                 )}
                                 <div className="info-row">
-                                    <FaCalendarAlt className="info-icon" />
+                                    <Icon name="calendar_month" className="info-icon" />
                                     <span>Requerido: {formatDate(requisition.requiredAt)}</span>
                                 </div>
                                 <div className="items-summary">
-                                    <FaBoxOpen />
+                                    <Icon name="inventory_2" />
                                     <span>{calculateItemsTotal(requisition.items)} items</span>
                                     <div className="progress-bar">
                                         <div
@@ -855,11 +887,11 @@ const Requisitions = () => {
                             </div>
                             <div className="card-actions">
                                 <button onClick={() => handleViewRequisition(requisition)}>
-                                    <FaEye /> Ver
+                                    <Icon name="visibility" /> Ver
                                 </button>
                                 {requisition.status === 'DRAFT' && (
                                     <button onClick={() => handleOpenModal(requisition)}>
-                                        <FaEdit /> Edit
+                                        <Icon name="edit" /> Edit
                                     </button>
                                 )}
                             </div>
@@ -867,7 +899,7 @@ const Requisitions = () => {
                     ))}
                     {filteredRequisitions.length === 0 && (
                         <div className="empty-state full-width">
-                            <FaClipboardList />
+                            <Icon name="assignment" />
                             <p>No results found requisitions</p>
                         </div>
                     )}
@@ -1046,7 +1078,7 @@ const Requisitions = () => {
 
                         {currentRequisition.quotationId && (
                             <p className="info-text">
-                                <FaCheckCircle style={{ color: '#28a745', marginRight: '8px' }} />
+                                <Icon name="check_circle" style={{ color: '#28a745', marginRight: '8px' }} />
                                 Items cargados desde cotización {currentRequisition.quotationFolio}
                             </p>
                         )}
@@ -1123,13 +1155,13 @@ const Requisitions = () => {
                                                         className="btn-icon edit"
                                                         onClick={() => handleEditItem(index)}
                                                     >
-                                                        <FaEdit />
+                                                        <Icon name="edit" />
                                                     </button>
                                                     <button
                                                         className="btn-icon delete"
                                                         onClick={() => handleRemoveItem(index)}
                                                     >
-                                                        <FaTrash />
+                                                        <Icon name="delete" />
                                                     </button>
                                                 </td>
                                             )}
@@ -1297,7 +1329,7 @@ const Requisitions = () => {
                                 handleApprove('REJECTED', comments);
                             }}
                         >
-                            <FaTimes /> Rechazar
+                            <Icon name="close" /> Rechazar
                         </button>
                         <button
                             className="btn-success"
@@ -1306,7 +1338,7 @@ const Requisitions = () => {
                                 handleApprove('APPROVED', comments);
                             }}
                         >
-                            <FaCheck /> Aprobar
+                            <Icon name="check" /> Aprobar
                         </button>
                     </div>
                 </div>
@@ -1320,7 +1352,7 @@ const Requisitions = () => {
                 size="small"
             >
                 <div className="delete-confirmation">
-                    <FaExclamationTriangle className="warning-icon" />
+                    <Icon name="warning" className="warning-icon" />
                     <p>
                         Are you sure que desea you want to delete the requisition{' '}
                         <strong>{requisitionToDelete?.folio}</strong>?

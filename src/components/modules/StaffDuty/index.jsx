@@ -13,6 +13,20 @@ const StaffDutyModule = () => {
         loadStaff();
     }, []);
 
+    // Demo data for offline/demo mode
+    const demoStaff = [
+        { id: 1, name: 'Carlos Martinez', role: 'CNC Operator', avatar: 'CM', status: 'working', currentTask: 'Cabinet doors production', since: '8:00 AM' },
+        { id: 2, name: 'Maria Garcia', role: 'Assembly Lead', avatar: 'MG', status: 'working', currentTask: 'Kitchen island assembly', since: '8:15 AM' },
+        { id: 3, name: 'Roberto Sanchez', role: 'Finishing Tech', avatar: 'RS', status: 'working', currentTask: 'Lacquer application', since: '7:45 AM' },
+        { id: 4, name: 'Ana Lopez', role: 'Quality Inspector', avatar: 'AL', status: 'break', currentTask: 'Final inspection batch #127', since: '9:00 AM' },
+        { id: 5, name: 'Pedro Ramirez', role: 'CNC Operator', avatar: 'PR', status: 'working', currentTask: 'Drawer fronts cutting', since: '8:30 AM' },
+        { id: 6, name: 'Sofia Torres', role: 'Designer', avatar: 'ST', status: 'working', currentTask: 'Client revision meeting', since: '9:15 AM' },
+        { id: 7, name: 'Miguel Hernandez', role: 'Warehouse', avatar: 'MH', status: 'break', currentTask: 'Material receiving', since: '8:00 AM' },
+        { id: 8, name: 'Laura Diaz', role: 'Admin', avatar: 'LD', status: 'offline', currentTask: 'Purchase orders', since: '-' },
+        { id: 9, name: 'Juan Morales', role: 'Assembly Tech', avatar: 'JM', status: 'working', currentTask: 'Vanity installation prep', since: '7:30 AM' },
+        { id: 10, name: 'Elena Ruiz', role: 'Supervisor', avatar: 'ER', status: 'working', currentTask: 'Production oversight', since: '7:00 AM' },
+    ];
+
     const loadStaff = async () => {
         setIsLoading(true);
         try {
@@ -21,13 +35,11 @@ const StaffDutyModule = () => {
                 const usersData = await usersApi.getAll();
                 console.log('[StaffDuty] API response:', usersData);
                 if (usersData?.length > 0) {
-                    // Transform users to staff duty format
                     const staffDuty = usersData.map((user, index) => {
                         const name = user.name || user.username || 'Unknown';
                         const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                        // Simulate random status for demo (in real app, this would come from attendance API)
                         const statuses = ['working', 'break', 'offline'];
-                        const status = statuses[index % 3]; // Cycle through statuses
+                        const status = statuses[index % 3];
                         const tasks = ['General duties', 'Project work', 'Administrative tasks', 'Client support', 'Inventory check'];
                         const times = ['8:00 AM', '8:30 AM', '9:00 AM', '9:15 AM', '7:45 AM'];
 
@@ -43,10 +55,18 @@ const StaffDutyModule = () => {
                         };
                     });
                     setStaffList(staffDuty);
+                } else {
+                    // Use demo data if API returns empty
+                    setStaffList(demoStaff);
                 }
+            } else {
+                // Use demo data when API is not enabled
+                setStaffList(demoStaff);
             }
         } catch (error) {
             console.error('[StaffDuty] Error loading users:', error);
+            // Use demo data on error
+            setStaffList(demoStaff);
         } finally {
             setIsLoading(false);
         }

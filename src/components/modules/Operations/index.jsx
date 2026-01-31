@@ -737,15 +737,22 @@ const OperationsModule = () => {
                                     <div className="stage-pipeline">
                                         {operationStages.map((stage) => {
                                             const stageData = newOperation.stages[stage.key];
+                                            const statusLabel = {
+                                                'pending': 'Pending',
+                                                'in_progress': 'In Progress',
+                                                'completed': 'Completed',
+                                                'skipped': 'Skipped'
+                                            }[stageData.status] || stageData.status;
                                             return (
                                                 <div
                                                     key={stage.key}
+                                                    data-stage={stage.key}
                                                     className={`stage-node ${getStageStatusClass(stageData.status)} ${selectedStage === stage.key ? 'selected' : ''}`}
                                                     onClick={() => setSelectedStage(stage.key)}
                                                 >
                                                     <Icon name={stage.icon} />
                                                     <span className="stage-label">{stage.label}</span>
-                                                    <span className="stage-status-text">{stageData.status}</span>
+                                                    <span className="stage-status-text">{statusLabel}</span>
                                                 </div>
                                             );
                                         })}

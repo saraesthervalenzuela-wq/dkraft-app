@@ -84,7 +84,7 @@ const ProductionChart = () => {
                             },
                             ticks: {
                                 color: '#64748b',
-                                font: { family: 'Plus Jakarta Sans' }
+                                font: { family: 'Red Hat Display' }
                             }
                         },
                         y: {
@@ -94,7 +94,7 @@ const ProductionChart = () => {
                             },
                             ticks: {
                                 color: '#64748b',
-                                font: { family: 'Plus Jakarta Sans' }
+                                font: { family: 'Red Hat Display' }
                             },
                             beginAtZero: true
                         }

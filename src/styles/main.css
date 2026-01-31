@@ -30,11 +30,11 @@
     --accent-gradient: linear-gradient(135deg, #001d66 0%, #0033b3 50%, #0047e0 100%);
 
     /* Secondary Accent - Electric Orange (Contrast) */
-    --orange-primary: #ff6b35;
-    --orange-secondary: #ff8c5a;
-    --orange-tertiary: #ffab7a;
-    --orange-glow: rgba(255, 107, 53, 0.4);
-    --orange-gradient: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    --orange-primary: #d35400;
+    --orange-secondary: #e67e22;
+    --orange-tertiary: #f39c12;
+    --orange-glow: rgba(211, 84, 0, 0.4);
+    --orange-gradient: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 
     /* Typography */
     --text-primary: #ffffff;
@@ -1292,7 +1292,7 @@ body::after {
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     box-shadow: 0 4px 15px rgba(0, 51, 179, 0.3);
     transition: all 0.3s ease;
     position: relative;
@@ -1695,7 +1695,7 @@ button {
 }
 
 .btn-action-edit:hover {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-color: var(--accent-primary);
     color: white;
     transform: scale(1.05);
@@ -1789,7 +1789,7 @@ button {
     align-items: center;
     gap: 10px;
     padding: 14px 28px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 12px;
     color: white;
@@ -1914,7 +1914,7 @@ button {
 
 /* Color variants for header icons */
 .header-icon.orange {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 .header-icon.orange::before {
@@ -2613,7 +2613,7 @@ button {
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2829,9 +2829,46 @@ button {
 /* Stats Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
+}
+
+/* Responsive for all stat grids */
+@media (max-width: 1400px) {
+    .stats-grid,
+    .duty-stats-grid,
+    .clients-stats-grid,
+    .bom-stats-grid,
+    .materials-stats-grid,
+    .suppliers-stats-grid,
+    .products-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .stats-grid,
+    .duty-stats-grid,
+    .clients-stats-grid,
+    .bom-stats-grid,
+    .materials-stats-grid,
+    .suppliers-stats-grid,
+    .products-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .stats-grid,
+    .duty-stats-grid,
+    .clients-stats-grid,
+    .bom-stats-grid,
+    .materials-stats-grid,
+    .suppliers-stats-grid,
+    .products-stats-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .stat-card {
@@ -2877,7 +2914,7 @@ button {
         0 0 60px rgba(0, 51, 179, 0.1);
 }
 
-.stat-card:nth-child(1) .stat-icon { background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%); }
+.stat-card:nth-child(1) .stat-icon { background: linear-gradient(135deg, #d35400 0%, #e67e22 100%); }
 .stat-card:nth-child(2) .stat-icon { background: var(--orange-gradient); }
 .stat-card:nth-child(3) .stat-icon { background: linear-gradient(135deg, #10b981 0%, #34d399 100%); }
 .stat-card:nth-child(4) .stat-icon { background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); }
@@ -2908,7 +2945,7 @@ button {
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2945,7 +2982,7 @@ button {
 }
 
 .chart-filter {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     padding: 8px 16px;
     border-radius: 20px;
@@ -3015,7 +3052,7 @@ button {
 
 .action-progress-bar {
     height: 100%;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 2px;
     transition: width 0.5s ease;
 }
@@ -3024,7 +3061,7 @@ button {
     width: 36px;
     height: 36px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     color: white;
     cursor: pointer;
@@ -3164,7 +3201,7 @@ button {
     font-size: 13px;
     font-weight: 600;
     color: white;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .staff-avatar.working {
@@ -3267,7 +3304,7 @@ button {
 }
 
 .top-client-item:first-child .client-rank {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     color: white;
 }
 
@@ -3408,7 +3445,7 @@ button {
 }
 
 .comm-btn.primary {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     color: white;
 }
 
@@ -3682,7 +3719,7 @@ button {
     content: '';
     width: 4px;
     height: 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 2px;
 }
 
@@ -3768,7 +3805,7 @@ button {
 }
 
 .action-btn-round.add {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     color: white;
     box-shadow: 0 4px 12px rgba(0, 51, 179, 0.3);
 }
@@ -3897,7 +3934,7 @@ button {
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     opacity: 0;
     transition: opacity 0.25s ease;
 }
@@ -4067,7 +4104,7 @@ button {
 }
 
 .page-btn.active {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-color: transparent;
     color: white;
     box-shadow: 0 4px 12px rgba(0, 51, 179, 0.3);
@@ -4075,7 +4112,7 @@ button {
 }
 
 .page-btn.nav {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-color: transparent;
     color: white;
 }
@@ -4190,7 +4227,7 @@ button {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -4255,7 +4292,7 @@ button {
     display: grid;
     grid-template-columns: 50px 2fr 2fr 1fr 80px;
     padding: 14px 28px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     font-size: 13px;
     font-weight: 600;
     color: white;
@@ -4473,7 +4510,7 @@ button {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4658,18 +4695,18 @@ button {
 
 .modal-content {
     background: linear-gradient(145deg,
-        rgba(20, 45, 100, 0.85) 0%,
-        rgba(15, 35, 80, 0.9) 30%,
-        rgba(10, 28, 65, 0.92) 70%,
-        rgba(8, 22, 55, 0.95) 100%);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-top: 1px solid rgba(255, 255, 255, 0.25);
-    border-left: 1px solid rgba(255, 255, 255, 0.2);
+        rgba(25, 55, 115, 0.88) 0%,
+        rgba(18, 42, 95, 0.92) 30%,
+        rgba(12, 32, 75, 0.94) 70%,
+        rgba(10, 26, 60, 0.96) 100%);
+    backdrop-filter: blur(48px) saturate(200%);
+    -webkit-backdrop-filter: blur(48px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
     border-radius: 28px;
     width: 100%;
-    max-width: 720px;
+    max-width: 900px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -5056,7 +5093,7 @@ button {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -5094,7 +5131,7 @@ button {
     display: grid;
     grid-template-columns: 50px 1fr 1.2fr 100px 1fr 2fr 80px;
     padding: 14px 28px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     font-size: 13px;
     font-weight: 600;
     color: white;
@@ -5252,7 +5289,7 @@ button {
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5470,7 +5507,7 @@ button {
     width: 56px;
     height: 56px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -5786,7 +5823,7 @@ button {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -5830,7 +5867,7 @@ button {
     display: grid;
     grid-template-columns: 50px 90px 70px 1.5fr 1fr 80px 1fr 100px 90px 1.2fr 70px;
     padding: 14px 28px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     font-size: 12px;
     font-weight: 600;
     color: white;
@@ -5985,7 +6022,7 @@ button {
 }
 
 .materials-table-modern thead {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -6397,7 +6434,7 @@ button {
 }
 
 .products-table-modern thead {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -7195,7 +7232,7 @@ button {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -7238,7 +7275,7 @@ button {
     display: grid;
     grid-template-columns: 50px 1fr 1.5fr 2fr 1fr 80px;
     padding: 14px 28px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     font-size: 13px;
     font-weight: 600;
     color: white;
@@ -7495,7 +7532,7 @@ button {
     justify-content: center;
     gap: 10px;
     padding: 16px 24px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 12px;
     color: white;
@@ -7565,7 +7602,7 @@ button {
 .projects-page .page-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -7593,7 +7630,7 @@ button {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -7700,7 +7737,7 @@ button {
 .projects-table-row .col-name .name-icon {
     width: 32px;
     height: 32px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -7893,7 +7930,7 @@ button {
     justify-content: center;
     gap: 8px;
     padding: 14px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -7957,7 +7994,7 @@ button {
 .operations-page .page-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -7985,7 +8022,7 @@ button {
     align-items: center;
     gap: 8px;
     padding: 12px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -8354,7 +8391,7 @@ button {
 
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 4px;
     transition: width 0.3s ease;
 }
@@ -8835,7 +8872,7 @@ button {
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border: none;
     border-radius: 10px;
     color: white;
@@ -8921,7 +8958,7 @@ button {
 .reports-page .page-title > .nav-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -9233,7 +9270,7 @@ button {
 }
 
 .report-tab.active {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     color: white;
 }
 
@@ -9318,7 +9355,7 @@ button {
 }
 
 .report-card.primary .report-card-icon {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .report-card.success .report-card-icon {
@@ -9417,7 +9454,7 @@ button {
 }
 
 .report-stat-card .stat-icon.total {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .report-stat-card .stat-icon.active {
@@ -9441,7 +9478,7 @@ button {
 }
 
 .report-stat-card .stat-icon.assigned {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .report-stat-card .stat-icon.revenue {
@@ -9453,7 +9490,7 @@ button {
 }
 
 .report-stat-card .stat-icon.products {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .report-stat-card .stat-icon.margin {
@@ -9533,7 +9570,7 @@ button {
 
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 5px;
     transition: width 0.5s ease;
 }
@@ -9830,7 +9867,7 @@ button {
 
 .progress-bar-mini .progress-fill {
     height: 100%;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 3px;
 }
 
@@ -9865,7 +9902,7 @@ button {
 .chart-bar {
     width: 100%;
     max-width: 40px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 6px 6px 0 0;
     display: flex;
     align-items: flex-start;
@@ -10012,7 +10049,7 @@ button {
 
 .distribution-fill {
     height: 100%;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 4px;
     transition: width 0.3s ease;
 }
@@ -10196,7 +10233,7 @@ button {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -10290,7 +10327,7 @@ button {
 .contributor-rank {
     width: 28px;
     height: 28px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -10841,7 +10878,7 @@ button {
 }
 
 .qa-metric-card.primary .metric-icon {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .qa-metric-card.success .metric-icon {
@@ -12660,7 +12697,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 50%;
     font-size: 14px;
     font-weight: 700;
@@ -12677,7 +12714,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 50%;
     font-size: 14px;
     font-weight: 600;
@@ -12871,7 +12908,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 50%;
     font-size: 16px;
     font-weight: 600;
@@ -13225,7 +13262,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 50%;
     font-size: 20px;
     font-weight: 600;
@@ -13338,7 +13375,7 @@ button {
 
 .division-bar-fill {
     height: 100%;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 5px;
     transition: width 0.3s;
 }
@@ -13590,7 +13627,7 @@ button {
 }
 
 .duty-stat-card.total .duty-stat-icon {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .duty-stat-value {
@@ -13634,7 +13671,7 @@ button {
 }
 
 .filter-btn.active {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-color: var(--accent-primary);
     color: white;
 }
@@ -13833,7 +13870,7 @@ button {
 }
 
 .clients-stat-card.orders .clients-stat-icon {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .clients-stat-card.avg .clients-stat-icon {
@@ -13888,7 +13925,7 @@ button {
 }
 
 .sort-btn.active {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-color: var(--accent-primary);
     color: white;
 }
@@ -13976,7 +14013,7 @@ button {
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -14312,7 +14349,7 @@ button {
     grid-template-columns: 50px 200px 1fr 100px;
     gap: 16px;
     padding: 14px 20px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     color: white;
     font-weight: 600;
     font-size: 13px;
@@ -14501,7 +14538,7 @@ button {
 .client-card .client-avatar {
     width: 56px;
     height: 56px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -14673,7 +14710,7 @@ button {
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
 }
 
 .top-client-card-header {
@@ -14739,7 +14776,7 @@ button {
 .top-client-avatar {
     width: 72px;
     height: 72px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -15453,7 +15490,7 @@ button {
 .pa-header-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -16070,7 +16107,7 @@ button {
 .pa-footer-logo {
     width: 40px;
     height: 40px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -17160,7 +17197,7 @@ button {
     align-items: center;
     gap: 0.25rem;
     padding: 0.5rem 0.75rem;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     color: white;
     border: none;
     border-radius: 6px;
@@ -17343,7 +17380,7 @@ button {
 }
 
 .type-btn.active {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-color: transparent;
     color: white;
 }
@@ -18917,7 +18954,7 @@ button {
         top: 1rem;
         left: 1rem;
         z-index: 999;
-        background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+        background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
         border: none;
         border-radius: 10px;
         padding: 0.75rem;
@@ -19247,7 +19284,7 @@ button {
 .material-card-icon {
     width: 48px;
     height: 48px;
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -19615,7 +19652,7 @@ button {
 }
 
 .view-toggle-btn.active {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     color: white;
     box-shadow: 0 2px 8px rgba(0, 51, 179, 0.3);
 }
