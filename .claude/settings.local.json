@@ -27,7 +27,8 @@
       "Bash(cd /Users/concepcion/Documents/GitHub/dkraft-app/dkraft-app __NEW_LINE_118e2070b9cdb75c__ echo \"=== Verificando commit a55bc7a ===\" git show a55bc7a --stat)",
       "Bash(head -10 __NEW_LINE_118e2070b9cdb75c__ echo \"\" echo \"=== Colores en el CSS ACTUAL ===\" grep -i \"orange\\\\|#ff6b35\\\\|glassmorphism\" src/styles/main.css)",
       "Bash(cd /Users/concepcion/Documents/GitHub/dkraft-app/dkraft-app echo \"=== Quién creó Firebase ===\" git log --oneline --all -- src/firebase/config.js)",
-      "Bash(git show:*)"
+      "Bash(git show:*)",
+      "Bash(git push:*)"
     ]
   }
 }

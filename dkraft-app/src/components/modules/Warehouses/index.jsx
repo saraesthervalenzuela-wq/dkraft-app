@@ -219,102 +219,126 @@ const WarehousesModule = () => {
     }
 
     return (
-        <div className="module-container warehouses-module">
-            {/* Header */}
-            <div className="module-header">
-                <div className="header-title">
-                    <FaWarehouse className="module-icon" />
-                    <h1>Almacenes</h1>
-                    {isApiEnabled && <span className="api-badge">API</span>}
+        <div className="module-page warehouses-module">
+            {/* Header - Same style as Staff */}
+            <div className="page-header">
+                <div className="header-content">
+                    <div className="header-icon">
+                        <span className="material-symbols-rounded">warehouse</span>
+                    </div>
+                    <div className="header-text">
+                        <h1>Warehouses</h1>
+                        <p>Manage storage locations and inventory zones</p>
+                    </div>
                 </div>
-                <button className="btn-primary" onClick={() => handleOpenModal()}>
-                    <FaPlus /> Nuevo Almacén
+                <button className="btn-primary-action" onClick={() => handleOpenModal()}>
+                    <span className="material-symbols-rounded">add</span>
+                    Add Warehouse
                 </button>
             </div>
 
-            {/* Filters */}
-            <div className="module-filters">
-                <div className="search-box">
-                    <FaSearch />
+            {/* Stats Cards */}
+            <div className="staff-stats-grid">
+                <div className="staff-stat-card">
+                    <div className="staff-stat-icon blue">
+                        <span className="material-symbols-rounded">warehouse</span>
+                    </div>
+                    <div className="staff-stat-info">
+                        <div className="staff-stat-value">{warehouses.length}</div>
+                        <div className="staff-stat-label">TOTAL WAREHOUSES</div>
+                    </div>
+                </div>
+                <div className="staff-stat-card">
+                    <div className="staff-stat-icon green">
+                        <span className="material-symbols-rounded">inventory_2</span>
+                    </div>
+                    <div className="staff-stat-info">
+                        <div className="staff-stat-value">{warehouses.filter(w => w.description).length}</div>
+                        <div className="staff-stat-label">ACTIVE ZONES</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Toolbar */}
+            <div className="staff-toolbar">
+                <div className="search-container">
+                    <span className="material-symbols-rounded search-icon">search</span>
                     <input
                         type="text"
-                        placeholder="Buscar por nombre, ubicación..."
+                        className="search-input"
+                        placeholder="Search warehouses..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="view-toggle">
+                <div className="view-toggle-buttons">
                     <button
-                        className={viewMode === 'grid' ? 'active' : ''}
-                        onClick={() => setViewMode('grid')}
+                        className={`view-toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
+                        onClick={() => setViewMode('table')}
+                        title="Table view"
                     >
-                        <FaTh />
+                        <span className="material-symbols-rounded">view_list</span>
                     </button>
                     <button
-                        className={viewMode === 'table' ? 'active' : ''}
-                        onClick={() => setViewMode('table')}
+                        className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                        onClick={() => setViewMode('grid')}
+                        title="Grid view"
                     >
-                        <FaList />
+                        <span className="material-symbols-rounded">grid_view</span>
                     </button>
                 </div>
             </div>
 
-            {/* Stats */}
-            <div className="stats-row">
-                <Card className="stat-card">
-                    <div className="stat-content">
-                        <FaWarehouse className="stat-icon" />
-                        <div>
-                            <span className="stat-value">{warehouses.length}</span>
-                            <span className="stat-label">Total Almacenes</span>
-                        </div>
-                    </div>
-                </Card>
-            </div>
-
-            {/* Content */}
+            {/* Content - Grid View */}
             {viewMode === 'grid' ? (
-                <div className="warehouses-grid">
+                <div className="clients-cards-grid">
                     {filteredWarehouses.map((warehouse) => (
-                        <Card key={warehouse.id} className="warehouse-card">
-                            <div className="card-header">
-                                <FaWarehouse className="card-icon" />
-                                <h3>{warehouse.name}</h3>
-                            </div>
-                            <div className="card-body">
-                                <div className="info-row">
-                                    <FaMapMarkerAlt className="info-icon" />
-                                    <span>{warehouse.location || 'Sin ubicación'}</span>
+                        <div key={warehouse.id} className="client-card">
+                            <div className="client-card-header">
+                                <div className="client-avatar color-2">
+                                    <span className="material-symbols-rounded">warehouse</span>
                                 </div>
-                                {warehouse.description && (
-                                    <p className="description">{warehouse.description}</p>
-                                )}
-                                <div className="meta-info">
-                                    <span>Creado: {formatDate(warehouse.createdAt)}</span>
+                                <div className="client-status">
+                                    <span className="status-badge active">Active</span>
                                 </div>
                             </div>
-                            <div className="card-actions">
-                                <button
-                                    className="btn-icon edit"
-                                    onClick={() => handleOpenModal(warehouse)}
-                                    title="Editar"
-                                >
-                                    <FaEdit />
+                            <div className="client-card-body">
+                                <h3 className="client-name">{warehouse.name}</h3>
+                                <span className="client-contact">Storage Zone</span>
+                                <div className="client-details">
+                                    <div className="detail-item">
+                                        <span className="material-symbols-rounded">location_on</span>
+                                        <span>{warehouse.location || 'No location'}</span>
+                                    </div>
+                                    {warehouse.description && (
+                                        <div className="detail-item">
+                                            <span className="material-symbols-rounded">description</span>
+                                            <span>{warehouse.description}</span>
+                                        </div>
+                                    )}
+                                    <div className="detail-item">
+                                        <span className="material-symbols-rounded">calendar_today</span>
+                                        <span>Created: {formatDate(warehouse.createdAt)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="client-card-actions">
+                                <button className="btn-action-view" onClick={() => handleOpenModal(warehouse)} title="View">
+                                    <span className="material-symbols-rounded">visibility</span>
                                 </button>
-                                <button
-                                    className="btn-icon delete"
-                                    onClick={() => confirmDelete(warehouse)}
-                                    title="Eliminar"
-                                >
-                                    <FaTrash />
+                                <button className="btn-action-edit" onClick={() => handleOpenModal(warehouse)} title="Edit">
+                                    <span className="material-symbols-rounded">edit</span>
+                                </button>
+                                <button className="btn-action-delete" onClick={() => confirmDelete(warehouse)} title="Delete">
+                                    <span className="material-symbols-rounded">delete</span>
                                 </button>
                             </div>
-                        </Card>
+                        </div>
                     ))}
                     {filteredWarehouses.length === 0 && (
-                        <div className="empty-state full-width">
-                            <FaWarehouse />
-                            <p>No se encontraron almacenes</p>
+                        <div className="empty-state-card">
+                            <span className="material-symbols-rounded">warehouse</span>
+                            <p>No warehouses found</p>
                         </div>
                     )}
                 </div>

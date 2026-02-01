@@ -50,6 +50,178 @@
 }
 
 /* ============================================
+   ADVANCED VISUAL EFFECTS - Glows, Animations
+   ============================================ */
+
+/* Glowing border animation */
+@keyframes borderGlow {
+    0%, 100% { box-shadow: 0 0 5px rgba(211, 84, 0, 0.3), 0 0 10px rgba(211, 84, 0, 0.2); }
+    50% { box-shadow: 0 0 15px rgba(211, 84, 0, 0.5), 0 0 25px rgba(211, 84, 0, 0.3); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 10px rgba(211, 84, 0, 0.4); }
+    50% { box-shadow: 0 0 25px rgba(211, 84, 0, 0.7), 0 0 40px rgba(211, 84, 0, 0.4); }
+}
+
+/* Card hover effects */
+.client-card,
+.staff-stat-card,
+.warehouse-card,
+.material-card,
+.product-card,
+.supplier-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(0, 71, 224, 0.2);
+}
+
+.client-card:hover,
+.staff-stat-card:hover,
+.warehouse-card:hover,
+.material-card:hover,
+.product-card:hover,
+.supplier-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(211, 84, 0, 0.6);
+    box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 0 30px rgba(211, 84, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Button effects */
+.btn-primary-action,
+.btn-add-user,
+.btn-add-supplier,
+.btn-add-material {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-primary-action::before,
+.btn-add-user::before,
+.btn-add-supplier::before,
+.btn-add-material::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-primary-action:hover::before,
+.btn-add-user:hover::before,
+.btn-add-supplier:hover::before,
+.btn-add-material:hover::before {
+    left: 100%;
+}
+
+.btn-primary-action:hover,
+.btn-add-user:hover,
+.btn-add-supplier:hover,
+.btn-add-material:hover {
+    transform: translateY(-3px);
+    box-shadow:
+        0 10px 30px rgba(211, 84, 0, 0.4),
+        0 0 20px rgba(211, 84, 0, 0.3);
+}
+
+/* Action button effects */
+.btn-action-view,
+.btn-action-edit,
+.btn-action-delete {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-action-view:hover {
+    background: linear-gradient(135deg, #0047e0 0%, #3366ff 100%);
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(0, 71, 224, 0.5);
+}
+
+.btn-action-edit:hover {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.btn-action-delete:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
+
+/* Stats card glow effect */
+.staff-stat-card {
+    position: relative;
+}
+
+.staff-stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 0 30px rgba(211, 84, 0, 0.3);
+    pointer-events: none;
+}
+
+.staff-stat-card:hover::after {
+    opacity: 1;
+}
+
+/* Table row hover */
+.clients-table-row:hover,
+.materials-table-row:hover,
+.products-table-row:hover,
+.staff-table-row:hover {
+    background: linear-gradient(90deg, rgba(211, 84, 0, 0.1) 0%, rgba(0, 71, 224, 0.1) 100%);
+    transform: scale(1.01);
+}
+
+/* Icon glow effects */
+.header-icon {
+    animation: pulse-glow 3s ease-in-out infinite;
+}
+
+/* Search input glow */
+.search-input:focus,
+.search-box input:focus {
+    box-shadow:
+        0 0 0 3px rgba(211, 84, 0, 0.2),
+        0 0 20px rgba(211, 84, 0, 0.15);
+    border-color: var(--orange-primary);
+}
+
+/* Nav item hover glow */
+.nav-item:hover {
+    background: linear-gradient(90deg, rgba(211, 84, 0, 0.15) 0%, transparent 100%);
+}
+
+.nav-item.active {
+    background: linear-gradient(90deg, rgba(211, 84, 0, 0.25) 0%, rgba(211, 84, 0, 0.1) 100%);
+    box-shadow: inset 3px 0 0 var(--orange-primary);
+}
+
+/* ============================================
    BASE RESET (Tailwind preflight handles most)
    ============================================ */
 * {
