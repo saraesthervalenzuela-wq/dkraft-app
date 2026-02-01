@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, IndustrialIcon } from '../../common';
+import { Button, Icon, IndustrialIcon } from '../../common';
 
 const ProjectAnalysis = ({ onNavigate }) => {
     const [cacheCleared, setCacheCleared] = useState(false);
@@ -477,9 +477,9 @@ const ProjectAnalysis = ({ onNavigate }) => {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn-modal-cancel" onClick={closeModuleModal}>
+                            <Button variant="secondary" onClick={closeModuleModal}>
                                 Close
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

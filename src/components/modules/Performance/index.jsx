@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Button } from '../../common';
+import { Button, IconButton } from '../../common';
 import {
     staffData,
     attendanceData,
@@ -474,13 +474,11 @@ const PerformanceModule = () => {
                                     </span>
                                 </td>
                                 <td>
-                                    <button
-                                        className="btn-icon"
+                                    <IconButton
+                                        icon="visibility"
                                         onClick={() => handleViewStaff(staff)}
                                         title="View Details"
-                                    >
-                                        <span className="material-symbols-rounded">visibility</span>
-                                    </button>
+                                    />
                                 </td>
                             </tr>
                         ))}
@@ -782,11 +780,10 @@ const PerformanceModule = () => {
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn-modal-cancel" onClick={() => setShowAttendanceModal(false)}>Cancel</button>
-                    <button className="btn-modal-save" onClick={handleAttendanceSubmit}>
-                        <span className="material-symbols-rounded">save</span>
+                    <Button variant="secondary" onClick={() => setShowAttendanceModal(false)}>Cancel</Button>
+                    <Button variant="primary" icon="save" onClick={handleAttendanceSubmit}>
                         Save Record
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
@@ -860,11 +857,10 @@ const PerformanceModule = () => {
                 </div>
 
                 <div className="modal-footer">
-                    <button className="btn-modal-cancel" onClick={() => setShowBonusModal(false)}>Cancel</button>
-                    <button className="btn-modal-save" onClick={handleBonusSubmit}>
-                        <span className="material-symbols-rounded">save</span>
+                    <Button variant="secondary" onClick={() => setShowBonusModal(false)}>Cancel</Button>
+                    <Button variant="primary" icon="save" onClick={handleBonusSubmit}>
                         Add Bonus
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

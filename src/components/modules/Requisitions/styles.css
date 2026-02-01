@@ -51,27 +51,6 @@
     letter-spacing: 0.5px;
 }
 
-.requisitions-module .btn-primary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #8b5cf6, #a855f7);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-}
-
-.requisitions-module .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
-}
-
 /* ================================
    FILTERS & SEARCH
    ================================ */
@@ -769,25 +748,6 @@
     border-top: 1px solid var(--border-subtle);
 }
 
-.requisitions-module .btn-secondary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: transparent;
-    color: var(--text-secondary);
-    border: 2px solid var(--border-subtle);
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-.requisitions-module .btn-secondary:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--text-muted);
-}
-
 /* ================================
    ORDER TOTALS
    ================================ */
@@ -945,44 +905,6 @@
     margin-top: 24px;
 }
 
-.requisitions-module .btn-success {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #10b981, #34d399);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.requisitions-module .btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-
-.requisitions-module .btn-danger {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #ef4444, #f87171);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.requisitions-module .btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-}
-
 .requisitions-module .delete-confirmation {
     text-align: center;
 }
@@ -1027,10 +949,6 @@
     .requisitions-module .module-header {
         flex-direction: column;
         align-items: stretch;
-    }
-
-    .requisitions-module .btn-primary {
-        justify-content: center;
     }
 
     .requisitions-module .module-filters {

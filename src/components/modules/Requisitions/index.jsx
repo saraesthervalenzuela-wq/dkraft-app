@@ -6,7 +6,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Card } from '../../common';
+import { Icon, SearchBox, Card, Button, IconButton } from '../../common';
 import Modal from '../../common/Modal';
 import { isApiEnabled, clientsApi, warehousesApi, projectsApi } from '../../../services/api';
 import './styles.css';
@@ -585,7 +585,7 @@ const Requisitions = () => {
                         <Icon name="error" />
                     </div>
                     <p className="text-text-primary">Error loading sales orders: {error}</p>
-                    <button className="btn btn-primary" onClick={loadData}>Retry</button>
+                    <Button variant="primary" onClick={loadData}>Retry</Button>
                 </div>
             </div>
         );
@@ -604,9 +604,9 @@ const Requisitions = () => {
                         <p>Manage sales orders converted from approved quotations</p>
                     </div>
                 </div>
-                <button className="btn btn-orange" onClick={() => handleOpenModal()}>
-                    <Icon name="add" /> New Order
-                </button>
+                <Button variant="orange" icon="add" onClick={() => handleOpenModal()}>
+                    New Order
+                </Button>
             </div>
 
             {/* Filters and Search */}
@@ -745,51 +745,45 @@ const Requisitions = () => {
                                         </td>
                                         <td>{renderStatusBadge(requisition.status)}</td>
                                         <td className="actions-cell">
-                                            <button
-                                                className="btn-icon view"
+                                            <IconButton
+                                                icon="visibility"
                                                 onClick={() => handleViewRequisition(requisition)}
                                                 title="Ver detalle"
-                                            >
-                                                <Icon name="visibility" />
-                                            </button>
+                                            />
                                             {requisition.status === 'DRAFT' && (
                                                 <>
-                                                    <button
-                                                        className="btn-icon edit"
+                                                    <IconButton
+                                                        icon="edit"
+                                                        variant="primary"
                                                         onClick={() => handleOpenModal(requisition)}
                                                         title="Edit"
-                                                    >
-                                                        <Icon name="edit" />
-                                                    </button>
-                                                    <button
-                                                        className="btn-icon approve"
+                                                    />
+                                                    <IconButton
+                                                        icon="how_to_reg"
+                                                        variant="success"
                                                         onClick={() => handleSubmitForApproval(requisition)}
                                                         title="Enviar a aprobación"
-                                                    >
-                                                        <Icon name="how_to_reg" />
-                                                    </button>
+                                                    />
                                                 </>
                                             )}
                                             {requisition.status === 'PENDING_APPROVAL' && (
-                                                <button
-                                                    className="btn-icon approve"
+                                                <IconButton
+                                                    icon="how_to_reg"
+                                                    variant="success"
                                                     onClick={() => handleOpenApprovalModal(requisition)}
                                                     title="Aprobar/Rechazar"
-                                                >
-                                                    <Icon name="how_to_reg" />
-                                                </button>
+                                                />
                                             )}
                                             {['DRAFT', 'REJECTED'].includes(requisition.status) && (
-                                                <button
-                                                    className="btn-icon delete"
+                                                <IconButton
+                                                    icon="delete"
+                                                    variant="danger"
                                                     onClick={() => {
                                                         setRequisitionToDelete(requisition);
                                                         setIsDeleteModalOpen(true);
                                                     }}
                                                     title="Delete"
-                                                >
-                                                    <Icon name="delete" />
-                                                </button>
+                                                />
                                             )}
                                         </td>
                                     </tr>
@@ -1119,13 +1113,13 @@ const Requisitions = () => {
                                         />
                                     </div>
                                 </div>
-                                <button
+                                <Button
                                     type="button"
-                                    className="btn-secondary"
+                                    variant="secondary"
                                     onClick={handleAddItem}
                                 >
                                     {editingItemIndex !== null ? 'Update Item' : 'Add Item'}
-                                </button>
+                                </Button>
                             </div>
                         )}
 
@@ -1151,18 +1145,16 @@ const Requisitions = () => {
                                             <td>{formatCurrency(item.subtotal)}</td>
                                             {!currentRequisition.quotationId && (
                                                 <td className="actions-cell">
-                                                    <button
-                                                        className="btn-icon edit"
+                                                    <IconButton
+                                                        icon="edit"
+                                                        variant="primary"
                                                         onClick={() => handleEditItem(index)}
-                                                    >
-                                                        <Icon name="edit" />
-                                                    </button>
-                                                    <button
-                                                        className="btn-icon delete"
+                                                    />
+                                                    <IconButton
+                                                        icon="delete"
+                                                        variant="danger"
                                                         onClick={() => handleRemoveItem(index)}
-                                                    >
-                                                        <Icon name="delete" />
-                                                    </button>
+                                                    />
                                                 </td>
                                             )}
                                         </tr>
@@ -1191,12 +1183,12 @@ const Requisitions = () => {
                     )}
 
                     <div className="form-actions">
-                        <button className="btn-secondary" onClick={handleCloseModal}>
+                        <Button variant="secondary" onClick={handleCloseModal}>
                             Cancel
-                        </button>
-                        <button className="btn-primary" onClick={handleSave}>
+                        </Button>
+                        <Button variant="primary" onClick={handleSave}>
                             {currentRequisition.id ? 'Update' : 'Create'} Sales Order
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -1322,24 +1314,26 @@ const Requisitions = () => {
                         />
                     </div>
                     <div className="approval-actions">
-                        <button
-                            className="btn-danger"
+                        <Button
+                            variant="danger"
+                            icon="close"
                             onClick={() => {
                                 const comments = document.getElementById('approvalComments').value;
                                 handleApprove('REJECTED', comments);
                             }}
                         >
-                            <Icon name="close" /> Rechazar
-                        </button>
-                        <button
-                            className="btn-success"
+                            Rechazar
+                        </Button>
+                        <Button
+                            variant="success"
+                            icon="check"
                             onClick={() => {
                                 const comments = document.getElementById('approvalComments').value;
                                 handleApprove('APPROVED', comments);
                             }}
                         >
-                            <Icon name="check" /> Aprobar
-                        </button>
+                            Aprobar
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -1359,18 +1353,18 @@ const Requisitions = () => {
                     </p>
                     <p className="warning-text">This action cannot be undone.</p>
                     <div className="confirmation-actions">
-                        <button
-                            className="btn-secondary"
+                        <Button
+                            variant="secondary"
                             onClick={() => setIsDeleteModalOpen(false)}
                         >
                             Cancel
-                        </button>
-                        <button
-                            className="btn-danger"
+                        </Button>
+                        <Button
+                            variant="danger"
                             onClick={handleDelete}
                         >
                             Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>

@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, IconButton, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
 import { useDataService } from '../../../hooks/useService';
 import './styles.css';
 
@@ -317,27 +317,23 @@ const WarehousesModule = () => {
                                 </div>
                             </div>
                             <div className="card-actions">
-                                <button
-                                    className="btn-action inventory"
+                                <IconButton
+                                    icon="inventory_2"
+                                    variant="primary"
                                     onClick={() => handleViewInventory(warehouse)}
                                     title="View Inventory"
-                                >
-                                    <Icon name="inventory_2" />
-                                </button>
-                                <button
-                                    className="btn-action"
+                                />
+                                <IconButton
+                                    icon="edit"
                                     onClick={() => handleOpenModal('edit', warehouse)}
                                     title="Edit"
-                                >
-                                    <Icon name="edit" />
-                                </button>
-                                <button
-                                    className="btn-action delete"
+                                />
+                                <IconButton
+                                    icon="delete"
+                                    variant="danger"
                                     onClick={() => confirmDelete(warehouse)}
                                     title="Delete"
-                                >
-                                    <Icon name="delete" />
-                                </button>
+                                />
                             </div>
                         </div>
                     ))}
@@ -380,27 +376,23 @@ const WarehousesModule = () => {
                                     </td>
                                     <td>{formatDate(warehouse.createdAt)}</td>
                                     <td className="actions-cell">
-                                        <button
-                                            className="btn-action inventory"
+                                        <IconButton
+                                            icon="inventory_2"
+                                            variant="primary"
                                             onClick={() => handleViewInventory(warehouse)}
                                             title="View Inventory"
-                                        >
-                                            <Icon name="inventory_2" />
-                                        </button>
-                                        <button
-                                            className="btn-action"
+                                        />
+                                        <IconButton
+                                            icon="edit"
                                             onClick={() => handleOpenModal('edit', warehouse)}
                                             title="Edit"
-                                        >
-                                            <Icon name="edit" />
-                                        </button>
-                                        <button
-                                            className="btn-action delete"
+                                        />
+                                        <IconButton
+                                            icon="delete"
+                                            variant="danger"
                                             onClick={() => confirmDelete(warehouse)}
                                             title="Delete"
-                                        >
-                                            <Icon name="delete" />
-                                        </button>
+                                        />
                                     </td>
                                 </tr>
                             ))}

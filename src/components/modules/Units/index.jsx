@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox, Button } from '../../common';
+import { Icon, IconButton, SearchBox, Button } from '../../common';
 
 const initialUnits = [
     { id: 1, name: 'Sheet', description: 'Full sheet of material (4x8 ft typical)' },
@@ -155,9 +155,7 @@ const UnitsModule = () => {
                         <span className="col-name">{unit.name}</span>
                         <span className="col-description">{unit.description}</span>
                         <span className="col-actions">
-                            <button className="btn-action-menu" onClick={() => handleEditUnit(unit)}>
-                                <Icon name="more_horiz" />
-                            </button>
+                            <IconButton icon="edit" variant="primary" onClick={() => handleEditUnit(unit)} />
                         </span>
                     </div>
                 ))}

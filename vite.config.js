@@ -13,5 +13,15 @@ export default defineConfig({
         secure: true,
       }
     }
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.js',
+    css: true,
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+      exclude: ['node_modules/', 'src/test/']
+    }
   }
 })

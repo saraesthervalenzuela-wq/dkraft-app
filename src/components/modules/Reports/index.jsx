@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Icon } from '../../common';
+import { Icon, Button } from '../../common';
 import {
     operationsData,
     projectsData,
@@ -1191,14 +1191,8 @@ const ReportsModule = () => {
                             <option value="all">All Time</option>
                         </select>
                     </div>
-                    <button className="btn-secondary">
-                        <span className="material-symbols-rounded">print</span>
-                        Print
-                    </button>
-                    <button className="btn-secondary">
-                        <span className="material-symbols-rounded">download</span>
-                        Export
-                    </button>
+                    <Button variant="secondary" icon="print">Print</Button>
+                    <Button variant="secondary" icon="download">Export</Button>
                 </div>
             </div>
 

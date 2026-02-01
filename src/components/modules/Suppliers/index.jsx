@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton, IconButton } from '../../common';
 import { suppliersApi } from '../../../services/api';
 
 /**
@@ -584,15 +584,9 @@ const SuppliersModule = () => {
                                     </div>
                                 </div>
                                 <div className="supplier-card-footer">
-                                    <button className="btn-icon" onClick={() => handleView(supplier)} title="View">
-                                        <Icon name="visibility" />
-                                    </button>
-                                    <button className="btn-icon" onClick={() => handleEdit(supplier)} title="Edit">
-                                        <Icon name="edit" />
-                                    </button>
-                                    <button className="btn-icon danger" onClick={() => handleDelete(supplier)} title="Delete">
-                                        <Icon name="delete" />
-                                    </button>
+                                    <IconButton icon="visibility" onClick={() => handleView(supplier)} title="View" />
+                                    <IconButton icon="edit" variant="primary" onClick={() => handleEdit(supplier)} title="Edit" />
+                                    <IconButton icon="delete" variant="danger" onClick={() => handleDelete(supplier)} title="Delete" />
                                 </div>
                             </div>
                         );

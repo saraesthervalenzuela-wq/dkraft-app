@@ -2,10 +2,19 @@ import { useState, useEffect, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AuthLayout } from './components/auth';
 import { Sidebar } from './components/layout';
+import { ErrorBoundary } from './components/common';
 import './styles/tailwind.css';
 
 // Lazy load all modules for code splitting
+// Dashboard preloaded for faster initial load
 const Dashboard = lazy(() => import('./components/modules/Dashboard'));
+
+// Preload Dashboard on idle
+if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+        import('./components/modules/Dashboard');
+    });
+}
 const StaffModule = lazy(() => import('./components/modules/Staff'));
 const StaffDutyModule = lazy(() => import('./components/modules/StaffDuty'));
 const ClientsModule = lazy(() => import('./components/modules/Clients'));
@@ -172,9 +181,11 @@ const AppContent = () => {
                     onLogout={logout}
                 />
                 <main className="main-content">
-                    <Suspense fallback={<ModuleLoader />}>
-                        {renderContent()}
-                    </Suspense>
+                    <ErrorBoundary message="Failed to load module. Please try again.">
+                        <Suspense fallback={<ModuleLoader />}>
+                            {renderContent()}
+                        </Suspense>
+                    </ErrorBoundary>
                 </main>
             </div>
         </>

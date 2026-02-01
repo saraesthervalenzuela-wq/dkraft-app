@@ -221,9 +221,9 @@ const StaffOnDutyCard = ({ onViewAll }) => (
                 <div className="card-title">Staff on Duty</div>
                 <div className="card-subtitle">{staffOnDuty.filter(s => s.status === 'working').length} actively working</div>
             </div>
-            <button className="btn-secondary" onClick={onViewAll}>
-                View All <Icon name="arrow_forward" />
-            </button>
+            <Button variant="secondary" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
+                View All
+            </Button>
         </div>
         <div className="staff-duty-list">
             {staffOnDuty.map((staff) => (
@@ -256,9 +256,9 @@ const TopClientsCard = ({ onViewAll }) => (
                 <div className="card-title">Top Clients</div>
                 <div className="card-subtitle">By total revenue</div>
             </div>
-            <button className="btn-secondary" onClick={onViewAll}>
-                View All <Icon name="arrow_forward" />
-            </button>
+            <Button variant="secondary" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
+                View All
+            </Button>
         </div>
         <div className="top-clients-list">
             {topClients.map((client, index) => (
@@ -812,9 +812,9 @@ const Dashboard = ({ onNavigate }) => {
                             <div className="card-title">Recent Orders</div>
                             <div className="card-subtitle">Latest project orders and their status</div>
                         </div>
-                        <button className="btn-secondary" onClick={() => handleNavigate('operations')}>
-                            View All <Icon name="arrow_forward" />
-                        </button>
+                        <Button variant="secondary" icon="arrow_forward" iconPosition="right" onClick={() => handleNavigate('operations')}>
+                            View All
+                        </Button>
                     </div>
                     <div className="orders-table">
                         <div className="orders-table-header">

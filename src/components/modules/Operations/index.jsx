@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox, Button } from '../../common';
+import { Icon, IconButton, SearchBox, Button } from '../../common';
 import './styles.css';
 import {
     operationsData,
@@ -491,9 +491,7 @@ const OperationsModule = () => {
                                     <span className="status-dot"></span>
                                     {operation.status}
                                 </span>
-                                <button className="btn-action-edit" onClick={() => handleEditOperation(operation)}>
-                                    <Icon name="edit" />
-                                </button>
+                                <IconButton icon="edit" variant="primary" onClick={() => handleEditOperation(operation)} />
                             </div>
                         </div>
                     ))}
@@ -573,9 +571,7 @@ const OperationsModule = () => {
                                     </span>
                                     <span className="col-due">{operation.dueDate}</span>
                                     <span className="col-actions">
-                                        <button className="btn-action-edit" onClick={() => handleEditOperation(operation)}>
-                                            <Icon name="edit" />
-                                        </button>
+                                        <IconButton icon="edit" variant="primary" onClick={() => handleEditOperation(operation)} />
                                     </span>
                                 </div>
                             ))}
@@ -898,9 +894,7 @@ const OperationsModule = () => {
                                                     </span>
                                                     <span>{mat.unit}</span>
                                                     <span>
-                                                        <button className="btn-remove-material" onClick={() => handleRemoveMaterial(index)}>
-                                                            <Icon name="delete" />
-                                                        </button>
+                                                        <IconButton icon="close" variant="danger" onClick={() => handleRemoveMaterial(index)} />
                                                     </span>
                                                 </div>
                                             ))}
@@ -954,17 +948,17 @@ const OperationsModule = () => {
                         </div>
 
                         <div className="modal-footer">
-                            <button className="btn-modal-cancel" onClick={resetForm}>
+                            <Button variant="secondary" onClick={resetForm}>
                                 Cancel
-                            </button>
-                            <button
-                                className="btn-modal-save"
+                            </Button>
+                            <Button
+                                variant="primary"
+                                icon="save"
                                 onClick={editingOperation ? handleUpdateOperation : handleCreateOperation}
                                 disabled={!newOperation.projectId}
                             >
-                                <span className="material-symbols-rounded">save</span>
                                 {editingOperation ? 'Update Operation' : 'Create Operation'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

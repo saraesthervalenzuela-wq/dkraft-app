@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton, IconButton } from '../../common';
 import { materialsApi, suppliersApi, categoriesApi, unitsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
@@ -668,15 +668,9 @@ const MaterialsModule = () => {
                                         </span>
                                     </div>
                                     <div className="material-actions">
-                                        <button className="btn-icon" onClick={() => handleView(material)} title="View">
-                                            <Icon name="visibility" />
-                                        </button>
-                                        <button className="btn-icon" onClick={() => handleEdit(material)} title="Edit">
-                                            <Icon name="edit" />
-                                        </button>
-                                        <button className="btn-icon danger" onClick={() => handleDelete(material)} title="Delete">
-                                            <Icon name="delete" />
-                                        </button>
+                                        <IconButton icon="visibility" onClick={() => handleView(material)} title="View" />
+                                        <IconButton icon="edit" variant="primary" onClick={() => handleEdit(material)} title="Edit" />
+                                        <IconButton icon="delete" variant="danger" onClick={() => handleDelete(material)} title="Delete" />
                                     </div>
                                 </div>
                             </div>
@@ -834,12 +828,8 @@ const MaterialsModule = () => {
                                                 {/* <button className="btn-icon-sm" onClick={() => handleView(material)} title="View">
                                                     <Icon name="visibility" />
                                                 </button> */}
-                                                <button className="btn-icon-sm primary" onClick={() => handleEdit(material)} title="Edit">
-                                                    <Icon name="edit" />
-                                                </button>
-                                                <button className="btn-icon-sm danger" onClick={() => handleDelete(material)} title="Delete">
-                                                    <Icon name="delete" />
-                                                </button>
+                                                <IconButton icon="edit" variant="primary" onClick={() => handleEdit(material)} title="Edit" />
+                                                <IconButton icon="delete" variant="danger" onClick={() => handleDelete(material)} title="Delete" />
                                             </div>
                                         </td>
                                     </tr>

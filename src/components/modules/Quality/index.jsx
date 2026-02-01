@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Icon, Button } from '../../common';
+import { Icon, IconButton, Button } from '../../common';
 import {
     qaInspectionsData,
     qaChecklistTemplates,
@@ -446,20 +446,16 @@ const QualityModule = () => {
                                 ) : '-'}
                             </span>
                             <span className="col-actions">
-                                <button
-                                    className="btn-action"
+                                <IconButton
+                                    icon="visibility"
                                     onClick={() => handleViewInspection(inspection)}
                                     title="View Details"
-                                >
-                                    <Icon name="visibility" />
-                                </button>
-                                <button
-                                    className="btn-action"
+                                />
+                                <IconButton
+                                    icon="edit"
                                     onClick={() => handleEditInspection(inspection)}
                                     title="Edit Inspection"
-                                >
-                                    <Icon name="edit" />
-                                </button>
+                                />
                             </span>
                         </div>
                     ))
@@ -809,9 +805,9 @@ const QualityModule = () => {
                                 <div className="form-section">
                                     <div className="section-header">
                                         <h4>Findings</h4>
-                                        <button className="btn-add-finding" onClick={handleAddFinding}>
-                                            <Icon name="add" /> Add Finding
-                                        </button>
+                                        <Button variant="primary" size="sm" icon="add" onClick={handleAddFinding}>
+                                            Add Finding
+                                        </Button>
                                     </div>
                                     {newInspection.findings.length > 0 ? (
                                         <div className="findings-preview">
@@ -920,37 +916,37 @@ const QualityModule = () => {
                     </div>
 
                     <div className="modal-footer">
-                        <button className="btn-modal-cancel" onClick={() => setShowModal(false)}>
+                        <Button variant="secondary" onClick={() => setShowModal(false)}>
                             {modalMode === 'view' ? 'Close' : 'Cancel'}
-                        </button>
+                        </Button>
                         {modalMode === 'view' && (
-                            <button
-                                className="btn-modal-save"
+                            <Button
+                                variant="primary"
+                                icon="edit"
                                 onClick={() => handleEditInspection(selectedInspection)}
                             >
-                                <span className="material-symbols-rounded">edit</span>
                                 Edit Inspection
-                            </button>
+                            </Button>
                         )}
                         {modalMode === 'create' && (
-                            <button
-                                className="btn-modal-save"
+                            <Button
+                                variant="success"
+                                icon="save"
                                 onClick={handleSaveInspection}
                                 disabled={!newInspection.operationId || !newInspection.stage || !newInspection.inspectorId}
                             >
-                                <span className="material-symbols-rounded">save</span>
                                 Complete Inspection
-                            </button>
+                            </Button>
                         )}
                         {modalMode === 'edit' && (
-                            <button
-                                className="btn-modal-save"
+                            <Button
+                                variant="success"
+                                icon="save"
                                 onClick={handleUpdateInspection}
                                 disabled={!newInspection.inspectorId}
                             >
-                                <span className="material-symbols-rounded">save</span>
                                 Update Inspection
-                            </button>
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -1049,17 +1045,17 @@ const QualityModule = () => {
                     </div>
 
                     <div className="modal-footer">
-                        <button className="btn-modal-cancel" onClick={() => setShowFindingModal(false)}>
+                        <Button variant="secondary" onClick={() => setShowFindingModal(false)}>
                             Cancel
-                        </button>
-                        <button
-                            className="btn-modal-save"
+                        </Button>
+                        <Button
+                            variant="success"
+                            icon="add"
                             onClick={handleSaveFinding}
                             disabled={!selectedFinding.type || !selectedFinding.severity || !selectedFinding.description}
                         >
-                            <span className="material-symbols-rounded">add</span>
                             Add Finding
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

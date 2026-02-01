@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox, Button } from '../../common';
+import { Icon, SearchBox, Button, IconButton } from '../../common';
 
 const initialCategories = [
     { id: 1, name: 'Woods', description: 'All types of wood and plywood materials' },
@@ -152,9 +152,7 @@ const CategoriesModule = () => {
                         <span className="col-name">{category.name}</span>
                         <span className="col-description">{category.description}</span>
                         <span className="col-actions">
-                            <button className="btn-action-menu" onClick={() => handleEditCategory(category)}>
-                                <Icon name="more_horiz" />
-                            </button>
+                            <IconButton icon="edit" variant="primary" onClick={() => handleEditCategory(category)} />
                         </span>
                     </div>
                 ))}

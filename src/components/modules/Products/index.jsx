@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton, IconButton } from '../../common';
 import { productsApi, materialsApi, productMaterialsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
@@ -801,15 +801,9 @@ const ProductsModule = () => {
                                 </div>
                                 <div className="material-card-footer">
                                     <div className="material-actions">
-                                        <button className="btn-icon" onClick={() => handleView(product)} title="View">
-                                            <Icon name="visibility" />
-                                        </button>
-                                        <button className="btn-icon" onClick={() => handleEdit(product)} title="Edit">
-                                            <Icon name="edit" />
-                                        </button>
-                                        <button className="btn-icon danger" onClick={() => handleDelete(product)} title="Delete">
-                                            <Icon name="delete" />
-                                        </button>
+                                        <IconButton icon="visibility" onClick={() => handleView(product)} title="View" />
+                                        <IconButton icon="edit" onClick={() => handleEdit(product)} title="Edit" />
+                                        <IconButton icon="delete" onClick={() => handleDelete(product)} title="Delete" variant="danger" />
                                     </div>
                                 </div>
                             </div>
@@ -940,15 +934,9 @@ const ProductsModule = () => {
                                         </td>
                                         <td className="col-actions">
                                             <div className="action-buttons">
-                                                <button className="btn-icon view" onClick={() => handleView(product)} title="View">
-                                                    <Icon name="visibility" />
-                                                </button>
-                                                <button className="btn-icon edit" onClick={() => handleEdit(product)} title="Edit">
-                                                    <Icon name="edit" />
-                                                </button>
-                                                <button className="btn-icon delete" onClick={() => handleDelete(product)} title="Delete">
-                                                    <Icon name="delete" />
-                                                </button>
+                                                <IconButton icon="visibility" onClick={() => handleView(product)} title="View" />
+                                                <IconButton icon="edit" onClick={() => handleEdit(product)} title="Edit" variant="primary" />
+                                                <IconButton icon="delete" onClick={() => handleDelete(product)} title="Delete" variant="danger" />
                                             </div>
                                         </td>
                                     </tr>
@@ -1176,13 +1164,15 @@ const ProductsModule = () => {
                                                 placeholder="Unit"
                                             />
                                         </div>
-                                        <button 
-                                            className="btn-primary-small"
+                                        <Button
+                                            variant="primary"
+                                            size="sm"
+                                            icon="add"
                                             onClick={handleAddMaterial}
                                             disabled={!newMaterial.materialId || !newMaterial.quantity}
                                         >
-                                            <Icon name="add" /> Add
-                                        </button>
+                                            Add
+                                        </Button>
                                     </div>
                                 </div>
                             )}
@@ -1203,13 +1193,12 @@ const ProductsModule = () => {
                                                     {pm.notes && <span className="item-notes">{pm.notes}</span>}
                                                 </div>
                                                 {modalMode === 'edit' && (
-                                                    <button 
-                                                        className="btn-icon danger"
+                                                    <IconButton
+                                                        icon="close"
                                                         onClick={() => handleRemoveMaterial(pm.id)}
                                                         title="Remove"
-                                                    >
-                                                        <Icon name="close" />
-                                                    </button>
+                                                        variant="danger"
+                                                    />
                                                 )}
                                             </div>
                                         ))}

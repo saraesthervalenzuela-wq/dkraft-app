@@ -1610,57 +1610,6 @@ button {
     color: white;
 }
 
-/* Secondary Button */
-.btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-subtle);
-    border-radius: 8px;
-    color: var(--text-secondary);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-secondary:hover {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border-color: var(--border-color);
-}
-
-.btn-secondary .material-symbols-rounded {
-    font-size: 18px;
-}
-
-/* Danger Button */
-.btn-danger {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
-    color: var(--danger);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-danger:hover {
-    background: rgba(239, 68, 68, 0.2);
-    border-color: var(--danger);
-}
-
-.btn-danger .material-symbols-rounded {
-    font-size: 18px;
-}
-
 /* Icon Button */
 .btn-icon {
     display: inline-flex;
@@ -9185,35 +9134,6 @@ button {
     font-size: 14px;
     color: var(--text-secondary);
     margin: 4px 0 0 0;
-}
-
-.reports-page .page-actions {
-    display: flex;
-    gap: 12px;
-}
-
-.reports-page .btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.reports-page .btn-secondary {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-}
-
-.reports-page .btn-secondary:hover {
-    background: rgba(0, 51, 179, 0.1);
-    color: var(--accent-primary);
-    border-color: var(--accent-primary);
 }
 
 /* Report Tabs Grid - Visual Cards */
@@ -17104,63 +17024,6 @@ button {
     border-top: 1px solid var(--border-subtle);
 }
 
-.form-actions .btn-secondary,
-.form-actions .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.form-actions .btn-secondary {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border-subtle);
-    color: var(--text-secondary);
-}
-
-.form-actions .btn-secondary:hover {
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    border-color: var(--border-color);
-}
-
-.form-actions .btn-primary {
-    background: var(--bg-tertiary);
-    border: 1px solid var(--accent-primary);
-    color: var(--accent-primary);
-}
-
-.form-actions .btn-primary:hover {
-    background: rgba(0, 51, 179, 0.1);
-    color: var(--accent-secondary);
-}
-
-.form-actions .btn-danger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    background: var(--bg-tertiary);
-    border: 1px solid var(--danger);
-    color: var(--danger);
-}
-
-.form-actions .btn-danger:hover {
-    background: rgba(239, 68, 68, 0.1);
-}
-
 /* Delete Confirmation */
 .delete-confirm {
     text-align: center;
@@ -17188,26 +17051,6 @@ button {
     margin-top: 1.5rem;
 }
 
-/* Materials Loading */
-.materials-loading {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 4rem 2rem;
-    color: var(--text-secondary);
-}
-
-.materials-loading .loading-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border-subtle);
-    border-top-color: var(--accent-primary);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin-bottom: 1rem;
-}
-
 @media (max-width: 640px) {
     .form-row {
         grid-template-columns: 1fr;
@@ -17215,12 +17058,6 @@ button {
 
     .form-actions {
         flex-direction: column;
-    }
-
-    .form-actions .btn-secondary,
-    .form-actions .btn-primary,
-    .form-actions .btn-danger {
-        width: 100%;
     }
 }
 
@@ -20241,39 +20078,6 @@ button {
 .unit-input-group {
     flex: 1;
     min-width: 80px;
-}
-
-.btn-primary-small {
-    padding: 10px 16px;
-    border-radius: 8px;
-    background: var(--accent-purple);
-    color: white;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    height: 42px; /* Match input height roughly */
-    white-space: nowrap;
-    transition: all 0.2s;
-}
-
-.btn-primary-small:hover {
-    background: var(--accent-purple-dark);
-    transform: translateY(-1px);
-}
-
-.btn-primary-small:disabled {
-    background: var(--text-muted);
-    cursor: not-allowed;
-    transform: none;
-    opacity: 0.7;
-}
-
-.btn-primary-small .material-symbols-rounded {
-    font-size: 18px;
 }
 
 /* Modal Sizes */

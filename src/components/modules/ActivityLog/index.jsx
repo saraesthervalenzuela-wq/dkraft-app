@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, Button } from '../../common';
 
 const initialActivityData = [
     { id: 1, action: 'create', module: 'Product', entityId: 'PRD-001', entityName: 'Oak Cabinet Door', user: 'Carlos Admin', userId: 'admin_user', timestamp: '2025-12-22T17:05:00', changes: { name: 'Oak Cabinet Door', price: 1500 } },
@@ -131,10 +131,7 @@ const ActivityLogModule = () => {
                         <p>Track all system changes and user actions</p>
                     </div>
                 </div>
-                <button className="btn-secondary">
-                    <span className="material-symbols-rounded">download</span>
-                    Export Log
-                </button>
+                <Button variant="secondary" icon="download">Export Log</Button>
             </div>
 
             <div className="module-stats-row">

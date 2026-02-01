@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, IconButton, SearchBox, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
 import { isApiEnabled, usersApi, registerToBackend } from '../../../services/api';
 
 // Role colors for avatars and badges
@@ -360,9 +360,7 @@ const StaffModule = () => {
                                         </Badge>
                                     </span>
                                     <span className="col-actions">
-                                        <button className="btn-action-edit" onClick={() => handleEditUser(user)}>
-                                            <Icon name="edit" />
-                                        </button>
+                                        <IconButton icon="edit" variant="primary" onClick={() => handleEditUser(user)} />
                                     </span>
                                 </div>
                             ))}
@@ -393,9 +391,7 @@ const StaffModule = () => {
                                         <div className="staff-avatar" style={{ background: roleStyle.bg, color: roleStyle.text }}>
                                             {initials}
                                         </div>
-                                        <button className="btn-action-edit" onClick={() => handleEditUser(user)}>
-                                            <Icon name="edit" />
-                                        </button>
+                                        <IconButton icon="edit" variant="primary" onClick={() => handleEditUser(user)} />
                                     </div>
                                     <div className="staff-card-body">
                                         <h4 className="staff-card-name">{user.username}</h4>

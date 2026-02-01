@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Icon, SearchBox, Button, Badge } from '../../common';
+import { Icon, SearchBox, Button, Badge, IconButton } from '../../common';
 
 const initialProjectsData = [
     { id: 1, name: 'ABC Corporate Office', description: 'Corporate office furniture project', status: 'Active', client: 'ABC Corporation', poNumber: 'PO-2024-001', workOrder: 'WO-001', estimateNumber: 'EST-001', terms: 'Net 30', nameAddress: 'ABC Corporation, 123 Main Ave', shipTo: 'North Industrial Zone', contact: 'John Smith - 664 123 4567', salesRep: 'Carlos Mendoza', csr: 'Ana Garcia', subtotal: 45000, tax: 7200, total: 52200 },
@@ -265,9 +265,7 @@ const ProjectsModule = () => {
                                     <span className="total-label">Total</span>
                                     <span className="total-value">${project.total?.toLocaleString()}</span>
                                 </div>
-                                <button className="btn-action-edit" onClick={() => handleEditProject(project)}>
-                                    <Icon name="edit" />
-                                </button>
+                                <IconButton icon="edit" variant="primary" onClick={() => handleEditProject(project)} />
                             </div>
                         </div>
                     ))}
@@ -336,9 +334,7 @@ const ProjectsModule = () => {
                                         </span>
                                     </span>
                                     <span className="col-actions">
-                                        <button className="btn-action-edit" onClick={() => handleEditProject(project)}>
-                                            <Icon name="edit" />
-                                        </button>
+                                        <IconButton icon="edit" variant="primary" onClick={() => handleEditProject(project)} />
                                     </span>
                                 </div>
                             ))}

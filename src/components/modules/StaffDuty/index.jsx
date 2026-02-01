@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, CardSkeleton } from '../../common';
 import { isApiEnabled, usersApi } from '../../../services/api';
 
 const StaffDutyModule = () => {
@@ -181,9 +181,10 @@ const StaffDutyModule = () => {
 
             {/* Staff Grid */}
             {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading staff...</p>
+                <div className="duty-staff-grid">
+                    {[...Array(6)].map((_, i) => (
+                        <CardSkeleton key={i} />
+                    ))}
                 </div>
             ) : (
                 <div className="duty-staff-grid">

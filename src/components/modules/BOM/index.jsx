@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, IconButton, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
 import { bomApi, productsApi, materialsApi } from '../../../services/api';
 import { bomData, bomStatusOptions, productsData, materialsData } from '../../../data/initialData';
 
@@ -493,15 +493,9 @@ const BOMModule = () => {
                                         <span className="stock-value">${bom.suggestedPrice?.toLocaleString()}</span>
                                     </div>
                                     <div className="material-actions">
-                                        <button className="btn-icon" onClick={() => handleView(bom)} title="View">
-                                            <Icon name="visibility" />
-                                        </button>
-                                        <button className="btn-icon" onClick={() => handleEdit(bom)} title="Edit">
-                                            <Icon name="edit" />
-                                        </button>
-                                        <button className="btn-icon danger" onClick={() => handleDelete(bom)} title="Delete">
-                                            <Icon name="delete" />
-                                        </button>
+                                        <IconButton icon="visibility" onClick={() => handleView(bom)} title="View" />
+                                        <IconButton icon="edit" onClick={() => handleEdit(bom)} title="Edit" variant="primary" />
+                                        <IconButton icon="delete" onClick={() => handleDelete(bom)} title="Delete" variant="danger" />
                                     </div>
                                 </div>
                             </div>
@@ -588,15 +582,9 @@ const BOMModule = () => {
                                         <Icon name={stockStatus.icon} style={{ color: stockStatus.color, fontSize: '20px' }} />
                                     </span>
                                     <span className="col-actions">
-                                        <button className="btn-icon" onClick={() => handleView(bom)} title="View">
-                                            <Icon name="visibility" />
-                                        </button>
-                                        <button className="btn-icon" onClick={() => handleEdit(bom)} title="Edit">
-                                            <Icon name="edit" />
-                                        </button>
-                                        <button className="btn-icon danger" onClick={() => handleDelete(bom)} title="Delete">
-                                            <Icon name="delete" />
-                                        </button>
+                                        <IconButton icon="visibility" onClick={() => handleView(bom)} title="View" />
+                                        <IconButton icon="edit" onClick={() => handleEdit(bom)} title="Edit" variant="primary" />
+                                        <IconButton icon="delete" onClick={() => handleDelete(bom)} title="Delete" variant="danger" />
                                     </span>
                                 </div>
 
@@ -808,12 +796,8 @@ const BOMModule = () => {
                                             </div>
                                             {modalMode !== 'view' && (
                                                 <div className="component-actions">
-                                                    <button className="btn-icon" onClick={() => handleEditComponent(comp, index)}>
-                                                        <Icon name="edit" />
-                                                    </button>
-                                                    <button className="btn-icon danger" onClick={() => handleRemoveComponent(index)}>
-                                                        <Icon name="delete" />
-                                                    </button>
+                                                    <IconButton icon="edit" onClick={() => handleEditComponent(comp, index)} variant="primary" />
+                                                    <IconButton icon="delete" onClick={() => handleRemoveComponent(index)} variant="danger" />
                                                 </div>
                                             )}
                                         </div>
@@ -875,12 +859,12 @@ const BOMModule = () => {
 
                     {modalMode !== 'view' && (
                         <div className="form-actions">
-                            <button className="btn-secondary" onClick={() => setShowModal(false)}>
+                            <Button variant="secondary" onClick={() => setShowModal(false)}>
                                 Cancel
-                            </button>
-                            <button className="btn-primary" onClick={handleSave}>
+                            </Button>
+                            <Button variant="primary" onClick={handleSave}>
                                 {modalMode === 'add' ? 'Create BOM' : 'Save Changes'}
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -1006,16 +990,16 @@ const BOMModule = () => {
                     </div>
 
                     <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowComponentModal(false)}>
+                        <Button variant="secondary" onClick={() => setShowComponentModal(false)}>
                             Cancel
-                        </button>
-                        <button
-                            className="btn-primary"
+                        </Button>
+                        <Button
+                            variant="primary"
                             onClick={handleSaveComponent}
                             disabled={!currentComponent.itemId && !currentComponent.subBomId}
                         >
                             {componentMode === 'add' ? 'Add Component' : 'Update Component'}
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -1032,12 +1016,12 @@ const BOMModule = () => {
                     <p>Are you sure you want to delete <strong>{bomToDelete?.name}</strong>?</p>
                     <p className="text-muted">This action cannot be undone.</p>
                     <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
+                        <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>
                             Cancel
-                        </button>
-                        <button className="btn-danger" onClick={confirmDelete}>
+                        </Button>
+                        <Button variant="danger" onClick={confirmDelete}>
                             Delete
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>

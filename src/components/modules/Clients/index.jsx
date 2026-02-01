@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Icon, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, IconButton, SearchBox, Modal, Button, Badge, TableSkeleton, CardSkeleton } from '../../common';
 import { clientsApi } from '../../../services/api';
 
 // Polling interval for QB sync status (30 seconds)
@@ -646,15 +646,9 @@ const ClientsModule = () => {
                                     </div>
                                 </div>
                                 <div className="client-card-footer">
-                                    <button className="btn-icon" onClick={() => handleView(client)} title="View">
-                                        <Icon name="visibility" />
-                                    </button>
-                                    <button className="btn-icon" onClick={() => handleEdit(client)} title="Edit">
-                                        <Icon name="edit" />
-                                    </button>
-                                    <button className="btn-icon danger" onClick={() => handleDelete(client)} title="Delete">
-                                        <Icon name="delete" />
-                                    </button>
+                                    <IconButton icon="visibility" onClick={() => handleView(client)} title="View" />
+                                    <IconButton icon="edit" variant="primary" onClick={() => handleEdit(client)} title="Edit" />
+                                    <IconButton icon="delete" variant="danger" onClick={() => handleDelete(client)} title="Delete" />
                                 </div>
                             </div>
                         );
@@ -737,15 +731,9 @@ const ClientsModule = () => {
                                             {statusStyle.label}
                                         </span>
                                         <span className="col-actions">
-                                            <button className="btn-icon" onClick={() => handleView(client)} title="View">
-                                                <Icon name="visibility" />
-                                            </button>
-                                            <button className="btn-icon" onClick={() => handleEdit(client)} title="Edit">
-                                                <Icon name="edit" />
-                                            </button>
-                                            <button className="btn-icon danger" onClick={() => handleDelete(client)} title="Delete">
-                                                <Icon name="delete" />
-                                            </button>
+                                            <IconButton icon="visibility" onClick={() => handleView(client)} title="View" />
+                                            <IconButton icon="edit" variant="primary" onClick={() => handleEdit(client)} title="Edit" />
+                                            <IconButton icon="delete" variant="danger" onClick={() => handleDelete(client)} title="Delete" />
                                         </span>
                                     </div>
                                 );

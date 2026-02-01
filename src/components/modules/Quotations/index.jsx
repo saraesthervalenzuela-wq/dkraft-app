@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
+import { Icon, IconButton, SearchBox, Modal, Button, TableSkeleton, CardSkeleton } from '../../common';
 import { isApiEnabled, clientsApi, productsApi } from '../../../services/api';
 import { clientsData as initialClientsData, productsData as initialProductsData } from '../../../data/initialData';
 import './styles.css';
@@ -659,66 +659,56 @@ const QuotationsModule = () => {
                                             </span>
                                         </td>
                                         <td className="actions-cell">
-                                            <button
-                                                className="btn-action"
+                                            <IconButton
+                                                icon="visibility"
                                                 onClick={() => handleOpenModal('view', quotation)}
                                                 title="View"
-                                            >
-                                                <Icon name="visibility" />
-                                            </button>
+                                            />
                                             {quotation.status === 'DRAFT' && (
                                                 <>
-                                                    <button
-                                                        className="btn-action"
+                                                    <IconButton
+                                                        icon="edit"
                                                         onClick={() => handleOpenModal('edit', quotation)}
                                                         title="Edit"
-                                                    >
-                                                        <Icon name="edit" />
-                                                    </button>
-                                                    <button
-                                                        className="btn-action send"
+                                                    />
+                                                    <IconButton
+                                                        icon="send"
+                                                        variant="primary"
                                                         onClick={() => handleSendToClient(quotation)}
                                                         title="Send to client"
-                                                    >
-                                                        <Icon name="send" />
-                                                    </button>
+                                                    />
                                                 </>
                                             )}
                                             {quotation.status === 'SENT' && (
-                                                <button
-                                                    className="btn-action approve"
+                                                <IconButton
+                                                    icon="check_circle"
+                                                    variant="success"
                                                     onClick={() => handleApprove(quotation)}
                                                     title="Approve"
-                                                >
-                                                    <Icon name="check_circle" />
-                                                </button>
+                                                />
                                             )}
                                             {quotation.status === 'APPROVED' && !quotation.depositPaid && (
-                                                <button
-                                                    className="btn-action"
+                                                <IconButton
+                                                    icon="payments"
                                                     onClick={() => handleOpenModal('edit', quotation)}
                                                     title="Register deposit"
-                                                >
-                                                    <Icon name="payments" />
-                                                </button>
+                                                />
                                             )}
                                             {quotation.status === 'APPROVED' && quotation.depositPaid && (
-                                                <button
-                                                    className="btn-action convert"
+                                                <IconButton
+                                                    icon="swap_horiz"
+                                                    variant="warning"
                                                     onClick={() => handleConvertToSalesOrder(quotation)}
                                                     title="Convert to Sales Order"
-                                                >
-                                                    <Icon name="swap_horiz" />
-                                                </button>
+                                                />
                                             )}
                                             {['DRAFT', 'REJECTED'].includes(quotation.status) && (
-                                                <button
-                                                    className="btn-action delete"
+                                                <IconButton
+                                                    icon="delete"
+                                                    variant="danger"
                                                     onClick={() => handleDelete(quotation)}
                                                     title="Delete"
-                                                >
-                                                    <Icon name="delete" />
-                                                </button>
+                                                />
                                             )}
                                         </td>
                                     </tr>
@@ -1043,18 +1033,17 @@ const QuotationsModule = () => {
                                                 <td>{formatCurrency(item.subtotal)}</td>
                                                 {modalMode !== 'view' && (
                                                     <td className="actions-cell">
-                                                        <button
-                                                            className="btn-action"
+                                                        <IconButton
+                                                            icon="edit"
                                                             onClick={() => handleEditItem(index)}
-                                                        >
-                                                            <Icon name="edit" />
-                                                        </button>
-                                                        <button
-                                                            className="btn-action delete"
+                                                            title="Edit item"
+                                                        />
+                                                        <IconButton
+                                                            icon="delete"
+                                                            variant="danger"
                                                             onClick={() => handleRemoveItem(index)}
-                                                        >
-                                                            <Icon name="delete" />
-                                                        </button>
+                                                            title="Remove item"
+                                                        />
                                                     </td>
                                                 )}
                                             </tr>
