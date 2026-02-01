@@ -19,8 +19,8 @@ const Button = ({
     type = 'button',
     ...props
 }) => {
-    // Check if this is an orange button with icon (split-icon style)
-    const isSplitIcon = variant === 'orange' && icon && iconPosition === 'left';
+    // Check if this button should have split-icon style (all variants except ghost)
+    const isSplitIcon = icon && iconPosition === 'left' && variant !== 'ghost';
 
     const baseClasses = `
         inline-flex items-center justify-center
@@ -88,9 +88,26 @@ const Button = ({
     };
 
     const sizeClasses = {
-        sm: 'px-4 py-2 text-xs',
-        md: 'px-6 py-3 text-sm',
-        lg: 'px-8 py-4 text-base'
+        sm: isSplitIcon ? 'pl-0 pr-5 py-2 text-xs' : 'px-4 py-2 text-xs',
+        md: isSplitIcon ? 'pl-0 pr-6 py-3 text-sm' : 'px-6 py-3 text-sm',
+        lg: isSplitIcon ? 'pl-0 pr-8 py-4 text-base' : 'px-8 py-4 text-base'
+    };
+
+    const splitIconSizes = {
+        sm: 'px-3 py-2 -my-2 mr-4',
+        md: 'px-4 py-3 -my-3 mr-5',
+        lg: 'px-5 py-4 -my-4 mr-6'
+    };
+
+    // Background colors for split-icon compartment by variant
+    const splitIconBg = {
+        primary: 'bg-blue-700/50 border-r border-blue-400/30',
+        secondary: 'bg-white/10 border-r border-white/20',
+        glass: 'bg-white/15 border-r border-white/25',
+        ghost: '',
+        danger: 'bg-red-700/50 border-r border-red-400/30',
+        success: 'bg-green-700/50 border-r border-green-400/30',
+        orange: 'bg-orange-600/50 border-r border-orange-400/30'
     };
 
     const widthClass = fullWidth ? 'w-full' : '';
@@ -116,8 +133,8 @@ const Button = ({
                 </>
             ) : isSplitIcon ? (
                 <>
-                    <span className="flex items-center justify-center bg-white/10 border-r border-white/20 px-3 py-0.5 -my-0.5 -ml-1 mr-3 rounded-l-full">
-                        <Icon name={icon} size="sm" />
+                    <span className={`flex items-center justify-center rounded-l-full ${splitIconBg[variant]} ${splitIconSizes[size]}`}>
+                        <Icon name={icon} size={size === 'lg' ? 'md' : 'sm'} />
                     </span>
                     {children}
                 </>
