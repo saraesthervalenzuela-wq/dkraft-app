@@ -303,6 +303,17 @@ const ClientsModule = () => {
     };
 
     /**
+     * Get avatar color class based on name
+     */
+    const getAvatarColorClass = (name) => {
+        if (!name) return 'color-7';
+        // Create a simple hash from the name to get consistent colors
+        const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const colorNum = (hash % 8) + 1;
+        return `color-${colorNum}`;
+    };
+
+    /**
      * QuickBooks sync status icon
      */
     const getQBStatusIcon = (status) => {
@@ -635,7 +646,7 @@ const ClientsModule = () => {
                         return (
                             <div key={client.id} className="client-card">
                                 <div className="client-card-header">
-                                    <div className="client-avatar">
+                                    <div className={`client-avatar ${getAvatarColorClass(client.name)}`}>
                                         {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                     </div>
                                     <div className="client-card-badges">

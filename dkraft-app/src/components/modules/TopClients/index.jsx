@@ -1,14 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
-import { topClients } from '../../../data/initialData';
+import { isApiEnabled, clientsApi } from '../../../services/api';
 
 const TopClientsModule = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('revenue');
     const [viewMode, setViewMode] = useState('grid');
+    const [clients, setClients] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const filteredClients = topClients.filter(client =>
-        client.name.toLowerCase().includes(searchTerm.toLowerCase())
+    // Load clients from API on mount
+    useEffect(() => {
+        loadClients();
+    }, []);
+
+    const loadClients = async () => {
+        setIsLoading(true);
+        try {
+            if (isApiEnabled()) {
+                const data = await clientsApi.getAll();
+                // Transform to top clients format with mock revenue/orders for now
+                const topClientsData = (data || []).map((client, index) => ({
+                    id: client.id,
+                    name: client.name || client.companyName,
+                    totalRevenue: client.totalRevenue || Math.floor(Math.random() * 50000) + 10000,
+                    totalOrders: client.totalOrders || Math.floor(Math.random() * 50) + 5,
+                    lastOrder: client.lastOrder || new Date().toISOString().split('T')[0],
+                    trend: ['up', 'down', 'stable'][index % 3]
+                }));
+                setClients(topClientsData);
+            }
+        } catch (error) {
+            console.error('Error loading clients:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const filteredClients = clients.filter(client =>
+        client.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const sortedClients = [...filteredClients].sort((a, b) => {
@@ -17,8 +47,8 @@ const TopClientsModule = () => {
         return 0;
     });
 
-    const totalRevenue = topClients.reduce((sum, c) => sum + c.totalRevenue, 0);
-    const totalOrders = topClients.reduce((sum, c) => sum + c.totalOrders, 0);
+    const totalRevenue = clients.reduce((sum, c) => sum + (c.totalRevenue || 0), 0);
+    const totalOrders = clients.reduce((sum, c) => sum + (c.totalOrders || 0), 0);
 
     return (
         <div className="module-page top-clients-page">
