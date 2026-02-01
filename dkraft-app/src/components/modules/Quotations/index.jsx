@@ -6,7 +6,7 @@
 
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
-import { isApiEnabled, clientsApi, productsApi } from '../../../services/api';
+import { isApiEnabled, clientsApi, productsApi, quotationsApi } from '../../../services/api';
 import { clientsData as initialClientsData, productsData as initialProductsData } from '../../../data/initialData';
 import './styles.css';
 
@@ -124,9 +124,22 @@ const QuotationsModule = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Load quotations from localStorage first
-            const localQuotations = loadFromStorage();
-            setQuotations(localQuotations);
+            // Try to load quotations from API first
+            let quotationsData = [];
+            if (isApiEnabled()) {
+                try {
+                    quotationsData = await quotationsApi.getAll();
+                    console.log('[Quotations] Loaded from API:', quotationsData?.length || 0);
+                } catch (err) {
+                    console.warn('[Quotations] API error, using localStorage:', err.message);
+                }
+            }
+
+            // Fallback to localStorage if API didn't return data
+            if (!quotationsData || quotationsData.length === 0) {
+                quotationsData = loadFromStorage();
+            }
+            setQuotations(quotationsData);
 
             let clientsData = [];
             let productsData = [];

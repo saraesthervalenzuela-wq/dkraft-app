@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
 import { bomService, productsService, materialsService } from '../../../firebase';
+import { isApiEnabled, bomApi, productsApi, materialsApi } from '../../../services/api';
 import { bomData, bomStatusOptions, productsData, materialsData } from '../../../data/initialData';
 
 const emptyBOM = {
@@ -69,15 +70,16 @@ const BOMModule = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [bomsData, productsData, materialsData] = await Promise.all([
-                bomService.getAll(),
-                productsService.getAll(),
-                materialsService.getAll()
+            const useApi = isApiEnabled();
+            const [bomsData, prodsData, matsData] = await Promise.all([
+                useApi ? bomApi.getAll() : bomService.getAll(),
+                useApi ? productsApi.getAll() : productsService.getAll(),
+                useApi ? materialsApi.getAll() : materialsService.getAll()
             ]);
 
-            if (bomsData.length > 0) setBoms(bomsData);
-            if (productsData.length > 0) setProducts(productsData);
-            if (materialsData.length > 0) setMaterials(materialsData);
+            if (bomsData?.length > 0) setBoms(bomsData);
+            if (prodsData?.length > 0) setProducts(prodsData);
+            if (matsData?.length > 0) setMaterials(matsData);
         } catch (error) {
             console.error('Error loading BOM data:', error);
         } finally {
