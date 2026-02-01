@@ -192,10 +192,3 @@ CREATE TABLE qb_tokens (
 - [OAuth 2.0 Guide](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0)
 - [QB SDK for JS](https://github.com/intuit/oauth-jsclient) (opcional)
 
-## Contacto
-
-Para dudas sobre el proyecto D-KRAFT, contactar al equipo de desarrollo.
-
----
-
-**Tiempo estimado:** 3-5 días si tienes experiencia con QB, 1-2 semanas si es tu primera vez.
