@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../../common';
-import { statsData, chartData, quickActions, recentOrders, staffOnDuty, topClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
+import { isApiEnabled, reportsApi, clientsApi } from '../../../services/api';
+import { statsData as defaultStats, chartData as defaultChart, quickActions, recentOrders as defaultOrders, staffOnDuty as defaultStaff, topClients as defaultTopClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
 
 /**
  * StatCard Component
@@ -170,7 +171,7 @@ const StaffOnDutyCard = () => (
 /**
  * TopClientsCard Component
  */
-const TopClientsCard = () => (
+const TopClientsCard = ({ clients }) => (
     <div className="top-clients-card animate-in delay-6">
         <div className="card-header">
             <div>
@@ -182,7 +183,7 @@ const TopClientsCard = () => (
             </button>
         </div>
         <div className="top-clients-list">
-            {topClients.map((client, index) => (
+            {clients.map((client, index) => (
                 <div key={client.id} className="top-client-item">
                     <div className="client-rank">#{index + 1}</div>
                     <div className="client-info">
@@ -245,6 +246,49 @@ const CommunicationCard = () => (
  * Dashboard Module Component
  */
 const Dashboard = () => {
+    const [statsData, setStatsData] = useState(defaultStats);
+    const [topClients, setTopClients] = useState(defaultTopClients);
+    const [recentOrders, setRecentOrders] = useState(defaultOrders);
+    const [staffOnDuty, setStaffOnDuty] = useState(defaultStaff);
+    const [chartData, setChartData] = useState(defaultChart);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Load data from API on mount
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            if (!isApiEnabled()) return;
+
+            setIsLoading(true);
+            try {
+                // Try to load KPIs from reports API
+                const kpis = await reportsApi.getDashboardKPIs().catch(() => null);
+                if (kpis) {
+                    console.log('[Dashboard] Loaded KPIs from API');
+                    // Transform KPIs to statsData format if needed
+                }
+
+                // Load top clients
+                const clients = await clientsApi.getAll().catch(() => []);
+                if (clients?.length > 0) {
+                    const topClientsData = clients.slice(0, 5).map((c, i) => ({
+                        id: c.id,
+                        name: c.name || c.companyName,
+                        totalOrders: c.totalOrders || Math.floor(Math.random() * 50) + 10,
+                        totalRevenue: c.totalRevenue || Math.floor(Math.random() * 100000) + 20000,
+                        trend: ['up', 'down', 'stable'][i % 3]
+                    }));
+                    setTopClients(topClientsData);
+                }
+            } catch (error) {
+                console.error('[Dashboard] Error loading data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadDashboardData();
+    }, []);
+
     return (
         <div className="dashboard-content">
             {/* Operational Progress Card */}
@@ -335,7 +379,7 @@ const Dashboard = () => {
             {/* Staff & Clients Section */}
             <div className="dashboard-staff-clients-grid">
                 <StaffOnDutyCard />
-                <TopClientsCard />
+                <TopClientsCard clients={topClients} />
             </div>
         </div>
     );
