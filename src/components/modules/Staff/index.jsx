@@ -339,6 +339,10 @@ const StaffModule = () => {
                                 Role
                                 <Icon name={sortConfig.key === 'role' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
                             </span>
+                            <span className="col-status sortable" onClick={() => handleSort('status')}>
+                                Status
+                                <Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
+                            </span>
                             <span className="col-actions">Actions</span>
                         </div>
 
@@ -357,6 +361,16 @@ const StaffModule = () => {
                                     <span className="col-role">
                                         <Badge variant={getRoleBadgeVariant(user.role)} size="sm">
                                             {ROLE_COLORS[user.role]?.label || user.role}
+                                        </Badge>
+                                    </span>
+                                    <span className="col-status">
+                                        <Badge
+                                            variant={user.status === 'active' ? 'success' : 'default'}
+                                            size="sm"
+                                            dot
+                                            pulse={user.status === 'active'}
+                                        >
+                                            {user.status === 'active' ? 'Active' : 'Inactive'}
                                         </Badge>
                                     </span>
                                     <span className="col-actions">

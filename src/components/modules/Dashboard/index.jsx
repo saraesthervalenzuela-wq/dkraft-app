@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Icon, Button, Badge } from '../../common';
-import { statsData, chartData, quickActions, recentOrders, staffOnDuty, topClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
+import { statsData, chartData, chartDataByRange, quickActions, recentOrders, staffOnDuty, topClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
 import { clientsApi, suppliersApi, materialsApi, productsApi, isApiEnabled } from '../../../services/api';
 
 /**
@@ -187,28 +187,30 @@ const ProductionChart = () => {
 /**
  * ActionCard Component
  */
-const ActionCard = ({ title, desc, progress, onClick }) => (
-    <div className="action-card group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:border-orange-500/30">
-        {/* Hover glow effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-500/0 to-orange-500/0 group-hover:from-orange-500/5 group-hover:via-transparent group-hover:to-blue-500/5 transition-all duration-500" />
+const ACTION_ICONS = {
+    'Register Product': 'inventory_2',
+    'New Order': 'add_shopping_cart',
+    'Assign Staff': 'group_add'
+};
 
-        <div className="relative z-10">
-            <div className="action-title text-lg font-bold text-white mb-2">{title}</div>
-            <div className="action-desc text-sm text-slate-400 mb-4">{desc}</div>
-            <div className="action-progress h-1.5 bg-white/10 rounded-full overflow-hidden mb-4">
-                <div
-                    className="action-progress-bar h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-700"
-                    style={{ width: `${progress}%` }}
-                />
+const ActionCard = ({ title, desc, onClick }) => (
+    <button
+        onClick={onClick}
+        className="action-card group relative overflow-hidden rounded-2xl p-5 cursor-pointer text-left
+            bg-slate-800/50 border border-white/10
+            transition-all duration-300 hover:scale-[1.02] hover:bg-slate-800/70 hover:border-orange-500/30 hover:shadow-xl hover:shadow-orange-500/10"
+    >
+        <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shrink-0 shadow-lg shadow-orange-500/25 group-hover:scale-110 transition-transform duration-300">
+                <Icon name={ACTION_ICONS[title] || 'arrow_forward'} className="text-white text-xl" />
             </div>
+            <div className="flex-1 min-w-0">
+                <h4 className="text-white font-semibold text-base mb-1 group-hover:text-orange-300 transition-colors">{title}</h4>
+                <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
+            </div>
+            <Icon name="chevron_right" className="text-slate-600 group-hover:text-orange-400 group-hover:translate-x-1 transition-all duration-300 mt-1" />
         </div>
-        <button
-            onClick={onClick}
-            className="action-btn absolute bottom-4 right-4 w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white transition-all duration-300 group-hover:scale-110 group-hover:rotate-12 group-hover:shadow-lg group-hover:shadow-orange-500/30"
-        >
-            <Icon name="arrow_forward" />
-        </button>
-    </div>
+    </button>
 );
 
 /**
@@ -221,7 +223,7 @@ const StaffOnDutyCard = ({ onViewAll }) => (
                 <div className="card-title">Staff on Duty</div>
                 <div className="card-subtitle">{staffOnDuty.filter(s => s.status === 'working').length} actively working</div>
             </div>
-            <Button variant="glass" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
+            <Button variant="secondary" size="sm" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
                 View All
             </Button>
         </div>
@@ -249,6 +251,14 @@ const StaffOnDutyCard = ({ onViewAll }) => (
 /**
  * TopClientsCard Component
  */
+const RANK_COLORS = [
+    'bg-gradient-to-br from-orange-500 to-orange-600 text-white',
+    'bg-gradient-to-br from-slate-400 to-slate-500 text-white',
+    'bg-gradient-to-br from-amber-600 to-amber-700 text-white',
+    'bg-slate-700 text-slate-300',
+    'bg-slate-700 text-slate-300',
+];
+
 const TopClientsCard = ({ onViewAll }) => (
     <div className="top-clients-card animate-in delay-6">
         <div className="card-header">
@@ -256,14 +266,16 @@ const TopClientsCard = ({ onViewAll }) => (
                 <div className="card-title">Top Clients</div>
                 <div className="card-subtitle">By total revenue</div>
             </div>
-            <Button variant="glass" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
+            <Button variant="secondary" size="sm" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
                 View All
             </Button>
         </div>
         <div className="top-clients-list">
             {topClients.map((client, index) => (
                 <div key={client.id} className="top-client-item">
-                    <div className="client-rank">#{index + 1}</div>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${RANK_COLORS[index] || RANK_COLORS[4]}`}>
+                        #{index + 1}
+                    </div>
                     <div className="client-info">
                         <div className="client-name">{client.name}</div>
                         <div className="client-orders">{client.totalOrders} orders</div>
@@ -474,7 +486,7 @@ const LiveActivityFeed = ({ onNavigate }) => {
     ]);
 
     return (
-        <div className="bg-slate-800/40 rounded-2xl border border-white/10 p-5 animate-in delay-2">
+        <div className="bg-slate-800/40 rounded-2xl border border-white/10 p-5 animate-in delay-2 flex flex-col h-[380px]">
             <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
@@ -485,21 +497,21 @@ const LiveActivityFeed = ({ onNavigate }) => {
                         <p className="text-slate-400 text-xs">Real-time updates</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
                     <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                    <span className="text-xs text-slate-400">Live</span>
+                    <span className="text-xs text-green-400 font-medium">Live</span>
                 </div>
             </div>
 
-            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-2 scrollbar-thin">
+            <div className="space-y-2 flex-1 overflow-y-auto pr-2 scrollbar-thin">
                 {activities.map((activity, index) => (
                     <div
                         key={activity.id}
-                        className="flex items-start gap-3 p-3 rounded-xl bg-slate-900/50 hover:bg-slate-800/50 transition-all cursor-pointer group"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-900/50 hover:bg-slate-800/50 transition-all cursor-pointer group"
                         style={{ animationDelay: `${index * 100}ms` }}
                     >
                         <div className={`
-                            w-8 h-8 rounded-lg flex items-center justify-center shrink-0
+                            w-9 h-9 rounded-lg flex items-center justify-center shrink-0
                             ${activity.color === 'orange' ? 'bg-orange-500/20 text-orange-400' :
                               activity.color === 'success' ? 'bg-green-500/20 text-green-400' :
                               activity.color === 'warning' ? 'bg-amber-500/20 text-amber-400' :
@@ -511,22 +523,24 @@ const LiveActivityFeed = ({ onNavigate }) => {
                             <p className="text-sm text-slate-200 truncate group-hover:text-white transition-colors">
                                 {activity.text}
                             </p>
-                            <p className="text-xs text-slate-500">{activity.time}</p>
+                            <p className="text-xs text-slate-500 mt-0.5">{activity.time}</p>
                         </div>
                         <Icon name="chevron_right" className="text-slate-600 group-hover:text-orange-400 transition-colors" size="sm" />
                     </div>
                 ))}
             </div>
 
-            <Button
-                variant="ghost"
-                size="sm"
-                icon="history"
-                className="w-full mt-4"
-                onClick={() => onNavigate?.('activity-log')}
-            >
-                View All Activity
-            </Button>
+            <div className="pt-4 mt-auto border-t border-white/10">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    icon="history"
+                    className="w-full"
+                    onClick={() => onNavigate?.('activity-log')}
+                >
+                    View All Activity
+                </Button>
+            </div>
         </div>
     );
 };

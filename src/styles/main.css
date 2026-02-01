@@ -4386,7 +4386,7 @@ button {
 
 .staff-table-header {
     display: grid;
-    grid-template-columns: 50px 2fr 2fr 1fr 80px;
+    grid-template-columns: 50px 2fr 2fr 1fr 100px 80px;
     padding: 14px 28px;
     background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
     font-size: 13px;
@@ -4414,9 +4414,9 @@ button {
 
 .staff-table-row {
     display: grid;
-    grid-template-columns: 50px 2fr 2fr 1fr 80px;
-    padding: 16px 28px;
-    border-bottom: 1px solid var(--border-subtle);
+    grid-template-columns: 50px 2fr 2fr 1fr 100px 80px;
+    padding: 20px 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     align-items: center;
     transition: all 0.2s ease;
     animation: slideIn 0.3s ease forwards;
@@ -4433,11 +4433,11 @@ button {
 .staff-table-row:nth-child(8) { animation-delay: 0.4s; }
 
 .staff-table-row:hover {
-    background: rgba(0, 51, 179, 0.04);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .staff-table-row:last-child {
-    border-bottom: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .col-checkbox {

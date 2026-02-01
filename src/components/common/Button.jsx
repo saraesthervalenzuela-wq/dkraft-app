@@ -24,7 +24,7 @@ const Button = ({
         font-semibold rounded-xl
         transition-all duration-200
         outline-none focus:outline-none
-        cursor-pointer
+        cursor-pointer whitespace-nowrap
         disabled:opacity-50 disabled:cursor-not-allowed
     `;
 
@@ -75,18 +75,18 @@ const Button = ({
         `,
         orange: `
             bg-gradient-to-r from-orange-500 to-orange-600
-            text-white
-            shadow-lg shadow-orange-500/25
-            hover:shadow-orange-500/40 hover:scale-[1.02]
+            text-white font-bold
+            shadow-lg shadow-orange-500/30
+            hover:shadow-orange-500/50 hover:scale-[1.02]
             active:scale-[0.98]
-            border-0 outline-0
+            border border-orange-400/30
         `
     };
 
     const sizeClasses = {
         sm: 'px-4 py-2 text-xs',
-        md: 'px-5 py-2.5 text-sm',
-        lg: 'px-8 py-3.5 text-base'
+        md: 'px-6 py-3 text-sm',
+        lg: 'px-8 py-4 text-base'
     };
 
     const widthClass = fullWidth ? 'w-full' : '';

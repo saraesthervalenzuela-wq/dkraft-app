@@ -88,6 +88,30 @@ export const chartData = {
     values: [500, 1200, 800, 1700, 1450, 2100, 1900]
 };
 
+// Chart data by time range
+export const chartDataByRange = {
+    week: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        values: [500, 1200, 800, 1700, 1450, 2100, 1900],
+        title: 'This Week'
+    },
+    month: {
+        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+        values: [4500, 6200, 5800, 7100],
+        title: 'This Month'
+    },
+    quarter: {
+        labels: ['Jan', 'Feb', 'Mar'],
+        values: [18500, 22000, 25800],
+        title: 'This Quarter'
+    },
+    year: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        values: [15000, 18000, 22000, 19500, 24000, 28000, 26500, 30000, 32000, 29000, 35000, 42000],
+        title: 'This Year'
+    }
+};
+
 // Recent orders
 export const recentOrders = [
     { id: 1, orderNumber: 'OP-202504', client: 'Jackson Moore', project: 'Office Renovation', amount: 12500, status: 'completed' },
