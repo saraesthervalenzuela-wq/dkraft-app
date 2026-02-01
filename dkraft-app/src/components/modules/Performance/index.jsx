@@ -1,17 +1,44 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { isApiEnabled, performanceApi } from '../../../services/api';
 import {
-    staffData,
-    attendanceData,
+    staffData as defaultStaffData,
+    attendanceData as defaultAttendanceData,
     staffOperationHours,
-    staffProductivityData,
+    staffProductivityData as defaultProductivityData,
     divisionOptions,
     departmentOptions,
     bonusTypes,
-    attendanceStatusOptions,
-    performanceAlertSeverity
+    attendanceStatusOptions
 } from '../../../data/initialData';
 
 const PerformanceModule = () => {
+    // Data state
+    const [staffData, setStaffData] = useState(defaultStaffData);
+    const [attendanceData, setAttendanceData] = useState(defaultAttendanceData);
+    const [staffProductivityData, setStaffProductivityData] = useState(defaultProductivityData);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Load from API
+    useEffect(() => {
+        const loadData = async () => {
+            if (!isApiEnabled()) return;
+            setIsLoading(true);
+            try {
+                const data = await performanceApi.getAll().catch(() => null);
+                if (data) {
+                    if (data.staff?.length > 0) setStaffData(data.staff);
+                    if (data.attendance?.length > 0) setAttendanceData(data.attendance);
+                    if (data.productivity?.length > 0) setStaffProductivityData(data.productivity);
+                }
+            } catch (error) {
+                console.error('Error loading performance data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadData();
+    }, []);
+
     // State management
     const [activeTab, setActiveTab] = useState('overview');
     const [selectedStaff, setSelectedStaff] = useState(null);
@@ -20,7 +47,7 @@ const PerformanceModule = () => {
     const [divisionFilter, setDivisionFilter] = useState('all');
     const [dateRange, setDateRange] = useState('week');
     const [showModal, setShowModal] = useState(false);
-    const [modalMode, setModalMode] = useState('view');
+    const [_modalMode, setModalMode] = useState('view');
     const [showAttendanceModal, setShowAttendanceModal] = useState(false);
     const [showBonusModal, setShowBonusModal] = useState(false);
 
@@ -870,6 +897,17 @@ const PerformanceModule = () => {
             </div>
         </div>
     );
+
+    if (isLoading) {
+        return (
+            <div className="module-page performance-page">
+                <div className="loading-state">
+                    <span className="material-symbols-rounded">progress_activity</span>
+                    <p>Loading performance data...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="module-page performance-page">

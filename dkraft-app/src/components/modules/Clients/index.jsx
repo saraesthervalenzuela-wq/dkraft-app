@@ -149,7 +149,7 @@ const ClientsModule = () => {
     /**
      * Check if any clients have pending QB sync
      */
-    const hasPendingQBSync = useCallback((clientsList) => {
+    const _hasPendingQBSync = useCallback((clientsList) => {
         return clientsList.some(c => !c.listId && c.qbSyncStatus !== 'error');
     }, []);
 

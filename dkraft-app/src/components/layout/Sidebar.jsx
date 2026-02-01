@@ -68,7 +68,7 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
                     <div className="logo-icon">DC</div>
                     <div className="logo-text">
                         <span className="logo-title">D-KRAFT</span>
-                        <span className="logo-subtitle">Dove Creek KRAFT</span>
+                        <span className="logo-subtitle">Knowledge Resource Assignment & Flow Tracking</span>
                     </div>
                 </div>
             </div>

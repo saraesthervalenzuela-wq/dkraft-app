@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
 import { AuthLayout } from './components/auth';
 import { Sidebar } from './components/layout';
 import {
@@ -137,9 +138,11 @@ const AuthWrapper = () => {
 // Main App component
 function App() {
     return (
-        <AuthProvider>
-            <AuthWrapper />
-        </AuthProvider>
+        <ToastProvider position="top-right">
+            <AuthProvider>
+                <AuthWrapper />
+            </AuthProvider>
+        </ToastProvider>
     );
 }
 

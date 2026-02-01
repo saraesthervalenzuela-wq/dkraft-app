@@ -609,6 +609,69 @@ export const activityLogApi = {
     getRecent: (limit = 50) => request(`/activity-log?limit=${limit}`),
 };
 
+// ============================================
+// OPERATIONS (Work Orders) API
+// ============================================
+export const operationsApi = {
+    getAll: () => request('/operations'),
+    getById: (id) => request(`/operations/${id}`),
+    create: (data) => request('/operations', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    update: (id, data) => request(`/operations/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    }),
+    delete: (id) => request(`/operations/${id}`, { method: 'DELETE' }),
+    getByProject: (projectId) => request(`/operations?projectId=${projectId}`),
+    getByStatus: (status) => request(`/operations?status=${status}`),
+    updateStage: (id, stageKey, data) => request(`/operations/${id}/stages/${stageKey}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    }),
+};
+
+// ============================================
+// QUALITY API
+// ============================================
+export const qualityApi = {
+    getAll: () => request('/quality'),
+    getById: (id) => request(`/quality/${id}`),
+    create: (data) => request('/quality', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    update: (id, data) => request(`/quality/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    }),
+    delete: (id) => request(`/quality/${id}`, { method: 'DELETE' }),
+    getByOperation: (operationId) => request(`/quality?operationId=${operationId}`),
+    getByStatus: (status) => request(`/quality?status=${status}`),
+    getStats: () => request('/quality/stats'),
+};
+
+// ============================================
+// PERFORMANCE API
+// ============================================
+export const performanceApi = {
+    getAll: () => request('/performance'),
+    getById: (id) => request(`/performance/${id}`),
+    getByStaff: (staffId) => request(`/performance?staffId=${staffId}`),
+    getByPeriod: (startDate, endDate) => request(`/performance?startDate=${startDate}&endDate=${endDate}`),
+    create: (data) => request('/performance', {
+        method: 'POST',
+        body: JSON.stringify(data)
+    }),
+    update: (id, data) => request(`/performance/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+    }),
+    getStats: () => request('/performance/stats'),
+    getAlerts: () => request('/performance/alerts'),
+};
+
 // Export all APIs as a single object for convenience
 export const api = {
     materials: materialsApi,
@@ -629,6 +692,9 @@ export const api = {
     areas: areasApi,
     departments: departmentsApi,
     activityLog: activityLogApi,
+    operations: operationsApi,
+    quality: qualityApi,
+    performance: performanceApi,
 
     // Utility functions
     isEnabled: isApiEnabled,

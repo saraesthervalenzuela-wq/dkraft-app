@@ -29,7 +29,8 @@
       "Bash(cd /Users/concepcion/Documents/GitHub/dkraft-app/dkraft-app echo \"=== Quién creó Firebase ===\" git log --oneline --all -- src/firebase/config.js)",
       "Bash(git show:*)",
       "Bash(git push:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx eslint:*)"
     ]
   }
 }

@@ -1,13 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Icon } from '../../common';
+import { isApiEnabled, qualityApi, operationsApi } from '../../../services/api';
 import {
     qaInspectionsData,
     qaChecklistTemplates,
     qaFindingTypes,
     qaSeverityLevels,
     qaStatusOptions,
-    qaResultOptions,
-    operationsData,
+    operationsData as defaultOperationsData,
     operationStages,
     staffData
 } from '../../../data/initialData';
@@ -18,6 +18,29 @@ import {
  */
 const QualityModule = () => {
     const [inspections, setInspections] = useState(qaInspectionsData);
+    const [operationsData, setOperationsData] = useState(defaultOperationsData);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Load from API
+    useEffect(() => {
+        const loadData = async () => {
+            if (!isApiEnabled()) return;
+            setIsLoading(true);
+            try {
+                const [qaData, opsData] = await Promise.all([
+                    qualityApi.getAll().catch(() => []),
+                    operationsApi.getAll().catch(() => [])
+                ]);
+                if (qaData?.length > 0) setInspections(qaData);
+                if (opsData?.length > 0) setOperationsData(opsData);
+            } catch (error) {
+                console.error('Error loading quality data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadData();
+    }, []);
     const [activeTab, setActiveTab] = useState('inspections');
     const [activeStatusFilter, setActiveStatusFilter] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
@@ -676,7 +699,7 @@ const QualityModule = () => {
                         <div className="history-timeline">
                             {group.inspections
                                 .sort((a, b) => new Date(a.inspectionDate) - new Date(b.inspectionDate))
-                                .map((inspection, idx) => (
+                                .map((inspection) => (
                                     <div key={inspection.id} className="timeline-item">
                                         <div className={`timeline-dot ${getResultClass(inspection.result)}`}></div>
                                         <div className="timeline-content">
@@ -1083,6 +1106,17 @@ const QualityModule = () => {
             </div>
         );
     };
+
+    if (isLoading) {
+        return (
+            <div className="module-page quality-page">
+                <div className="loading-state">
+                    <Icon name="progress_activity" />
+                    <p>Loading quality inspections...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="module-page quality-page">

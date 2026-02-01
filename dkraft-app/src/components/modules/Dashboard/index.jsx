@@ -24,12 +24,12 @@ const StatCard = ({ label, value, icon, delay }) => (
 /**
  * ProductionChart Component
  */
-const ProductionChart = () => {
+const ProductionChart = ({ data }) => {
     const chartRef = useRef(null);
     const chartInstance = useRef(null);
 
     useEffect(() => {
-        if (chartRef.current && window.Chart) {
+        if (chartRef.current && window.Chart && data) {
             const ctx = chartRef.current.getContext('2d');
 
             if (chartInstance.current) {
@@ -37,21 +37,21 @@ const ProductionChart = () => {
             }
 
             const gradient = ctx.createLinearGradient(0, 0, 0, 280);
-            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.3)');
-            gradient.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+            gradient.addColorStop(0, 'rgba(211, 84, 0, 0.3)');
+            gradient.addColorStop(1, 'rgba(211, 84, 0, 0.0)');
 
             chartInstance.current = new window.Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: chartData.labels,
+                    labels: data.labels,
                     datasets: [{
-                        data: chartData.values,
-                        borderColor: '#8b5cf6',
+                        data: data.values,
+                        borderColor: '#d35400',
                         borderWidth: 3,
                         backgroundColor: gradient,
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#8b5cf6',
+                        pointBackgroundColor: '#d35400',
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2,
                         pointRadius: 5,
@@ -108,7 +108,7 @@ const ProductionChart = () => {
                 chartInstance.current.destroy();
             }
         };
-    }, []);
+    }, [data]);
 
     return (
         <div className="chart-container">
@@ -136,31 +136,31 @@ const ActionCard = ({ title, desc, progress }) => (
 /**
  * StaffOnDutyCard Component
  */
-const StaffOnDutyCard = () => (
+const StaffOnDutyCard = ({ staff }) => (
     <div className="staff-duty-card animate-in delay-5">
         <div className="card-header">
             <div>
                 <div className="card-title">Staff on Duty</div>
-                <div className="card-subtitle">{staffOnDuty.filter(s => s.status === 'working').length} actively working</div>
+                <div className="card-subtitle">{staff.filter(s => s.status === 'working').length} actively working</div>
             </div>
-            <button className="btn-secondary">
+            <button className="btn-view-all">
                 View All <Icon name="arrow_forward" />
             </button>
         </div>
         <div className="staff-duty-list">
-            {staffOnDuty.map((staff) => (
-                <div key={staff.id} className="staff-duty-item">
-                    <div className={`staff-avatar ${staff.status}`}>{staff.avatar}</div>
+            {staff.map((member) => (
+                <div key={member.id} className="staff-duty-item">
+                    <div className={`staff-avatar ${member.status}`}>{member.avatar}</div>
                     <div className="staff-info">
-                        <div className="staff-name">{staff.name}</div>
-                        <div className="staff-role">{staff.role}</div>
+                        <div className="staff-name">{member.name}</div>
+                        <div className="staff-role">{member.role}</div>
                     </div>
                     <div className="staff-task">
-                        <div className="task-name">{staff.currentTask}</div>
-                        <div className="task-since">Since {staff.since}</div>
+                        <div className="task-name">{member.currentTask}</div>
+                        <div className="task-since">Since {member.since}</div>
                     </div>
-                    <div className={`staff-status-badge ${staff.status}`}>
-                        {staff.status === 'working' ? 'Working' : 'On Break'}
+                    <div className={`staff-status-badge ${member.status}`}>
+                        {member.status === 'working' ? 'Working' : 'On Break'}
                     </div>
                 </div>
             ))}
@@ -178,7 +178,7 @@ const TopClientsCard = ({ clients }) => (
                 <div className="card-title">Top Clients</div>
                 <div className="card-subtitle">By total revenue</div>
             </div>
-            <button className="btn-secondary">
+            <button className="btn-view-all">
                 View All <Icon name="arrow_forward" />
             </button>
         </div>
@@ -246,12 +246,12 @@ const CommunicationCard = () => (
  * Dashboard Module Component
  */
 const Dashboard = () => {
-    const [statsData, setStatsData] = useState(defaultStats);
+    const [statsData, _setStatsData] = useState(defaultStats);
     const [topClients, setTopClients] = useState(defaultTopClients);
-    const [recentOrders, setRecentOrders] = useState(defaultOrders);
-    const [staffOnDuty, setStaffOnDuty] = useState(defaultStaff);
-    const [chartData, setChartData] = useState(defaultChart);
-    const [isLoading, setIsLoading] = useState(false);
+    const [recentOrders, _setRecentOrders] = useState(defaultOrders);
+    const [staffOnDuty, _setStaffOnDuty] = useState(defaultStaff);
+    const [chartData, _setChartData] = useState(defaultChart);
+    const [_isLoading, setIsLoading] = useState(false);
 
     // Load data from API on mount
     useEffect(() => {
@@ -322,7 +322,7 @@ const Dashboard = () => {
                     </button>
                 </div>
 
-                <ProductionChart />
+                <ProductionChart data={chartData} />
             </div>
 
             {/* Quick Actions */}
@@ -346,7 +346,7 @@ const Dashboard = () => {
                             <div className="card-title">Recent Orders</div>
                             <div className="card-subtitle">Latest project orders and their status</div>
                         </div>
-                        <button className="btn-secondary">
+                        <button className="btn-view-all">
                             View All <Icon name="arrow_forward" />
                         </button>
                     </div>
@@ -378,7 +378,7 @@ const Dashboard = () => {
 
             {/* Staff & Clients Section */}
             <div className="dashboard-staff-clients-grid">
-                <StaffOnDutyCard />
+                <StaffOnDutyCard staff={staffOnDuty} />
                 <TopClientsCard clients={topClients} />
             </div>
         </div>

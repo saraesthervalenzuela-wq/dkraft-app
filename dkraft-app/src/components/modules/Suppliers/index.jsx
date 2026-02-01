@@ -3,10 +3,43 @@ import { Icon, SearchBox, Modal } from '../../common';
 import { suppliersService } from '../../../firebase';
 import { isApiEnabled, suppliersApi } from '../../../services/api';
 
+// Avatar color palette - vibrant and varied
+const AVATAR_COLORS = [
+    'linear-gradient(135deg, #1a5276 0%, #2874a6 100%)',  // Navy
+    'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)',  // Green
+    'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',  // Purple
+    'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)',  // Red
+    'linear-gradient(135deg, #16a085 0%, #1abc9c 100%)',  // Teal
+    'linear-gradient(135deg, #d35400 0%, #e67e22 100%)',  // Orange
+    'linear-gradient(135deg, #2980b9 0%, #3498db 100%)',  // Blue
+    'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)',  // Yellow
+    'linear-gradient(135deg, #6c3483 0%, #8e44ad 100%)',  // Deep Purple
+    'linear-gradient(135deg, #0e6655 0%, #148f77 100%)',  // Dark Teal
+    'linear-gradient(135deg, #922b21 0%, #c0392b 100%)',  // Dark Red
+    'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',  // Dark Blue
+];
+
+// Get avatar color by index
+const getAvatarColor = (index) => AVATAR_COLORS[index % AVATAR_COLORS.length];
+
+// Supplier categories
+const SUPPLIER_CATEGORIES = [
+    { id: 'wood', name: 'Wood & Lumber', icon: 'forest', color: '#8B4513' },
+    { id: 'hardware', name: 'Hardware & Fasteners', icon: 'build', color: '#607D8B' },
+    { id: 'metal', name: 'Metals & Steel', icon: 'iron', color: '#78909C' },
+    { id: 'paint', name: 'Paints & Finishes', icon: 'format_paint', color: '#E91E63' },
+    { id: 'glass', name: 'Glass & Crystals', icon: 'window', color: '#00BCD4' },
+    { id: 'textile', name: 'Textiles & Fabrics', icon: 'checkroom', color: '#9C27B0' },
+    { id: 'electronic', name: 'Electronics', icon: 'memory', color: '#4CAF50' },
+    { id: 'machinery', name: 'Machinery & Tools', icon: 'precision_manufacturing', color: '#FF5722' },
+    { id: 'packaging', name: 'Packaging', icon: 'inventory_2', color: '#795548' },
+    { id: 'other', name: 'Other', icon: 'category', color: '#9E9E9E' },
+];
+
 /**
  * Initial suppliers data matching MySQL schema
  * Fields: id, name, email, phone, address, city, state, country, zipCode,
- *         rfc, contactName, website, status, qbListId, qbSyncStatus, notes
+ *         rfc, contactName, website, status, qbListId, qbSyncStatus, notes, category
  */
 const initialSuppliersData = [
     {

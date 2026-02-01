@@ -214,7 +214,7 @@ const ProductsModule = () => {
     /**
      * Check if any products have pending QB sync
      */
-    const hasPendingQBSync = useCallback((productsList) => {
+    const _hasPendingQBSync = useCallback((productsList) => {
         return productsList.some(p => !p.qbListId && p.qbSyncStatus !== 'error');
     }, []);
 

@@ -110,7 +110,7 @@ const MaterialsModule = () => {
     /**
      * Check if any materials have pending QB sync and need polling
      */
-    const hasPendingQBSync = useCallback((materialsList) => {
+    const _hasPendingQBSync = useCallback((materialsList) => {
         return materialsList.some(m => !m.qbListId && m.qbSyncStatus !== 'error');
     }, []);
 

@@ -158,6 +158,17 @@ const ProjectsModule = () => {
     const totalRevenue = projects.reduce((sum, p) => sum + (p.total || 0), 0);
     const completedProjects = projects.filter(p => p.status === 'Completed').length;
 
+    if (isLoading) {
+        return (
+            <div className="module-page projects-page">
+                <div className="loading-state">
+                    <Icon name="progress_activity" />
+                    <p>Loading projects...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="module-page projects-page">
             {/* Page Header */}

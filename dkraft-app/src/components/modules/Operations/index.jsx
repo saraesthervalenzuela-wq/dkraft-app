@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
+import { isApiEnabled, operationsApi, projectsApi, materialsApi } from '../../../services/api';
 import {
     operationsData,
     operationStages,
@@ -14,6 +15,32 @@ import {
 
 const OperationsModule = () => {
     const [operations, setOperations] = useState(operationsData);
+    const [_projects, setProjects] = useState(projectsData);
+    const [_materials, setMaterials] = useState(materialsData);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Load from API
+    useEffect(() => {
+        const loadData = async () => {
+            if (!isApiEnabled()) return;
+            setIsLoading(true);
+            try {
+                const [opsData, projData, matsData] = await Promise.all([
+                    operationsApi.getAll().catch(() => []),
+                    projectsApi.getAll().catch(() => []),
+                    materialsApi.getAll().catch(() => [])
+                ]);
+                if (opsData?.length > 0) setOperations(opsData);
+                if (projData?.length > 0) setProjects(projData);
+                if (matsData?.length > 0) setMaterials(matsData);
+            } catch (error) {
+                console.error('Error loading operations:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadData();
+    }, []);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedOperations, setSelectedOperations] = useState([]);
     const [activeTab, setActiveTab] = useState('all');
@@ -64,12 +91,12 @@ const OperationsModule = () => {
 
     // Get current stage label
     const getCurrentStageLabel = (stages) => {
-        const inProgress = Object.entries(stages).find(([_, data]) => data.status === 'in_progress');
+        const inProgress = Object.entries(stages).find(([_key, data]) => data.status === 'in_progress');
         if (inProgress) {
             const stageInfo = operationStages.find(s => s.key === inProgress[0]);
             return stageInfo?.label || inProgress[0];
         }
-        const pending = Object.entries(stages).find(([_, data]) => data.status === 'pending');
+        const pending = Object.entries(stages).find(([_key, data]) => data.status === 'pending');
         if (pending) {
             const stageInfo = operationStages.find(s => s.key === pending[0]);
             return stageInfo?.label || pending[0];
@@ -165,8 +192,8 @@ const OperationsModule = () => {
         if (!newOperation.projectId) return;
         const selectedProject = projectsData.find(p => p.id === parseInt(newOperation.projectId));
         const updatedProgress = calculateProgress(newOperation.stages);
-        const currentStageKey = Object.entries(newOperation.stages).find(([_, data]) => data.status === 'in_progress')?.[0]
-            || Object.entries(newOperation.stages).find(([_, data]) => data.status === 'pending')?.[0]
+        const currentStageKey = Object.entries(newOperation.stages).find(([_k, data]) => data.status === 'in_progress')?.[0]
+            || Object.entries(newOperation.stages).find(([_k, data]) => data.status === 'pending')?.[0]
             || 'shipping';
 
         setOperations(operations.map(op =>
@@ -206,12 +233,12 @@ const OperationsModule = () => {
         });
     };
 
-    const handleDivisionToggle = (division) => {
+    const handleDivisionToggle = (divisionId) => {
         setNewOperation(prev => ({
             ...prev,
-            assignedDivisions: prev.assignedDivisions.includes(division)
-                ? prev.assignedDivisions.filter(d => d !== division)
-                : [...prev.assignedDivisions, division]
+            assignedDivisions: prev.assignedDivisions.includes(divisionId)
+                ? prev.assignedDivisions.filter(d => d !== divisionId)
+                : [...prev.assignedDivisions, divisionId]
         }));
     };
 
@@ -320,6 +347,17 @@ const OperationsModule = () => {
     const avgProgress = operations.length > 0
         ? Math.round(operations.reduce((sum, o) => sum + o.progress, 0) / operations.length)
         : 0;
+
+    if (isLoading) {
+        return (
+            <div className="module-page operations-page">
+                <div className="loading-state">
+                    <Icon name="progress_activity" />
+                    <p>Loading operations...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="module-page operations-page">
@@ -705,13 +743,14 @@ const OperationsModule = () => {
                                         <label>Assigned Divisions</label>
                                         <div className="division-checkboxes">
                                             {divisionOptions.map(division => (
-                                                <label key={division} className="checkbox-label">
+                                                <label key={division.id} className="checkbox-label">
                                                     <input
                                                         type="checkbox"
-                                                        checked={newOperation.assignedDivisions.includes(division)}
-                                                        onChange={() => handleDivisionToggle(division)}
+                                                        checked={newOperation.assignedDivisions.includes(division.id)}
+                                                        onChange={() => handleDivisionToggle(division.id)}
                                                     />
-                                                    {division}
+                                                    <Icon name={division.icon} />
+                                                    {division.name}
                                                 </label>
                                             ))}
                                         </div>

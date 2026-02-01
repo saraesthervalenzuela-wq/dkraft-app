@@ -1,13 +1,14 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Icon } from '../../common';
+import { isApiEnabled, operationsApi, projectsApi, materialsApi, productsApi, clientsApi, suppliersApi } from '../../../services/api';
 import {
-    operationsData,
-    projectsData,
-    materialsData,
+    operationsData as defaultOperationsData,
+    projectsData as defaultProjectsData,
+    materialsData as defaultMaterialsData,
     staffData,
-    productsData,
-    clientsData,
-    suppliersData,
+    productsData as defaultProductsData,
+    clientsData as defaultClientsData,
+    suppliersData as defaultSuppliersData,
     operationStages
 } from '../../../data/initialData';
 
@@ -21,20 +22,20 @@ const generateTimeSeriesData = () => {
     const currentMonth = new Date().getMonth();
 
     // Simulated time series data
-    const operationsOverTime = months.slice(0, currentMonth + 1).map((month, i) => ({
+    const operationsOverTime = months.slice(0, currentMonth + 1).map((month) => ({
         month,
         completed: Math.floor(Math.random() * 8) + 2,
         inProgress: Math.floor(Math.random() * 5) + 1,
         pending: Math.floor(Math.random() * 4) + 1
     }));
 
-    const revenueOverTime = months.slice(0, currentMonth + 1).map((month, i) => ({
+    const revenueOverTime = months.slice(0, currentMonth + 1).map((month) => ({
         month,
         revenue: Math.floor(Math.random() * 150000) + 50000,
         projected: Math.floor(Math.random() * 180000) + 60000
     }));
 
-    const materialsOverTime = months.slice(0, currentMonth + 1).map((month, i) => ({
+    const materialsOverTime = months.slice(0, currentMonth + 1).map((month) => ({
         month,
         used: Math.floor(Math.random() * 200) + 50,
         purchased: Math.floor(Math.random() * 250) + 80
@@ -47,6 +48,44 @@ const ReportsModule = () => {
     const [activeReport, setActiveReport] = useState('overview');
     const [dateRange, setDateRange] = useState('year');
     const [timeSeriesData] = useState(generateTimeSeriesData);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Data state
+    const [operationsData, setOperationsData] = useState(defaultOperationsData);
+    const [projectsData, setProjectsData] = useState(defaultProjectsData);
+    const [materialsData, setMaterialsData] = useState(defaultMaterialsData);
+    const [productsData, setProductsData] = useState(defaultProductsData);
+    const [clientsData, setClientsData] = useState(defaultClientsData);
+    const [suppliersData, setSuppliersData] = useState(defaultSuppliersData);
+
+    // Load from API
+    useEffect(() => {
+        const loadData = async () => {
+            if (!isApiEnabled()) return;
+            setIsLoading(true);
+            try {
+                const [ops, projs, mats, prods, clients, suppliers] = await Promise.all([
+                    operationsApi.getAll().catch(() => []),
+                    projectsApi.getAll().catch(() => []),
+                    materialsApi.getAll().catch(() => []),
+                    productsApi.getAll().catch(() => []),
+                    clientsApi.getAll().catch(() => []),
+                    suppliersApi.getAll().catch(() => [])
+                ]);
+                if (ops?.length > 0) setOperationsData(ops);
+                if (projs?.length > 0) setProjectsData(projs);
+                if (mats?.length > 0) setMaterialsData(mats);
+                if (prods?.length > 0) setProductsData(prods);
+                if (clients?.length > 0) setClientsData(clients);
+                if (suppliers?.length > 0) setSuppliersData(suppliers);
+            } catch (error) {
+                console.error('Error loading reports data:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadData();
+    }, []);
 
     // Calculate comprehensive analytics from all data sources
     const analytics = useMemo(() => {
@@ -161,7 +200,7 @@ const ReportsModule = () => {
             clients: { total: totalClients, active: activeClients },
             suppliers: { total: totalSuppliers, active: activeSuppliers }
         };
-    }, []);
+    }, [operationsData, projectsData, materialsData, productsData, clientsData, suppliersData]);
 
     const formatCurrency = (value) => {
         return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'MXN', minimumFractionDigits: 0 }).format(value);
@@ -465,7 +504,7 @@ const ReportsModule = () => {
                                         return `${i === 0 ? '' : 'L'} ${x} ${y}`;
                                     }).join(' ')}`}
                                     fill="none"
-                                    stroke="#8b5cf6"
+                                    stroke="#06b6d4"
                                     strokeWidth="2"
                                     strokeDasharray="5,5"
                                 />
@@ -983,7 +1022,7 @@ const ReportsModule = () => {
                     </h3>
                     <div className="top-contributors">
                         {Object.entries(analytics.staff.workload)
-                            .filter(([_, data]) => data.totalHours > 0)
+                            .filter(([_id, data]) => data.totalHours > 0)
                             .sort((a, b) => b[1].totalHours - a[1].totalHours)
                             .slice(0, 5)
                             .map(([id, data], index) => (
@@ -1006,7 +1045,7 @@ const ReportsModule = () => {
     // Financial Report
     const renderFinancialReport = () => {
         const totalRevenue = projectsData.reduce((sum, p) => sum + p.total, 0);
-        const totalCost = productsData.reduce((sum, p) => sum + p.costPrice, 0);
+        const _totalCost = productsData.reduce((sum, p) => sum + p.costPrice, 0);
         const inventoryValue = materialsData.reduce((sum, m) => sum + (m.cost * m.stock), 0);
 
         return (
@@ -1167,6 +1206,17 @@ const ReportsModule = () => {
                 return renderOverview();
         }
     };
+
+    if (isLoading) {
+        return (
+            <div className="module-page reports-page">
+                <div className="loading-state">
+                    <Icon name="progress_activity" />
+                    <p>Loading reports data...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="module-page reports-page">

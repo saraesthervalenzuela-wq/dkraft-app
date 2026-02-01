@@ -2,12 +2,47 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, clientsApi } from '../../../services/api';
 
+// Avatar color palette - vibrant and varied
+const AVATAR_COLORS = [
+    'linear-gradient(135deg, #d35400 0%, #e67e22 100%)',  // Orange
+    'linear-gradient(135deg, #2980b9 0%, #3498db 100%)',  // Blue
+    'linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)',  // Green
+    'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)',  // Purple
+    'linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)',  // Red
+    'linear-gradient(135deg, #16a085 0%, #1abc9c 100%)',  // Teal
+    'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',  // Dark Blue
+    'linear-gradient(135deg, #f39c12 0%, #f1c40f 100%)',  // Yellow
+    'linear-gradient(135deg, #1a5276 0%, #2874a6 100%)',  // Navy
+    'linear-gradient(135deg, #922b21 0%, #c0392b 100%)',  // Dark Red
+    'linear-gradient(135deg, #0e6655 0%, #148f77 100%)',  // Dark Teal
+    'linear-gradient(135deg, #6c3483 0%, #8e44ad 100%)',  // Deep Purple
+];
+
+// Get avatar color by index
+const getAvatarColor = (index) => AVATAR_COLORS[index % AVATAR_COLORS.length];
+
+// Dummy data for demonstration
+const dummyTopClients = [
+    { id: 1, name: 'Grupo Industrial Monterrey', totalRevenue: 485000, totalOrders: 47, lastOrder: '2026-01-28', trend: 'up' },
+    { id: 2, name: 'Constructora del Norte SA', totalRevenue: 372500, totalOrders: 38, lastOrder: '2026-01-30', trend: 'up' },
+    { id: 3, name: 'Aceros y Metales MX', totalRevenue: 298000, totalOrders: 31, lastOrder: '2026-01-25', trend: 'stable' },
+    { id: 4, name: 'Manufactura Avanzada', totalRevenue: 245000, totalOrders: 28, lastOrder: '2026-01-29', trend: 'up' },
+    { id: 5, name: 'Industrias Sánchez', totalRevenue: 198500, totalOrders: 24, lastOrder: '2026-01-22', trend: 'down' },
+    { id: 6, name: 'Corporativo Azteca', totalRevenue: 176000, totalOrders: 21, lastOrder: '2026-01-27', trend: 'stable' },
+    { id: 7, name: 'Maquinados Precisión', totalRevenue: 154000, totalOrders: 19, lastOrder: '2026-01-20', trend: 'up' },
+    { id: 8, name: 'Ferretería Industrial Plus', totalRevenue: 132500, totalOrders: 16, lastOrder: '2026-01-18', trend: 'down' },
+    { id: 9, name: 'Soldaduras Especiales', totalRevenue: 118000, totalOrders: 14, lastOrder: '2026-01-26', trend: 'stable' },
+    { id: 10, name: 'Estructuras Metálicas JR', totalRevenue: 95000, totalOrders: 12, lastOrder: '2026-01-15', trend: 'up' },
+    { id: 11, name: 'Taller Mecánico Industrial', totalRevenue: 82000, totalOrders: 10, lastOrder: '2026-01-24', trend: 'stable' },
+    { id: 12, name: 'Equipos Hidráulicos SA', totalRevenue: 67500, totalOrders: 8, lastOrder: '2026-01-21', trend: 'down' },
+];
+
 const TopClientsModule = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('revenue');
     const [viewMode, setViewMode] = useState('grid');
-    const [clients, setClients] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [clients, setClients] = useState(dummyTopClients);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Load clients from API on mount
     useEffect(() => {
@@ -15,12 +50,18 @@ const TopClientsModule = () => {
     }, []);
 
     const loadClients = async () => {
+        if (!isApiEnabled()) {
+            // Use dummy data if API is not enabled
+            setClients(dummyTopClients);
+            return;
+        }
+
         setIsLoading(true);
         try {
-            if (isApiEnabled()) {
-                const data = await clientsApi.getAll();
+            const data = await clientsApi.getAll();
+            if (data && data.length > 0) {
                 // Transform to top clients format with mock revenue/orders for now
-                const topClientsData = (data || []).map((client, index) => ({
+                const topClientsData = data.map((client, index) => ({
                     id: client.id,
                     name: client.name || client.companyName,
                     totalRevenue: client.totalRevenue || Math.floor(Math.random() * 50000) + 10000,
@@ -29,9 +70,14 @@ const TopClientsModule = () => {
                     trend: ['up', 'down', 'stable'][index % 3]
                 }));
                 setClients(topClientsData);
+            } else {
+                // Fallback to dummy data
+                setClients(dummyTopClients);
             }
         } catch (error) {
             console.error('Error loading clients:', error);
+            // Fallback to dummy data on error
+            setClients(dummyTopClients);
         } finally {
             setIsLoading(false);
         }
@@ -49,6 +95,17 @@ const TopClientsModule = () => {
 
     const totalRevenue = clients.reduce((sum, c) => sum + (c.totalRevenue || 0), 0);
     const totalOrders = clients.reduce((sum, c) => sum + (c.totalOrders || 0), 0);
+
+    if (isLoading) {
+        return (
+            <div className="module-page top-clients-page">
+                <div className="loading-state">
+                    <Icon name="progress_activity" />
+                    <p>Loading top clients...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="module-page top-clients-page">

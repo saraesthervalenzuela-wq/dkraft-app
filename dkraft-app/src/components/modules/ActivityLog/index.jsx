@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
+import { isApiEnabled, activityLogApi } from '../../../services/api';
 
 const initialActivityData = [
     { id: 1, action: 'create', module: 'Product', entityId: 'PRD-001', entityName: 'Oak Cabinet Door', user: 'Carlos Admin', userId: 'admin_user', timestamp: '2025-12-22T17:05:00', changes: { name: 'Oak Cabinet Door', price: 1500 } },
@@ -13,7 +14,27 @@ const initialActivityData = [
 ];
 
 const ActivityLogModule = () => {
-    const [activities] = useState(initialActivityData);
+    const [activities, setActivities] = useState(initialActivityData);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Load from API
+    useEffect(() => {
+        const loadActivities = async () => {
+            if (!isApiEnabled()) return;
+            setIsLoading(true);
+            try {
+                const data = await activityLogApi.getAll();
+                if (data?.length > 0) {
+                    setActivities(data);
+                }
+            } catch (error) {
+                console.error('Error loading activities:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadActivities();
+    }, []);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterAction, setFilterAction] = useState('all');
     const [filterModule, setFilterModule] = useState('all');
@@ -73,7 +94,7 @@ const ActivityLogModule = () => {
         }));
     };
 
-    const renderChanges = (changes, action) => {
+    const renderChanges = (changes, _action) => {
         if (!changes || Object.keys(changes).length === 0) {
             return <span className="no-changes">No details available</span>;
         }
@@ -119,6 +140,17 @@ const ActivityLogModule = () => {
     const createCount = activities.filter(a => a.action === 'create').length;
     const updateCount = activities.filter(a => a.action === 'update').length;
 
+    if (isLoading) {
+        return (
+            <div className="module-page activity-log-page">
+                <div className="loading-state">
+                    <Icon name="progress_activity" />
+                    <p>Loading activity log...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="module-page activity-log-page">
             <div className="page-header">
@@ -131,7 +163,7 @@ const ActivityLogModule = () => {
                         <p>Track all system changes and user actions</p>
                     </div>
                 </div>
-                <button className="btn-secondary">
+                <button className="btn-export">
                     <span className="material-symbols-rounded">download</span>
                     Export Log
                 </button>

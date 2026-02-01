@@ -2,6 +2,20 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, usersApi } from '../../../services/api';
 
+// Fallback data when API is not available
+const fallbackStaffDuty = [
+    { id: 1, name: 'Carlos Mendoza', role: 'Production Manager', avatar: 'CM', status: 'working', currentTask: 'Supervising assembly line', since: '8:00 AM', email: 'carlos.mendoza@dkraft.com' },
+    { id: 2, name: 'Ana Garcia', role: 'Senior Designer', avatar: 'AG', status: 'working', currentTask: 'CAD modeling new cabinet', since: '8:30 AM', email: 'ana.garcia@dkraft.com' },
+    { id: 3, name: 'Roberto Silva', role: 'Sales Rep', avatar: 'RS', status: 'break', currentTask: 'Client follow-ups', since: '9:00 AM', email: 'roberto.silva@dkraft.com' },
+    { id: 4, name: 'Juan Hernandez', role: 'CNC Operator', avatar: 'JH', status: 'working', currentTask: 'Cutting MDF panels', since: '7:45 AM', email: 'juan.hernandez@dkraft.com' },
+    { id: 5, name: 'Patricia Ruiz', role: 'Quality Inspector', avatar: 'PR', status: 'working', currentTask: 'Inspecting finished products', since: '8:15 AM', email: 'patricia.ruiz@dkraft.com' },
+    { id: 6, name: 'Miguel Torres', role: 'Warehouse Supervisor', avatar: 'MT', status: 'working', currentTask: 'Inventory count', since: '7:30 AM', email: 'miguel.torres@dkraft.com' },
+    { id: 7, name: 'David Martinez', role: 'Welder', avatar: 'DM', status: 'break', currentTask: 'Metal frame assembly', since: '8:00 AM', email: 'david.martinez@dkraft.com' },
+    { id: 8, name: 'Sofia Rodriguez', role: 'Painter', avatar: 'SR', status: 'working', currentTask: 'Lacquer application', since: '8:30 AM', email: 'sofia.rodriguez@dkraft.com' },
+    { id: 9, name: 'Fernando Ramirez', role: 'Carpentry Lead', avatar: 'FR', status: 'working', currentTask: 'Cabinet door fitting', since: '7:00 AM', email: 'fernando.ramirez@dkraft.com' },
+    { id: 10, name: 'Laura Sanchez', role: 'Accountant', avatar: 'LS', status: 'offline', currentTask: 'Financial reports', since: '-', email: 'laura.sanchez@dkraft.com' },
+];
+
 const StaffDutyModule = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
@@ -25,9 +39,8 @@ const StaffDutyModule = () => {
                     const staffDuty = usersData.map((user, index) => {
                         const name = user.name || user.username || 'Unknown';
                         const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-                        // Simulate random status for demo (in real app, this would come from attendance API)
                         const statuses = ['working', 'break', 'offline'];
-                        const status = statuses[index % 3]; // Cycle through statuses
+                        const status = statuses[index % 3];
                         const tasks = ['General duties', 'Project work', 'Administrative tasks', 'Client support', 'Inventory check'];
                         const times = ['8:00 AM', '8:30 AM', '9:00 AM', '9:15 AM', '7:45 AM'];
 
@@ -43,10 +56,16 @@ const StaffDutyModule = () => {
                         };
                     });
                     setStaffList(staffDuty);
+                } else {
+                    setStaffList(fallbackStaffDuty);
                 }
+            } else {
+                // Use fallback data when API is disabled
+                setStaffList(fallbackStaffDuty);
             }
         } catch (error) {
             console.error('[StaffDuty] Error loading users:', error);
+            setStaffList(fallbackStaffDuty);
         } finally {
             setIsLoading(false);
         }

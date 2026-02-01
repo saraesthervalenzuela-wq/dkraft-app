@@ -2,7 +2,22 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, usersApi } from '../../../services/api';
 
-// Empty initial data - will be loaded from API
+// Fallback data when API is not available
+const fallbackStaffData = [
+    { id: 1, username: 'Carlos Mendoza', email: 'carlos.mendoza@dkraft.com', role: 'ADMIN' },
+    { id: 2, username: 'Ana Garcia', email: 'ana.garcia@dkraft.com', role: 'MANAGEMENT' },
+    { id: 3, username: 'Roberto Silva', email: 'roberto.silva@dkraft.com', role: 'SALES' },
+    { id: 4, username: 'Maria Lopez', email: 'maria.lopez@dkraft.com', role: 'ADMIN_DEV' },
+    { id: 5, username: 'Juan Hernandez', email: 'juan.hernandez@dkraft.com', role: 'USER' },
+    { id: 6, username: 'Patricia Ruiz', email: 'patricia.ruiz@dkraft.com', role: 'STORE' },
+    { id: 7, username: 'Miguel Torres', email: 'miguel.torres@dkraft.com', role: 'REQUISITOR' },
+    { id: 8, username: 'Laura Sanchez', email: 'laura.sanchez@dkraft.com', role: 'COST' },
+    { id: 9, username: 'David Martinez', email: 'david.martinez@dkraft.com', role: 'USER' },
+    { id: 10, username: 'Sofia Rodriguez', email: 'sofia.rodriguez@dkraft.com', role: 'SALES' },
+    { id: 11, username: 'Eduardo Flores', email: 'eduardo.flores@dkraft.com', role: 'USER' },
+    { id: 12, username: 'Carmen Diaz', email: 'carmen.diaz@dkraft.com', role: 'MANAGEMENT' },
+];
+
 const initialStaffData = [];
 
 const roleOptions = ['ADMIN_DEV', 'ADMIN', 'USER', 'STORE', 'SALES', 'COST', 'REQUISITOR', 'MANAGEMENT'];
@@ -40,10 +55,17 @@ const StaffModule = () => {
                         role: u.role || 'VIEWER',
                     }));
                     setUsers(normalizedUsers);
+                } else {
+                    setUsers(fallbackStaffData);
                 }
+            } else {
+                // Use fallback data when API is disabled
+                setUsers(fallbackStaffData);
             }
         } catch (error) {
             console.error('[Staff] Error loading users:', error);
+            // Use fallback data on error
+            setUsers(fallbackStaffData);
         } finally {
             setIsLoading(false);
         }

@@ -44,7 +44,7 @@ export const navSections = [
         label: 'PRODUCTION',
         items: [
             { id: 'projects', label: 'Projects', icon: 'assignment' },
-            { id: 'quotations', label: 'Cotizaciones', icon: 'request_quote' },
+            { id: 'quotations', label: 'Quotations', icon: 'request_quote' },
             { id: 'requisitions', label: 'Sales Orders', icon: 'shopping_cart' },
             { id: 'operations', label: 'Operations', icon: 'engineering' },
         ]
@@ -239,6 +239,90 @@ export const staffData = [
         status: 'Inactive',
         phone: '(664) 890-1234',
         hireDate: '2022-07-10',
+        avatar: null
+    },
+    {
+        id: 9,
+        code: 'EMP009',
+        name: 'David Martinez',
+        email: 'david.martinez@dovecreek.com',
+        department: 'Production',
+        position: 'Welder',
+        status: 'Active',
+        phone: '(664) 901-2345',
+        hireDate: '2023-02-14',
+        avatar: null
+    },
+    {
+        id: 10,
+        code: 'EMP010',
+        name: 'Sofia Rodriguez',
+        email: 'sofia.rodriguez@dovecreek.com',
+        department: 'Production',
+        position: 'Painter',
+        status: 'Active',
+        phone: '(664) 012-3456',
+        hireDate: '2022-09-05',
+        avatar: null
+    },
+    {
+        id: 11,
+        code: 'EMP011',
+        name: 'Eduardo Flores',
+        email: 'eduardo.flores@dovecreek.com',
+        department: 'Production',
+        position: 'Assembly Technician',
+        status: 'Active',
+        phone: '(664) 123-4568',
+        hireDate: '2023-06-12',
+        avatar: null
+    },
+    {
+        id: 12,
+        code: 'EMP012',
+        name: 'Carmen Diaz',
+        email: 'carmen.diaz@dovecreek.com',
+        department: 'Administration',
+        position: 'Office Manager',
+        status: 'Active',
+        phone: '(664) 234-5679',
+        hireDate: '2021-04-18',
+        avatar: null
+    },
+    {
+        id: 13,
+        code: 'EMP013',
+        name: 'Fernando Ramirez',
+        email: 'fernando.ramirez@dovecreek.com',
+        department: 'Production',
+        position: 'Carpentry Lead',
+        status: 'Active',
+        phone: '(664) 345-6780',
+        hireDate: '2020-11-30',
+        avatar: null
+    },
+    {
+        id: 14,
+        code: 'EMP014',
+        name: 'Isabel Moreno',
+        email: 'isabel.moreno@dovecreek.com',
+        department: 'Design',
+        position: 'CAD Designer',
+        status: 'Active',
+        phone: '(664) 456-7891',
+        hireDate: '2022-05-22',
+        avatar: null
+    },
+    {
+        id: 15,
+        code: 'EMP015',
+        name: 'Ricardo Vargas',
+        email: 'ricardo.vargas@dovecreek.com',
+        department: 'Quality',
+        position: 'Quality Control Manager',
+        status: 'Active',
+        phone: '(664) 567-8902',
+        hireDate: '2021-09-15',
         avatar: null
     }
 ];
@@ -688,7 +772,13 @@ export const operationStages = [
     { key: 'shipping', label: 'Shipping', icon: 'local_shipping' }
 ];
 
-export const divisionOptions = ['Carpentry', 'Assembly', 'Painting', 'Metal', 'Glazing'];
+export const divisionOptions = [
+    { id: 'Carpentry', name: 'Carpentry', icon: 'carpenter' },
+    { id: 'Assembly', name: 'Assembly', icon: 'construction' },
+    { id: 'Painting', name: 'Painting', icon: 'format_paint' },
+    { id: 'Metal', name: 'Metal', icon: 'hardware' },
+    { id: 'Glazing', name: 'Glazing', icon: 'window' },
+];
 export const operationStatusOptions = ['Pending', 'In Progress', 'Completed', 'On Hold'];
 export const priorityOptions = ['Low', 'Medium', 'High', 'Urgent'];
 export const stageStatusOptions = ['pending', 'in_progress', 'completed', 'skipped'];

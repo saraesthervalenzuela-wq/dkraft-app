@@ -3,7 +3,7 @@
  * Matches backend API schema: id, name, location, description, createdAt
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     FaWarehouse,
     FaPlus,
@@ -27,23 +27,23 @@ import './styles.css';
 const initialWarehousesData = [
     {
         id: 1,
-        name: 'Almacén Principal',
-        location: 'Parque Industrial Tijuana',
-        description: 'Almacén principal de materias primas y productos terminados',
+        name: 'Main Warehouse',
+        location: 'Industrial Park Tijuana',
+        description: 'Main warehouse for raw materials and finished products',
         createdAt: '2025-01-15T10:00:00Z'
     },
     {
         id: 2,
-        name: 'Almacén Producción',
-        location: 'Planta de Manufactura',
-        description: 'Almacén adjunto a línea de producción',
+        name: 'Production Warehouse',
+        location: 'Manufacturing Plant',
+        description: 'Warehouse adjacent to production line',
         createdAt: '2025-01-15T10:00:00Z'
     },
     {
         id: 3,
-        name: 'Almacén Temporal',
-        location: 'Zona Industrial Otay',
-        description: 'Almacenamiento de desbordamiento',
+        name: 'Overflow Warehouse',
+        location: 'Otay Industrial Zone',
+        description: 'Overflow storage facility',
         createdAt: '2025-01-20T10:00:00Z'
     },
 ];
@@ -59,8 +59,7 @@ const emptyWarehouse = {
 
 const WarehousesModule = () => {
     // State
-    const [warehouses, setWarehouses] = useState(initialWarehousesData);
-    const [filteredWarehouses, setFilteredWarehouses] = useState(initialWarehousesData);
+    const [localWarehouses, setLocalWarehouses] = useState(initialWarehousesData);
     const [searchTerm, setSearchTerm] = useState('');
     const [viewMode, setViewMode] = useState('grid');
 
@@ -78,29 +77,21 @@ const WarehousesModule = () => {
         if (isApiEnabled) {
             fetchAll().catch(console.error);
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Update warehouses when data changes
-    useEffect(() => {
-        if (data && data.length > 0) {
-            setWarehouses(data);
-            setFilteredWarehouses(data);
-        }
-    }, [data]);
+    // Use API data when available, otherwise use local state
+    const warehouses = isApiEnabled && data?.length > 0 ? data : localWarehouses;
 
-    // Filter warehouses
-    useEffect(() => {
-        if (searchTerm) {
-            const term = searchTerm.toLowerCase();
-            const filtered = warehouses.filter(wh =>
-                wh.name?.toLowerCase().includes(term) ||
-                wh.location?.toLowerCase().includes(term) ||
-                wh.description?.toLowerCase().includes(term)
-            );
-            setFilteredWarehouses(filtered);
-        } else {
-            setFilteredWarehouses(warehouses);
-        }
+    // Derive filtered warehouses using useMemo
+    const filteredWarehouses = useMemo(() => {
+        if (!searchTerm) return warehouses;
+        const term = searchTerm.toLowerCase();
+        return warehouses.filter(wh =>
+            wh.name?.toLowerCase().includes(term) ||
+            wh.location?.toLowerCase().includes(term) ||
+            wh.description?.toLowerCase().includes(term)
+        );
     }, [warehouses, searchTerm]);
 
     // CRUD operations
@@ -135,7 +126,7 @@ const WarehousesModule = () => {
                 if (isApiEnabled) {
                     await update(currentWarehouse.id, dataToSave);
                 } else {
-                    setWarehouses(prev => prev.map(wh =>
+                    setLocalWarehouses(prev => prev.map(wh =>
                         wh.id === currentWarehouse.id ? { ...wh, ...dataToSave } : wh
                     ));
                 }
@@ -148,7 +139,7 @@ const WarehousesModule = () => {
                         id: Date.now(),
                         createdAt: new Date().toISOString()
                     };
-                    setWarehouses(prev => [...prev, newWarehouse]);
+                    setLocalWarehouses(prev => [...prev, newWarehouse]);
                 }
             }
 
@@ -168,7 +159,7 @@ const WarehousesModule = () => {
                 await remove(warehouseToDelete.id);
                 await fetchAll();
             } else {
-                setWarehouses(prev => prev.filter(wh => wh.id !== warehouseToDelete.id));
+                setLocalWarehouses(prev => prev.filter(wh => wh.id !== warehouseToDelete.id));
             }
             setIsDeleteModalOpen(false);
             setWarehouseToDelete(null);
@@ -186,7 +177,7 @@ const WarehousesModule = () => {
     // Format date
     const formatDate = (dateString) => {
         if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('es-MX', {
+        return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -199,7 +190,7 @@ const WarehousesModule = () => {
             <div className="module-container warehouses-module">
                 <div className="loading-state">
                     <FaSpinner className="spinner" />
-                    <p>Cargando almacenes...</p>
+                    <p>Loading warehouses...</p>
                 </div>
             </div>
         );
@@ -211,8 +202,8 @@ const WarehousesModule = () => {
             <div className="module-container warehouses-module">
                 <div className="error-state">
                     <FaExclamationTriangle />
-                    <p>Error al cargar almacenes: {error}</p>
-                    <button onClick={() => fetchAll()}>Reintentar</button>
+                    <p>Error loading warehouses: {error}</p>
+                    <button onClick={() => fetchAll()}>Retry</button>
                 </div>
             </div>
         );
@@ -348,11 +339,11 @@ const WarehousesModule = () => {
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Nombre</th>
-                                <th>Ubicación</th>
-                                <th>Descripción</th>
-                                <th>Creado</th>
-                                <th>Acciones</th>
+                                <th>Name</th>
+                                <th>Location</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -403,52 +394,52 @@ const WarehousesModule = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                title={currentWarehouse.id ? 'Editar Almacén' : 'Nuevo Almacén'}
+                title={currentWarehouse.id ? 'Edit Warehouse' : 'New Warehouse'}
                 size="medium"
             >
                 <div className="warehouse-form">
                     <div className="form-group">
-                        <label>Nombre *</label>
+                        <label>Name *</label>
                         <input
                             type="text"
                             name="name"
                             value={currentWarehouse.name}
                             onChange={handleInputChange}
-                            placeholder="Nombre del almacén"
+                            placeholder="Warehouse name"
                             required
                         />
                     </div>
                     <div className="form-group">
-                        <label>Ubicación *</label>
+                        <label>Location *</label>
                         <input
                             type="text"
                             name="location"
                             value={currentWarehouse.location}
                             onChange={handleInputChange}
-                            placeholder="Dirección o ubicación"
+                            placeholder="Address or location"
                             required
                         />
                     </div>
                     <div className="form-group">
-                        <label>Descripción</label>
+                        <label>Description</label>
                         <textarea
                             name="description"
                             value={currentWarehouse.description}
                             onChange={handleInputChange}
-                            placeholder="Descripción del almacén..."
+                            placeholder="Warehouse description..."
                             rows="3"
                         />
                     </div>
                     <div className="form-actions">
                         <button className="btn-secondary" onClick={handleCloseModal}>
-                            Cancelar
+                            Cancel
                         </button>
                         <button
                             className="btn-primary"
                             onClick={handleSave}
                             disabled={!currentWarehouse.name || !currentWarehouse.location}
                         >
-                            {currentWarehouse.id ? 'Actualizar' : 'Crear'}
+                            {currentWarehouse.id ? 'Update' : 'Create'}
                         </button>
                     </div>
                 </div>
@@ -458,25 +449,25 @@ const WarehousesModule = () => {
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                title="Confirmar Eliminación"
+                title="Confirm Deletion"
                 size="small"
             >
                 <div className="delete-confirmation">
                     <FaExclamationTriangle className="warning-icon" />
                     <p>
-                        ¿Está seguro que desea eliminar el almacén{' '}
+                        Are you sure you want to delete warehouse{' '}
                         <strong>{warehouseToDelete?.name}</strong>?
                     </p>
-                    <p className="warning-text">Esta acción no se puede deshacer.</p>
+                    <p className="warning-text">This action cannot be undone.</p>
                     <div className="confirmation-actions">
                         <button
                             className="btn-secondary"
                             onClick={() => setIsDeleteModalOpen(false)}
                         >
-                            Cancelar
+                            Cancel
                         </button>
                         <button className="btn-danger" onClick={handleDelete}>
-                            Eliminar
+                            Delete
                         </button>
                     </div>
                 </div>

@@ -43,22 +43,22 @@ const QUOTATIONS_KEY = 'dkraft_quotations';
  * Status configuration with colors and icons
  */
 const STATUS_CONFIG = {
-    DRAFT: { label: 'Borrador', color: '#6c757d', icon: FaEdit },
-    PENDING_APPROVAL: { label: 'Pendiente Aprobación', color: '#ffc107', icon: FaClock },
-    APPROVED: { label: 'Aprobada', color: '#28a745', icon: FaCheckCircle },
-    REJECTED: { label: 'Rechazada', color: '#dc3545', icon: FaTimes },
-    ORDERED: { label: 'Ordenada', color: '#17a2b8', icon: FaShoppingCart },
-    PARTIALLY_FULFILLED: { label: 'Parcialmente Cumplida', color: '#fd7e14', icon: FaTruck },
-    FULFILLED: { label: 'Cumplida', color: '#20c997', icon: FaCheck },
-    CANCELLED: { label: 'Cancelada', color: '#6c757d', icon: FaTimes },
+    DRAFT: { label: 'Draft', color: '#6c757d', icon: FaEdit },
+    PENDING_APPROVAL: { label: 'Pending Approval', color: '#ffc107', icon: FaClock },
+    APPROVED: { label: 'Approved', color: '#28a745', icon: FaCheckCircle },
+    REJECTED: { label: 'Rejected', color: '#dc3545', icon: FaTimes },
+    ORDERED: { label: 'Ordered', color: '#17a2b8', icon: FaShoppingCart },
+    PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', color: '#fd7e14', icon: FaTruck },
+    FULFILLED: { label: 'Fulfilled', color: '#20c997', icon: FaCheck },
+    CANCELLED: { label: 'Cancelled', color: '#6c757d', icon: FaTimes },
 };
 
 const ITEM_STATUS_CONFIG = {
-    REQUESTED: { label: 'Solicitado', color: '#ffc107' },
-    ORDERED: { label: 'Ordenado', color: '#17a2b8' },
-    PARTIALLY_RECEIVED: { label: 'Parcialmente Recibido', color: '#fd7e14' },
-    RECEIVED: { label: 'Recibido', color: '#28a745' },
-    CANCELLED: { label: 'Cancelado', color: '#6c757d' },
+    REQUESTED: { label: 'Requested', color: '#ffc107' },
+    ORDERED: { label: 'Ordered', color: '#17a2b8' },
+    PARTIALLY_RECEIVED: { label: 'Partially Received', color: '#fd7e14' },
+    RECEIVED: { label: 'Received', color: '#28a745' },
+    CANCELLED: { label: 'Cancelled', color: '#6c757d' },
 };
 
 /**
@@ -440,7 +440,7 @@ const Requisitions = () => {
             handleCloseModal();
         } catch (err) {
             console.error('[SalesOrders] Error saving:', err);
-            alert('Error al guardar la orden de venta');
+            alert('Error saving sales order');
         }
     };
 
@@ -454,7 +454,7 @@ const Requisitions = () => {
             setRequisitionToDelete(null);
         } catch (err) {
             console.error('[SalesOrders] Error deleting:', err);
-            alert('Error al eliminar la orden');
+            alert('Error deleting order');
         }
     };
 
@@ -469,7 +469,7 @@ const Requisitions = () => {
             setIsApprovalModalOpen(false);
         } catch (err) {
             console.error('[SalesOrders] Error updating status:', err);
-            alert('Error al procesar la aprobación');
+            alert('Error processing approval');
         }
     };
 
@@ -478,7 +478,7 @@ const Requisitions = () => {
             updateRequisitionInStorage(requisition.id, { status: 'PENDING_APPROVAL' });
         } catch (err) {
             console.error('[SalesOrders] Error submitting for approval:', err);
-            alert('Error al enviar para aprobación');
+            alert('Error submitting for approval');
         }
     };
 
@@ -545,7 +545,7 @@ const Requisitions = () => {
             <div className="module-container requisitions-module">
                 <div className="loading-state">
                     <FaSpinner className="spinner" />
-                    <p>Cargando requisiciones...</p>
+                    <p>Loading requisitions...</p>
                 </div>
             </div>
         );
@@ -557,8 +557,8 @@ const Requisitions = () => {
             <div className="module-container requisitions-module">
                 <div className="error-state">
                     <FaExclamationTriangle />
-                    <p>Error al cargar requisiciones: {error}</p>
-                    <button onClick={fetchAll}>Reintentar</button>
+                    <p>Error loading requisitions: {error}</p>
+                    <button onClick={loadData}>Retry</button>
                 </div>
             </div>
         );
@@ -589,7 +589,7 @@ const Requisitions = () => {
                     <FaSearch />
                     <input
                         type="text"
-                        placeholder="Buscar por folio, solicitante, almacén..."
+                        placeholder="Search by folio, requester, warehouse..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -600,7 +600,7 @@ const Requisitions = () => {
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
                     >
-                        <option value="ALL">Todos los estados</option>
+                        <option value="ALL">All Statuses</option>
                         {Object.entries(STATUS_CONFIG).map(([key, config]) => (
                             <option key={key} value={key}>{config.label}</option>
                         ))}
@@ -640,7 +640,7 @@ const Requisitions = () => {
                             <span className="stat-value">
                                 {requisitions.filter(r => r.status === 'PENDING_APPROVAL').length}
                             </span>
-                            <span className="stat-label">Pendientes</span>
+                            <span className="stat-label">Pending</span>
                         </div>
                     </div>
                 </Card>
@@ -651,7 +651,7 @@ const Requisitions = () => {
                             <span className="stat-value">
                                 {requisitions.filter(r => r.status === 'APPROVED').length}
                             </span>
-                            <span className="stat-label">Aprobadas</span>
+                            <span className="stat-label">Approved</span>
                         </div>
                     </div>
                 </Card>
@@ -662,7 +662,7 @@ const Requisitions = () => {
                             <span className="stat-value">
                                 {requisitions.filter(r => r.status === 'FULFILLED').length}
                             </span>
-                            <span className="stat-label">Cumplidas</span>
+                            <span className="stat-label">Fulfilled</span>
                         </div>
                     </div>
                 </Card>
@@ -676,13 +676,13 @@ const Requisitions = () => {
                             <tr>
                                 <th></th>
                                 <th>Folio</th>
-                                <th>Solicitante</th>
-                                <th>Almacén</th>
-                                <th>Proyecto</th>
+                                <th>Requester</th>
+                                <th>Warehouse</th>
+                                <th>Project</th>
                                 <th>Items</th>
-                                <th>Fecha Requerida</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th>Required Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -721,7 +721,7 @@ const Requisitions = () => {
                                             <button
                                                 className="btn-icon view"
                                                 onClick={() => handleViewRequisition(requisition)}
-                                                title="Ver detalle"
+                                                title="View details"
                                             >
                                                 <FaEye />
                                             </button>
@@ -730,7 +730,7 @@ const Requisitions = () => {
                                                     <button
                                                         className="btn-icon edit"
                                                         onClick={() => handleOpenModal(requisition)}
-                                                        title="Editar"
+                                                        title="Edit"
                                                     >
                                                         <FaEdit />
                                                     </button>
@@ -747,7 +747,7 @@ const Requisitions = () => {
                                                 <button
                                                     className="btn-icon approve"
                                                     onClick={() => handleOpenApprovalModal(requisition)}
-                                                    title="Aprobar/Rechazar"
+                                                    title="Approve/Reject"
                                                 >
                                                     <FaUserCheck />
                                                 </button>
@@ -759,7 +759,7 @@ const Requisitions = () => {
                                                         setRequisitionToDelete(requisition);
                                                         setIsDeleteModalOpen(true);
                                                     }}
-                                                    title="Eliminar"
+                                                    title="Delete"
                                                 >
                                                     <FaTrash />
                                                 </button>
@@ -770,17 +770,17 @@ const Requisitions = () => {
                                         <tr className="expanded-row">
                                             <td colSpan="9">
                                                 <div className="expanded-content">
-                                                    <h4>Items de la Requisición</h4>
+                                                    <h4>Requisition Items</h4>
                                                     <table className="items-table">
                                                         <thead>
                                                             <tr>
                                                                 <th>Material</th>
-                                                                <th>Cantidad</th>
-                                                                <th>Unidad</th>
-                                                                <th>Proveedor Sugerido</th>
-                                                                <th>Fecha Necesaria</th>
-                                                                <th>Estado</th>
-                                                                <th>Recibido</th>
+                                                                <th>Quantity</th>
+                                                                <th>Unit</th>
+                                                                <th>Suggested Supplier</th>
+                                                                <th>Needed By</th>
+                                                                <th>Status</th>
+                                                                <th>Received</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -801,7 +801,7 @@ const Requisitions = () => {
                                                     </table>
                                                     {requisition.comments && (
                                                         <div className="requisition-comments">
-                                                            <strong>Comentarios:</strong> {requisition.comments}
+                                                            <strong>Comments:</strong> {requisition.comments}
                                                         </div>
                                                     )}
                                                 </div>
@@ -860,11 +860,11 @@ const Requisitions = () => {
                             </div>
                             <div className="card-actions">
                                 <button onClick={() => handleViewRequisition(requisition)}>
-                                    <FaEye /> Ver
+                                    <FaEye /> View
                                 </button>
                                 {requisition.status === 'DRAFT' && (
                                     <button onClick={() => handleOpenModal(requisition)}>
-                                        <FaEdit /> Editar
+                                        <FaEdit /> Edit
                                     </button>
                                 )}
                             </div>
@@ -883,7 +883,7 @@ const Requisitions = () => {
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                title={currentRequisition.id ? 'Editar Sales Order' : 'Nueva Sales Order'}
+                title={currentRequisition.id ? 'Edit Sales Order' : 'New Sales Order'}
                 size="large"
             >
                 <div className="requisition-form" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
@@ -914,13 +914,13 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Cotización Vinculada</label>
+                                <label>Linked Quotation</label>
                                 <select
                                     name="quotationId"
                                     value={currentRequisition.quotationId}
                                     onChange={(e) => handleQuotationSelect(e.target.value)}
                                 >
-                                    <option value="">Sin cotización (manual)</option>
+                                    <option value="">No quotation (manual)</option>
                                     {quotations.map(q => (
                                         <option key={q.id} value={q.id}>
                                             {q.folio} - {q.clientName} - {formatCurrency(q.total)}
@@ -929,7 +929,7 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Entidad de Facturación *</label>
+                                <label>Billing Entity *</label>
                                 <select
                                     name="billingEntity"
                                     value={currentRequisition.billingEntity}
@@ -971,7 +971,7 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Almacén Destino *</label>
+                                <label>Destination Warehouse *</label>
                                 <select
                                     name="warehouseId"
                                     value={currentRequisition.warehouseId}
@@ -985,7 +985,7 @@ const Requisitions = () => {
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Fecha de Aprobación</label>
+                                <label>Approval Date</label>
                                 <input
                                     type="date"
                                     name="approvalDate"
@@ -1012,7 +1012,7 @@ const Requisitions = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Depósito ($)</label>
+                                <label>Deposit ($)</label>
                                 <input
                                     type="number"
                                     name="deposit"
@@ -1023,7 +1023,7 @@ const Requisitions = () => {
                                 />
                             </div>
                             <div className="form-group">
-                                <label>Depósito Pagado</label>
+                                <label>Deposit Paid</label>
                                 <select
                                     name="depositPaid"
                                     value={currentRequisition.depositPaid ? 'true' : 'false'}
@@ -1035,7 +1035,7 @@ const Requisitions = () => {
                             </div>
                         </div>
                         <div className="form-group full-width">
-                            <label>Comentarios</label>
+                            <label>Comments</label>
                             <textarea
                                 name="comments"
                                 value={currentRequisition.comments}
@@ -1052,7 +1052,7 @@ const Requisitions = () => {
                         {currentRequisition.quotationId && (
                             <p className="info-text">
                                 <FaCheckCircle style={{ color: '#28a745', marginRight: '8px' }} />
-                                Items cargados desde cotización {currentRequisition.quotationFolio}
+                                Items loaded from quotation {currentRequisition.quotationFolio}
                             </p>
                         )}
 
@@ -1060,7 +1060,7 @@ const Requisitions = () => {
                             <div className="item-form">
                                 <div className="form-grid">
                                     <div className="form-group">
-                                        <label>Descripción *</label>
+                                        <label>Description *</label>
                                         <input
                                             type="text"
                                             name="description"
@@ -1097,7 +1097,7 @@ const Requisitions = () => {
                                     className="btn-secondary"
                                     onClick={handleAddItem}
                                 >
-                                    {editingItemIndex !== null ? 'Actualizar Item' : 'Agregar Item'}
+                                    {editingItemIndex !== null ? 'Update Item' : 'Add Item'}
                                 </button>
                             </div>
                         )}
@@ -1106,12 +1106,12 @@ const Requisitions = () => {
                             <table className="items-table">
                                 <thead>
                                     <tr>
-                                        <th>Producto</th>
-                                        <th>Descripción</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio Unit.</th>
+                                        <th>Product</th>
+                                        <th>Description</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
                                         <th>Subtotal</th>
-                                        {!currentRequisition.quotationId && <th>Acciones</th>}
+                                        {!currentRequisition.quotationId && <th>Actions</th>}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1165,10 +1165,10 @@ const Requisitions = () => {
 
                     <div className="form-actions">
                         <button className="btn-secondary" onClick={handleCloseModal}>
-                            Cancelar
+                            Cancel
                         </button>
                         <button className="btn-primary" onClick={handleSave}>
-                            {currentRequisition.id ? 'Actualizar' : 'Crear'} Sales Order
+                            {currentRequisition.id ? 'Update' : 'Create'} Sales Order
                         </button>
                     </div>
                 </div>
@@ -1191,11 +1191,11 @@ const Requisitions = () => {
 
                     <div className="detail-grid">
                         <div className="detail-item">
-                            <label>Solicitante</label>
+                            <label>Requester</label>
                             <span>{currentRequisition.requesterName}</span>
                         </div>
                         <div className="detail-item">
-                            <label>Almacén Destino</label>
+                            <label>Destination Warehouse</label>
                             <span>{currentRequisition.warehouseName}</span>
                         </div>
                         <div className="detail-item">
@@ -1214,7 +1214,7 @@ const Requisitions = () => {
 
                     {currentRequisition.comments && (
                         <div className="detail-comments">
-                            <label>Comentarios</label>
+                            <label>Comments</label>
                             <p>{currentRequisition.comments}</p>
                         </div>
                     )}
@@ -1225,12 +1225,12 @@ const Requisitions = () => {
                             <thead>
                                 <tr>
                                     <th>Material</th>
-                                    <th>Cantidad</th>
-                                    <th>Unidad</th>
-                                    <th>Proveedor Sugerido</th>
-                                    <th>Estado</th>
-                                    <th>Ordenado</th>
-                                    <th>Recibido</th>
+                                    <th>Quantity</th>
+                                    <th>Unit</th>
+                                    <th>Suggested Supplier</th>
+                                    <th>Status</th>
+                                    <th>Ordered</th>
+                                    <th>Received</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -1268,30 +1268,30 @@ const Requisitions = () => {
             <Modal
                 isOpen={isApprovalModalOpen}
                 onClose={() => setIsApprovalModalOpen(false)}
-                title="Aprobar Requisición"
+                title="Approve Requisition"
                 size="medium"
             >
                 <div className="approval-form">
                     <p>
-                        ¿Desea aprobar o rechazar la requisición <strong>{currentRequisition.folio}</strong>?
+                        Do you want to approve or reject requisition <strong>{currentRequisition.folio}</strong>?
                     </p>
                     <div className="approval-summary">
                         <div>
-                            <strong>Solicitante:</strong> {currentRequisition.requesterName}
+                            <strong>Requester:</strong> {currentRequisition.requesterName}
                         </div>
                         <div>
                             <strong>Items:</strong> {currentRequisition.items?.length || 0}
                         </div>
                         <div>
-                            <strong>Almacén:</strong> {currentRequisition.warehouseName}
+                            <strong>Warehouse:</strong> {currentRequisition.warehouseName}
                         </div>
                     </div>
                     <div className="form-group">
-                        <label>Comentarios de Aprobación</label>
+                        <label>Approval Comments</label>
                         <textarea
                             id="approvalComments"
                             rows="3"
-                            placeholder="Agregar comentarios opcionales..."
+                            placeholder="Add optional comments..."
                         />
                     </div>
                     <div className="approval-actions">
@@ -1302,7 +1302,7 @@ const Requisitions = () => {
                                 handleApprove('REJECTED', comments);
                             }}
                         >
-                            <FaTimes /> Rechazar
+                            <FaTimes /> Reject
                         </button>
                         <button
                             className="btn-success"
@@ -1311,7 +1311,7 @@ const Requisitions = () => {
                                 handleApprove('APPROVED', comments);
                             }}
                         >
-                            <FaCheck /> Aprobar
+                            <FaCheck /> Approve
                         </button>
                     </div>
                 </div>
@@ -1321,13 +1321,13 @@ const Requisitions = () => {
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                title="Confirmar Eliminación"
+                title="Confirm Deletion"
                 size="small"
             >
                 <div className="delete-confirmation">
                     <FaExclamationTriangle className="warning-icon" />
                     <p>
-                        ¿Está seguro que desea eliminar la requisición{' '}
+                        Are you sure you want to delete requisition{' '}
                         <strong>{requisitionToDelete?.folio}</strong>?
                     </p>
                     <p className="warning-text">Esta acción no se puede deshacer.</p>
@@ -1336,13 +1336,13 @@ const Requisitions = () => {
                             className="btn-secondary"
                             onClick={() => setIsDeleteModalOpen(false)}
                         >
-                            Cancelar
+                            Cancel
                         </button>
                         <button
                             className="btn-danger"
                             onClick={handleDelete}
                         >
-                            Eliminar
+                            Delete
                         </button>
                     </div>
                 </div>
