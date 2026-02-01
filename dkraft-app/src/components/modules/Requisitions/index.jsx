@@ -565,16 +565,21 @@ const Requisitions = () => {
     }
 
     return (
-        <div className="module-container requisitions-module">
-            {/* Header */}
-            <div className="module-header">
-                <div className="header-title">
-                    <FaShoppingCart className="module-icon" />
-                    <h1>Sales Orders</h1>
-                    <span className="local-badge">Local</span>
+        <div className="module-page requisitions-module">
+            {/* Header - Consistent Style */}
+            <div className="page-header">
+                <div className="header-content">
+                    <div className="header-icon">
+                        <span className="material-symbols-rounded">shopping_cart</span>
+                    </div>
+                    <div className="header-text">
+                        <h1>Sales Orders</h1>
+                        <p>Manage purchase requisitions and sales orders</p>
+                    </div>
                 </div>
-                <button className="btn-primary" onClick={() => handleOpenModal()}>
-                    <FaPlus /> Nueva Orden
+                <button className="btn-primary-action" onClick={() => handleOpenModal()}>
+                    <span className="material-symbols-rounded">add</span>
+                    New Order
                 </button>
             </div>
 

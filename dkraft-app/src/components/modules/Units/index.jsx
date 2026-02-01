@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
+import { isApiEnabled, unitsApi } from '../../../services/api';
 
 const initialUnits = [
     { id: 1, name: 'Sheet', description: 'Full sheet of material (4x8 ft typical)' },
@@ -15,6 +16,15 @@ const initialUnits = [
 const UnitsModule = () => {
     const [units, setUnits] = useState(initialUnits);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Load from API
+    useEffect(() => {
+        if (isApiEnabled()) {
+            unitsApi.getAll().then(data => {
+                if (data?.length > 0) setUnits(data);
+            }).catch(console.error);
+        }
+    }, []);
     const [selectedUnits, setSelectedUnits] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingUnit, setEditingUnit] = useState(null);

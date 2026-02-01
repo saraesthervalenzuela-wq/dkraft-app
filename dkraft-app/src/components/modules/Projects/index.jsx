@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
+import { isApiEnabled, projectsApi } from '../../../services/api';
 
 const initialProjectsData = [
     { id: 1, name: 'ABC Corporate Office', description: 'Corporate office furniture project', status: 'Active', client: 'ABC Corporation', poNumber: 'PO-2024-001', workOrder: 'WO-001', estimateNumber: 'EST-001', terms: 'Net 30', nameAddress: 'ABC Corporation, 123 Main Ave', shipTo: 'North Industrial Zone', contact: 'John Smith - 664 123 4567', salesRep: 'Carlos Mendoza', csr: 'Ana Garcia', subtotal: 45000, tax: 7200, total: 52200 },
@@ -12,6 +13,26 @@ const termsOptions = ['Net 15', 'Net 30', 'Net 45', 'Due on Receipt', 'COD'];
 
 const ProjectsModule = () => {
     const [projects, setProjects] = useState(initialProjectsData);
+    const [isLoading, setIsLoading] = useState(false);
+
+    // Load from API on mount
+    useEffect(() => {
+        const loadProjects = async () => {
+            if (isApiEnabled()) {
+                setIsLoading(true);
+                try {
+                    const data = await projectsApi.getAll();
+                    if (data?.length > 0) {
+                        setProjects(data);
+                    }
+                } catch (error) {
+                    console.error('Error loading projects:', error);
+                }
+                setIsLoading(false);
+            }
+        };
+        loadProjects();
+    }, []);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProjects, setSelectedProjects] = useState([]);
     const [showModal, setShowModal] = useState(false);

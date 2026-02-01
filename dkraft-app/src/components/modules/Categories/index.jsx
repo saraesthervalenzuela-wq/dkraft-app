@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
+import { isApiEnabled, categoriesApi } from '../../../services/api';
 
 const initialCategories = [
     { id: 1, name: 'Woods', description: 'All types of wood and plywood materials' },
@@ -12,6 +13,15 @@ const initialCategories = [
 const CategoriesModule = () => {
     const [categories, setCategories] = useState(initialCategories);
     const [searchTerm, setSearchTerm] = useState('');
+
+    // Load from API
+    useEffect(() => {
+        if (isApiEnabled()) {
+            categoriesApi.getAll().then(data => {
+                if (data?.length > 0) setCategories(data);
+            }).catch(console.error);
+        }
+    }, []);
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
