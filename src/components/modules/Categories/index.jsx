@@ -101,7 +101,7 @@ const CategoriesModule = () => {
                         <p>Organize your materials into categories</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => setShowModal(true)}>
                     Add new category
                 </Button>
             </div>

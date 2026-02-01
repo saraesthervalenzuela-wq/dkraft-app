@@ -365,7 +365,7 @@ const BOMModule = () => {
                     </div>
                 </div>
                 <div className="header-actions">
-                    <Button variant="orange" icon="add" onClick={handleAdd}>
+                    <Button variant="orange" icon="add" size="lg" onClick={handleAdd}>
                         New BOM
                     </Button>
                 </div>

@@ -35,6 +35,11 @@ describe('Button', () => {
         expect(container.firstChild).toHaveClass('from-red-500');
     });
 
+    it('applies glass variant with backdrop blur', () => {
+        const { container } = render(<Button variant="glass">Glass Button</Button>);
+        expect(container.firstChild).toHaveClass('backdrop-blur-md');
+    });
+
     it('applies size classes', () => {
         const { container } = render(<Button size="lg">Large</Button>);
         expect(container.firstChild).toHaveClass('px-6');

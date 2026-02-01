@@ -233,7 +233,7 @@ const StaffModule = () => {
                         <p>Manage your team members</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => setShowModal(true)}>
                     Add new user
                 </Button>
             </div>

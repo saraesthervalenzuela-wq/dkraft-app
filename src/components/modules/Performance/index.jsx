@@ -330,7 +330,7 @@ const PerformanceModule = () => {
                         Quarter
                     </button>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => setShowAttendanceModal(true)}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => setShowAttendanceModal(true)}>
                     Record Entry
                 </Button>
             </div>

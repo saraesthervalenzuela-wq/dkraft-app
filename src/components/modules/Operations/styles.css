@@ -31,11 +31,11 @@
     width: 60px;
     height: 60px;
     border-radius: 16px;
-    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
 }
 
 .operations-page .header-icon .material-symbols-rounded {
@@ -148,12 +148,12 @@
 }
 
 .operations-page .stat-icon.purple {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.35);
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.35);
 }
 
 .operations-page .module-stat-card:has(.stat-icon.purple)::before {
-    background: linear-gradient(180deg, #8b5cf6, #7c3aed);
+    background: linear-gradient(180deg, #3b82f6, #2563eb);
 }
 
 .operations-page .stat-info {
@@ -430,13 +430,13 @@
 }
 
 .operations-page .view-toggle-btn.active {
-    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
     color: white;
 }
 
 .operations-page .view-toggle-btn:hover:not(.active) {
-    background: rgba(139, 92, 246, 0.1);
-    color: #a78bfa;
+    background: rgba(59, 130, 246, 0.1);
+    color: #93c5fd;
 }
 
 .operations-page .btn-delete-selected {
@@ -472,7 +472,7 @@
         rgba(30, 50, 100, 0.5) 0%,
         rgba(20, 40, 85, 0.45) 50%,
         rgba(15, 35, 75, 0.5) 100%);
-    border: 1px solid rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.15);
     border-radius: 20px;
     overflow: hidden;
     transition: all 0.3s ease;
@@ -481,8 +481,8 @@
 
 .operations-page .operation-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(139, 92, 246, 0.25);
-    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.25);
+    border-color: rgba(59, 130, 246, 0.4);
     background: linear-gradient(145deg,
         rgba(40, 60, 120, 0.55) 0%,
         rgba(30, 50, 100, 0.5) 50%,
@@ -494,7 +494,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px;
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(59, 130, 246, 0.05);
     border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -502,7 +502,7 @@
     width: 48px;
     height: 48px;
     border-radius: 12px;
-    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -552,7 +552,7 @@
 .operations-page .operation-card-wo {
     font-size: 20px;
     font-weight: 700;
-    color: #a78bfa;
+    color: #93c5fd;
     margin: 0 0 4px 0;
     font-family: var(--font-display);
 }
@@ -617,10 +617,10 @@
 
 .operations-page .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #8b5cf6, #a855f7, #c084fc);
+    background: linear-gradient(90deg, #3b82f6, #60a5fa, #93c5fd);
     border-radius: 4px;
     transition: width 0.3s ease;
-    box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.5);
 }
 
 .operations-page .operation-card-details {
@@ -688,8 +688,8 @@
     height: 40px;
     border-radius: 10px;
     border: none;
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
+    background: rgba(59, 130, 246, 0.15);
+    color: #93c5fd;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -698,7 +698,7 @@
 }
 
 .operations-page .btn-action-edit:hover {
-    background: rgba(139, 92, 246, 0.25);
+    background: rgba(59, 130, 246, 0.25);
     transform: scale(1.1);
 }
 
@@ -709,7 +709,7 @@
     background: linear-gradient(145deg,
         rgba(30, 50, 100, 0.45) 0%,
         rgba(20, 40, 85, 0.4) 100%);
-    border: 1px solid rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(59, 130, 246, 0.15);
     border-radius: 20px;
     overflow: hidden;
     margin-bottom: 24px;
@@ -725,11 +725,11 @@
     grid-template-columns: 50px 150px 1fr 150px 150px 100px 120px 80px;
     gap: 16px;
     padding: 16px 24px;
-    background: rgba(139, 92, 246, 0.08);
+    background: rgba(59, 130, 246, 0.08);
     border-bottom: 1px solid var(--border-subtle);
     font-size: 12px;
     font-weight: 600;
-    color: #a78bfa;
+    color: #93c5fd;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -761,11 +761,11 @@
 }
 
 .operations-page .operations-table-row:hover {
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(59, 130, 246, 0.05);
 }
 
 .operations-page .col-wo strong {
-    color: #a78bfa;
+    color: #93c5fd;
 }
 
 .operations-page .col-progress .progress-container {
@@ -859,9 +859,9 @@
 }
 
 .operations-page .stage-node.selected {
-    border-color: #8b5cf6;
-    background: rgba(139, 92, 246, 0.15);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.15);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
 .operations-page .stage-node .nav-icon,
@@ -974,19 +974,19 @@
 .operations-page .stage-node[data-stage="roughMill"] .nav-icon { color: #f97316 !important; }
 .operations-page .stage-node[data-stage="fineMill"] .nav-icon { color: #fb923c !important; }
 .operations-page .stage-node[data-stage="metal"] .nav-icon { color: #64748b !important; }
-.operations-page .stage-node[data-stage="assembly"] .nav-icon { color: #8b5cf6 !important; }
+.operations-page .stage-node[data-stage="assembly"] .nav-icon { color: #3b82f6 !important; }
 .operations-page .stage-node[data-stage="preHanging"] .nav-icon { color: #06b6d4 !important; }
 .operations-page .stage-node[data-stage="sanding"] .nav-icon { color: #eab308 !important; }
 .operations-page .stage-node[data-stage="glazing"] .nav-icon { color: #22d3ee !important; }
-.operations-page .stage-node[data-stage="filling"] .nav-icon { color: #a855f7 !important; }
+.operations-page .stage-node[data-stage="filling"] .nav-icon { color: #60a5fa !important; }
 .operations-page .stage-node[data-stage="painting"] .nav-icon { color: #ec4899 !important; }
 .operations-page .stage-node[data-stage="qc"] .nav-icon { color: #10b981 !important; }
 .operations-page .stage-node[data-stage="shipping"] .nav-icon { color: #3b82f6 !important; }
 
 /* Stage Editor */
 .operations-page .stage-editor {
-    background: rgba(139, 92, 246, 0.08);
-    border: 1px solid rgba(139, 92, 246, 0.2);
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.2);
     border-radius: 16px;
     padding: 24px;
     margin-top: 16px;
@@ -1038,11 +1038,11 @@
     grid-template-columns: 2fr 1fr 1fr 80px 60px;
     gap: 12px;
     padding: 14px 16px;
-    background: rgba(139, 92, 246, 0.1);
+    background: rgba(59, 130, 246, 0.1);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    color: #a78bfa;
+    color: #93c5fd;
     letter-spacing: 0.5px;
 }
 
@@ -1122,7 +1122,7 @@
     gap: 10px;
     font-weight: 600;
     min-width: 150px;
-    color: #a78bfa;
+    color: #93c5fd;
 }
 
 .operations-page .team-stage-members {

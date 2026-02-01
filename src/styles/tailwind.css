@@ -341,18 +341,6 @@
         cursor: not-allowed;
     }
 
-    .btn-orange {
-        padding: var(--spacing-3) var(--spacing-6);
-        background: linear-gradient(135deg, var(--color-orange-primary) 0%, var(--color-orange-secondary) 100%);
-        color: white;
-        box-shadow: 0 4px 15px var(--color-orange-glow);
-    }
-
-    .btn-orange:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px var(--color-orange-glow);
-    }
-
     .btn-ghost {
         padding: var(--spacing-2) var(--spacing-4);
         background: transparent;
@@ -382,64 +370,100 @@
     }
 
     /* ========================================
-       FORM INPUTS
+       FORM INPUTS - Glass Effect
        ======================================== */
     .form-group {
         display: flex;
         flex-direction: column;
-        gap: var(--spacing-2);
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .form-row .form-group {
+        margin-bottom: 0;
     }
 
     .form-label {
-        font-size: var(--font-size-sm);
-        font-weight: 500;
-        color: var(--color-text-secondary);
+        font-size: 13px;
+        font-weight: 600;
+        color: #e2e8f0;
+        margin-bottom: 4px;
     }
 
-    .form-input {
+    .form-input,
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="password"],
+    select,
+    textarea {
         width: 100%;
-        padding: var(--spacing-3) var(--spacing-4);
-        background: var(--color-bg-input);
-        border: 2px solid var(--color-border-subtle);
-        border-radius: var(--radius-xl);
-        color: var(--color-text-primary);
-        font-family: var(--font-family-display);
-        font-size: var(--font-size-sm);
-        transition: all var(--transition-fast);
+        padding: 14px 16px;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: #f1f5f9;
+        font-family: inherit;
+        font-size: 14px;
+        transition: all 0.2s ease;
         outline: none;
     }
 
-    .form-input::placeholder {
-        color: var(--color-text-muted);
+    .form-input::placeholder,
+    input::placeholder,
+    textarea::placeholder {
+        color: #64748b;
     }
 
-    .form-input:focus {
-        border-color: var(--color-accent-primary);
-        background: rgba(0, 51, 179, 0.05);
-        box-shadow: 0 0 0 4px rgba(0, 51, 179, 0.1);
+    .form-input:focus,
+    input:focus,
+    select:focus,
+    textarea:focus {
+        border-color: rgba(249, 115, 22, 0.5);
+        background: rgba(15, 23, 42, 0.8);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
     }
 
-    .form-input:hover:not(:focus) {
-        border-color: var(--color-border-hover);
+    .form-input:hover:not(:focus),
+    input:hover:not(:focus),
+    select:hover:not(:focus),
+    textarea:hover:not(:focus) {
+        border-color: rgba(255, 255, 255, 0.2);
+        background: rgba(15, 23, 42, 0.7);
     }
 
-    .form-select {
+    select {
         appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%238b9dc3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: right var(--spacing-3) center;
+        background-position: right 12px center;
         background-size: 18px;
-        padding-right: var(--spacing-10);
+        padding-right: 44px;
+        cursor: pointer;
     }
 
-    .form-textarea {
-        min-height: 120px;
+    textarea {
+        min-height: 100px;
         resize: vertical;
     }
 
     .form-error {
-        font-size: var(--font-size-xs);
-        color: var(--color-danger);
+        font-size: 12px;
+        color: #f87171;
+        margin-top: 4px;
     }
 
     /* ========================================
@@ -602,7 +626,7 @@
         padding: var(--spacing-4) var(--spacing-5);
         font-size: var(--font-size-sm);
         color: var(--color-text-primary);
-        border-bottom: 1px solid var(--color-border-subtle);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .table-tw tbody tr {
@@ -610,10 +634,25 @@
     }
 
     .table-tw tbody tr:hover {
-        background: rgba(0, 51, 179, 0.05);
+        background: rgba(59, 130, 246, 0.08);
     }
 
     .table-tw tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Global table row separators */
+    .table-row,
+    [class*="-table-row"],
+    [class*="-row"]:not(.form-row) {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    tr:last-child {
         border-bottom: none;
     }
 

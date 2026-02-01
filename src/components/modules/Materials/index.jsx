@@ -504,7 +504,7 @@ const MaterialsModule = () => {
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
                     </button> */}
-                    <Button variant="orange" icon="add" onClick={handleAdd}>
+                    <Button variant="orange" icon="add" size="lg" onClick={handleAdd}>
                         Add material
                     </Button>
                 </div>

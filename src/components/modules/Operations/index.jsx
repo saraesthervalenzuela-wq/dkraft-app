@@ -335,7 +335,7 @@ const OperationsModule = () => {
                         <p>Manage production workflow and track progress</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => setShowModal(true)}>
                     New Operation
                 </Button>
             </div>
@@ -370,7 +370,7 @@ const OperationsModule = () => {
                     </div>
                 </div>
                 <div className="module-stat-card">
-                    <div className="stat-icon purple">
+                    <div className="stat-icon blue">
                         <Icon name="speed" />
                     </div>
                     <div className="stat-info">

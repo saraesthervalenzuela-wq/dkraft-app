@@ -5,7 +5,9 @@
       "Bash(pbcopy)",
       "Bash(npm run test:run:*)",
       "Bash(du:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

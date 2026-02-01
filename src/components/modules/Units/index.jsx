@@ -104,7 +104,7 @@ const UnitsModule = () => {
                         <p>Manage units of measurement for materials</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => setShowModal(true)}>
                     Add new unit
                 </Button>
             </div>

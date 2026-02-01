@@ -150,7 +150,7 @@ const ProjectsModule = () => {
                         <p>Manage your projects</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => setShowModal(true)}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => setShowModal(true)}>
                     Add new project
                 </Button>
             </div>

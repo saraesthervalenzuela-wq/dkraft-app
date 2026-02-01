@@ -3,7 +3,7 @@ import Icon from './Icon';
 /**
  * SearchBox Component
  * Reusable search input with icon and glass effect
- * Migrated to Tailwind CSS utilities
+ * Using flexbox layout for reliable icon positioning
  */
 const SearchBox = ({
     value,
@@ -12,40 +12,43 @@ const SearchBox = ({
     className = ''
 }) => {
     return (
-        <div className={`relative inline-flex items-center ${className}`}>
+        <div
+            className={`group flex items-center gap-3 px-4 h-11 rounded-xl
+                border border-white/10
+                bg-slate-800/50
+                backdrop-blur-sm
+                transition-all duration-200
+                focus-within:border-orange-500/50
+                focus-within:bg-slate-800/70
+                focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.1)]
+                hover:border-white/20 hover:bg-slate-800/60
+                ${className}`}
+            style={{ width: '300px' }}
+        >
             <Icon
                 name="search"
-                className="absolute left-3.5 z-10 text-slate-400 text-xl transition-colors duration-200 peer-focus:text-orange-500"
+                className="text-slate-400 text-xl flex-shrink-0 group-focus-within:text-orange-400 transition-colors duration-200"
             />
             <input
                 type="text"
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
-                className="peer w-[280px] py-3 px-4 pl-11 rounded-3xl
-                    border-2 border-slate-500/30
-                    bg-gradient-to-br from-slate-800/60 to-slate-900/50
-                    text-white text-sm
-                    placeholder:text-slate-400/70
-                    backdrop-blur-xl
-                    transition-all duration-200
-                    focus:outline-none focus:border-orange-500/60
-                    focus:shadow-[0_0_0_3px_rgba(211,84,0,0.2),0_4px_20px_rgba(0,0,0,0.2)]
-                    focus:bg-gradient-to-br focus:from-slate-700/70 focus:to-slate-800/60
-                    dark:border-slate-500/30 dark:bg-gradient-to-br dark:from-slate-800/60 dark:to-slate-900/50
-                    [data-theme='light']:bg-blue-50 [data-theme='light']:border-blue-200"
+                className="flex-1 h-full bg-transparent border-none outline-none
+                    text-white text-sm font-medium
+                    placeholder:text-slate-500"
             />
             {value && (
                 <button
                     onClick={() => onChange('')}
-                    className="absolute right-3 p-1
-                        bg-transparent border-none
-                        text-slate-400/60 hover:text-orange-400
+                    className="flex-shrink-0 p-1
+                        text-slate-500 hover:text-orange-400
                         cursor-pointer transition-colors duration-200
                         flex items-center justify-center"
                     aria-label="Clear search"
+                    type="button"
                 >
-                    <Icon name="close" className="text-lg" />
+                    <Icon name="close" className="text-base" />
                 </button>
             )}
         </div>

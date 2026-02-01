@@ -18,7 +18,7 @@
 }
 
 .quotations-table thead {
-    background: rgba(139, 92, 246, 0.15);
+    background: rgba(59, 130, 246, 0.1);
 }
 
 .quotations-table th {
@@ -26,7 +26,7 @@
     text-align: left;
     font-weight: 600;
     font-size: 13px;
-    color: #a78bfa;
+    color: #94a3b8;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -38,7 +38,7 @@
 }
 
 .quotations-table tbody tr:hover {
-    background: rgba(139, 92, 246, 0.05);
+    background: rgba(59, 130, 246, 0.05);
 }
 
 .folio-cell {

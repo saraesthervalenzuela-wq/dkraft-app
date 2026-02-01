@@ -13,6 +13,16 @@ const SUPPLIER_CATEGORIES = [
     { value: 'OTHER', label: 'Other / Otros', color: '#64748b', bgColor: 'rgba(100, 116, 139, 0.15)' },
 ];
 
+// Avatar colors for variety
+const AVATAR_COLORS = [
+    'linear-gradient(135deg, #3b82f6, #2563eb)',
+    'linear-gradient(135deg, #10b981, #059669)',
+    'linear-gradient(135deg, #f59e0b, #d97706)',
+    'linear-gradient(135deg, #ec4899, #db2777)',
+    'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+    'linear-gradient(135deg, #06b6d4, #0891b2)',
+];
+
 const getCategoryStyle = (category) => {
     const cat = SUPPLIER_CATEGORIES.find(c => c.value === category);
     return cat || SUPPLIER_CATEGORIES[4]; // Default to OTHER
@@ -463,7 +473,7 @@ const SuppliersModule = () => {
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
                     </button>
-                    <Button variant="orange" icon="add" onClick={handleAdd}>
+                    <Button variant="orange" icon="add" size="lg" onClick={handleAdd}>
                         Add new supplier
                     </Button>
                 </div>
@@ -538,22 +548,23 @@ const SuppliersModule = () => {
             ) : viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="suppliers-cards-grid">
-                    {sortedSuppliers.map((supplier) => {
-                        const statusStyle = getStatusStyle(supplier.status);
+                    {sortedSuppliers.map((supplier, index) => {
                         const qbStatus = getQBStatusIcon(supplier.qbSyncStatus);
-                        const categoryStyle = getCategoryStyle(supplier.category);
 
                         return (
                             <div key={supplier.id} className="supplier-card">
                                 <div className="supplier-card-header">
-                                    <div className="supplier-avatar" style={{ background: categoryStyle.color }}>
+                                    <div className="supplier-avatar" style={{ background: AVATAR_COLORS[index % AVATAR_COLORS.length] }}>
                                         {supplier.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                     </div>
                                     <div className="supplier-card-badges">
-                                        <span className={`status-badge ${statusStyle.color}`}>
-                                            <span className="status-dot"></span>
-                                            {statusStyle.label}
-                                        </span>
+                                        <Badge
+                                            variant={supplier.status === 'ACTIVE' ? 'success' : 'default'}
+                                            dot
+                                            pulse={supplier.status === 'ACTIVE'}
+                                        >
+                                            {supplier.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                        </Badge>
                                         <span className="qb-status-badge" style={{ color: qbStatus.color }} title={qbStatus.label}>
                                             <Icon name={qbStatus.icon} />
                                         </span>
@@ -634,7 +645,6 @@ const SuppliersModule = () => {
 
                         <div className="suppliers-table-body">
                             {sortedSuppliers.map((supplier) => {
-                                const statusStyle = getStatusStyle(supplier.status);
                                 // Build full address string
                                 const fullAddress = [
                                     supplier.address,
@@ -659,9 +669,14 @@ const SuppliersModule = () => {
                                         </span>
                                         <span className="col-name">{supplier.name}</span>
                                         <span className="col-email">{supplier.email}</span>
-                                        <span className={`col-status status-badge ${statusStyle.color}`}>
-                                            <span className="status-dot"></span>
-                                            {statusStyle.label}
+                                        <span className="col-status">
+                                            <Badge
+                                                variant={supplier.status === 'ACTIVE' ? 'success' : 'default'}
+                                                dot
+                                                pulse={supplier.status === 'ACTIVE'}
+                                            >
+                                                {supplier.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                            </Badge>
                                         </span>
                                         <span className="col-phone">{supplier.phone}</span>
                                         <span className="col-address">{fullAddress}</span>

@@ -1086,45 +1086,7 @@ body::after {
    For primary CTAs and important actions
    ================================ */
 
-/* Orange gradient button - Primary CTA */
-.btn-orange,
-.btn-cta {
-    background: var(--orange-gradient);
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: var(--radius-md);
-    font-family: var(--font-display);
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition-base);
-    box-shadow: 0 4px 15px var(--orange-glow);
-}
-
-.btn-orange:hover,
-.btn-cta:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px var(--orange-glow), var(--shadow-orange);
-}
-
-/* Orange outline button */
-.btn-orange-outline {
-    background: transparent;
-    color: var(--orange-primary);
-    border: 2px solid var(--orange-primary);
-    padding: 10px 22px;
-    border-radius: var(--radius-md);
-    font-family: var(--font-display);
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition-base);
-}
-
-.btn-orange-outline:hover {
-    background: var(--orange-primary);
-    color: white;
-    box-shadow: var(--shadow-orange);
-}
+/* Orange buttons now use Button component with variant="orange" */
 
 /* Orange text accent */
 .text-orange {

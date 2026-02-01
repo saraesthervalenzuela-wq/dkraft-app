@@ -1074,7 +1074,7 @@ const QualityModule = () => {
                         <p>Manage inspections, checklists, and quality control</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={handleNewInspection}>
+                <Button variant="orange" icon="add" size="lg" onClick={handleNewInspection}>
                     New Inspection
                 </Button>
             </div>

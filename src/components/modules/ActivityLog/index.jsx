@@ -131,7 +131,7 @@ const ActivityLogModule = () => {
                         <p>Track all system changes and user actions</p>
                     </div>
                 </div>
-                <Button variant="secondary" icon="download">Export Log</Button>
+                <Button variant="glass" icon="download">Export Log</Button>
             </div>
 
             <div className="module-stats-row">

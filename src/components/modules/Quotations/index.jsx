@@ -512,7 +512,7 @@ const QuotationsModule = () => {
                         <p>Manage quotations and estimates for clients</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => handleOpenModal('add')}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => handleOpenModal('add')}>
                     New Quotation
                 </Button>
             </div>

@@ -15,32 +15,48 @@ import {
  * Reports Module
  * Interconnected analytics dashboard showing data relationships across all modules
  */
-// Generate time series data for charts
+// Generate time series data for charts - more realistic trends
 const generateTimeSeriesData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const currentMonth = new Date().getMonth();
 
-    // Simulated time series data
+    // Realistic data with seasonal trends and growth
+    const baseOperations = [4, 5, 6, 8, 7, 9, 10, 8, 11, 12, 10, 14];
     const operationsOverTime = months.slice(0, currentMonth + 1).map((month, i) => ({
         month,
-        completed: Math.floor(Math.random() * 8) + 2,
-        inProgress: Math.floor(Math.random() * 5) + 1,
-        pending: Math.floor(Math.random() * 4) + 1
+        completed: baseOperations[i],
+        inProgress: Math.max(2, Math.floor(baseOperations[i] * 0.4)),
+        pending: Math.max(1, Math.floor(baseOperations[i] * 0.25))
     }));
 
+    // Revenue with realistic growth trend
+    const baseRevenue = [65000, 72000, 85000, 92000, 88000, 105000, 118000, 110000, 125000, 138000, 145000, 165000];
     const revenueOverTime = months.slice(0, currentMonth + 1).map((month, i) => ({
         month,
-        revenue: Math.floor(Math.random() * 150000) + 50000,
-        projected: Math.floor(Math.random() * 180000) + 60000
+        revenue: baseRevenue[i],
+        projected: Math.floor(baseRevenue[i] * 1.15),
+        costs: Math.floor(baseRevenue[i] * 0.65),
+        profit: Math.floor(baseRevenue[i] * 0.35)
     }));
 
+    // Materials usage with seasonal patterns
+    const baseMaterials = [120, 135, 165, 180, 170, 195, 210, 200, 225, 245, 235, 270];
     const materialsOverTime = months.slice(0, currentMonth + 1).map((month, i) => ({
         month,
-        used: Math.floor(Math.random() * 200) + 50,
-        purchased: Math.floor(Math.random() * 250) + 80
+        used: baseMaterials[i],
+        purchased: Math.floor(baseMaterials[i] * 1.2),
+        waste: Math.floor(baseMaterials[i] * 0.08)
     }));
 
-    return { operationsOverTime, revenueOverTime, materialsOverTime };
+    // Staff productivity
+    const staffProductivity = months.slice(0, currentMonth + 1).map((month, i) => ({
+        month,
+        hoursWorked: 160 + (i * 5),
+        tasksCompleted: 45 + (i * 3),
+        efficiency: 82 + Math.floor(i * 0.8)
+    }));
+
+    return { operationsOverTime, revenueOverTime, materialsOverTime, staffProductivity };
 };
 
 const ReportsModule = () => {
@@ -444,7 +460,7 @@ const ReportsModule = () => {
                                         const y = 150 - (d.projected / maxRev) * 130;
                                         return `L ${x} ${y}`;
                                     }).join(' ')} L 400 150 Z`}
-                                    fill="rgba(139, 92, 246, 0.1)"
+                                    fill="rgba(59, 130, 246, 0.1)"
                                 />
                                 {/* Revenue area */}
                                 <path
@@ -465,7 +481,7 @@ const ReportsModule = () => {
                                         return `${i === 0 ? '' : 'L'} ${x} ${y}`;
                                     }).join(' ')}`}
                                     fill="none"
-                                    stroke="#8b5cf6"
+                                    stroke="#3b82f6"
                                     strokeWidth="2"
                                     strokeDasharray="5,5"
                                 />
@@ -1192,7 +1208,7 @@ const ReportsModule = () => {
                         </select>
                     </div>
                     <Button variant="secondary" icon="print">Print</Button>
-                    <Button variant="secondary" icon="download">Export</Button>
+                    <Button variant="orange" icon="download">Export</Button>
                 </div>
             </div>
 

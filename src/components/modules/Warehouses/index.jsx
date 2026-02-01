@@ -239,7 +239,7 @@ const WarehousesModule = () => {
                         <p>Manage storage locations and inventory zones</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => handleOpenModal('add')}>
+                <Button variant="orange" size="lg" icon="add" onClick={() => handleOpenModal('add')}>
                     New Warehouse
                 </Button>
             </div>

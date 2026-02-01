@@ -221,7 +221,7 @@ const StaffOnDutyCard = ({ onViewAll }) => (
                 <div className="card-title">Staff on Duty</div>
                 <div className="card-subtitle">{staffOnDuty.filter(s => s.status === 'working').length} actively working</div>
             </div>
-            <Button variant="secondary" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
+            <Button variant="glass" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
                 View All
             </Button>
         </div>
@@ -256,7 +256,7 @@ const TopClientsCard = ({ onViewAll }) => (
                 <div className="card-title">Top Clients</div>
                 <div className="card-subtitle">By total revenue</div>
             </div>
-            <Button variant="secondary" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
+            <Button variant="glass" icon="arrow_forward" iconPosition="right" onClick={onViewAll}>
                 View All
             </Button>
         </div>
@@ -598,10 +598,10 @@ const InventoryAlertsWidget = ({ onNavigate }) => {
                 ))}
             </div>
 
-            <div className="flex gap-2 mt-4">
+            <div className="flex gap-3 mt-6 pt-4 border-t border-white/10">
                 <Button
-                    variant="ghost"
-                    size="sm"
+                    variant="secondary"
+                    size="md"
                     icon="inventory_2"
                     className="flex-1"
                     onClick={() => onNavigate?.('materials')}
@@ -610,8 +610,9 @@ const InventoryAlertsWidget = ({ onNavigate }) => {
                 </Button>
                 <Button
                     variant="orange"
-                    size="sm"
+                    size="md"
                     icon="add_shopping_cart"
+                    className="flex-1"
                     onClick={() => onNavigate?.('requisitions')}
                 >
                     Reorder
@@ -812,7 +813,7 @@ const Dashboard = ({ onNavigate }) => {
                             <div className="card-title">Recent Orders</div>
                             <div className="card-subtitle">Latest project orders and their status</div>
                         </div>
-                        <Button variant="secondary" icon="arrow_forward" iconPosition="right" onClick={() => handleNavigate('operations')}>
+                        <Button variant="glass" icon="arrow_forward" iconPosition="right" onClick={() => handleNavigate('operations')}>
                             View All
                         </Button>
                     </div>

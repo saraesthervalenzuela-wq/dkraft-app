@@ -604,7 +604,7 @@ const Requisitions = () => {
                         <p>Manage sales orders converted from approved quotations</p>
                     </div>
                 </div>
-                <Button variant="orange" icon="add" onClick={() => handleOpenModal()}>
+                <Button variant="orange" icon="add" size="lg" onClick={() => handleOpenModal()}>
                     New Order
                 </Button>
             </div>

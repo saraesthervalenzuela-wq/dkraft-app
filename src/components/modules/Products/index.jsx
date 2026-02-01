@@ -8,6 +8,17 @@ const QB_SYNC_POLL_INTERVAL = 30000;
 // LocalStorage key for products
 const STORAGE_KEY = 'dkraft_products';
 
+// Product icons for visual variety
+const PRODUCT_ICONS = [
+    { icon: 'desk', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
+    { icon: 'menu_book', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+    { icon: 'coffee', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' },
+    { icon: 'door_sliding', color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)' },
+    { icon: 'inbox', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.15)' },
+    { icon: 'chair', color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.15)' },
+    { icon: 'table_restaurant', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+    { icon: 'weekend', color: '#84cc16', bg: 'rgba(132, 204, 22, 0.15)' },
+];
 
 /**
  * Initial products data matching MySQL schema
@@ -668,7 +679,7 @@ const ProductsModule = () => {
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
                     </button> */}
-                    <Button variant="orange" icon="add" onClick={handleAdd}>
+                    <Button variant="orange" icon="add" size="lg" onClick={handleAdd}>
                         Add new product
                     </Button>
                 </div>
@@ -752,9 +763,9 @@ const ProductsModule = () => {
             ) : viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="materials-cards-grid">
-                    {paginatedProducts.map((product) => {
+                    {paginatedProducts.map((product, index) => {
                         const qbStatus = getQBStatusIcon(product.qbSyncStatus);
-                        const statusStyle = getStatusStyle(product.status);
+                        const productIcon = PRODUCT_ICONS[index % PRODUCT_ICONS.length];
                         const margin = product.costPrice > 0
                             ? ((product.price - product.costPrice) / product.costPrice * 100).toFixed(1)
                             : 0;
@@ -762,14 +773,17 @@ const ProductsModule = () => {
                         return (
                             <div key={product.id} className="material-card">
                                 <div className="material-card-header">
-                                    <div className="material-card-icon">
-                                        <Icon name="category" />
+                                    <div className="material-card-icon" style={{ background: productIcon.bg, color: productIcon.color }}>
+                                        <Icon name={productIcon.icon} />
                                     </div>
                                     <div className="material-card-badges">
-                                        <span className={`status-badge ${statusStyle.color}`}>
-                                            <span className="status-dot"></span>
-                                            {statusStyle.label}
-                                        </span>
+                                        <Badge
+                                            variant={product.status === 'ACTIVE' ? 'success' : 'default'}
+                                            dot
+                                            pulse={product.status === 'ACTIVE'}
+                                        >
+                                            {product.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                        </Badge>
                                         <span className="qb-status-badge" style={{ color: qbStatus.color }} title={qbStatus.label}>
                                             <Icon name={qbStatus.icon} />
                                         </span>
@@ -927,10 +941,13 @@ const ProductsModule = () => {
                                             </div>
                                         </td>
                                         <td className="col-status">
-                                            <span className={`status-badge ${statusStyle.color}`}>
-                                                <span className="status-dot"></span>
-                                                {statusStyle.label}
-                                            </span>
+                                            <Badge
+                                                variant={product.status === 'ACTIVE' ? 'success' : 'default'}
+                                                dot
+                                                pulse={product.status === 'ACTIVE'}
+                                            >
+                                                {product.status === 'ACTIVE' ? 'Active' : 'Inactive'}
+                                            </Badge>
                                         </td>
                                         <td className="col-actions">
                                             <div className="action-buttons">
