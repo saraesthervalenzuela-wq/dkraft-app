@@ -8,7 +8,22 @@
       "Bash(grep:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npm run build:*)",
+      "Bash(lsof:*)",
+      "Bash(open http://localhost:5173/)",
+      "Bash(pkill:*)",
+      "Bash(curl:*)",
+      "Bash(open:*)",
+      "Bash(open -a \"Safari\" http://localhost:5173/)",
+      "Bash(osascript:*)",
+      "Bash(npx stylelint:*)",
+      "Bash(ls:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm install:*)",
+      "Bash(while read hash msg)",
+      "Bash(do if git show $hash:src/styles/main.css)",
+      "Bash(then echo \"$hash - $msg\" break fi done)"
     ]
   }
 }
