@@ -2,6 +2,56 @@
 /* Dovecreek Knowledge-based Resource Assignment & Flow Tracking */
 /* Design System: Deep Blue + Electric Orange | Typography: Red Hat Display + Coda */
 
+@import "tailwindcss";
+
+/* ============================================
+   TAILWIND THEME - D-KRAFT Design System
+   ============================================ */
+@theme {
+    /* Colors - Deep Blue */
+    --color-primary: #0033b3;
+    --color-primary-light: #0047e0;
+    --color-primary-dark: #001d66;
+
+    /* Colors - Electric Orange */
+    --color-orange: #d35400;
+    --color-orange-light: #e67e22;
+    --color-orange-bright: #f39c12;
+    --color-orange-glow: rgba(211, 84, 0, 0.4);
+
+    /* Background Colors */
+    --color-bg-primary: #0a1628;
+    --color-bg-secondary: rgba(15, 35, 80, 0.8);
+    --color-bg-tertiary: rgba(20, 50, 110, 0.6);
+    --color-bg-card: rgba(15, 40, 90, 0.65);
+
+    /* Status Colors */
+    --color-success: #10b981;
+    --color-warning: #fbbf24;
+    --color-danger: #ef4444;
+    --color-info: #0047e0;
+
+    /* Font Families */
+    --font-display: 'Red Hat Display', system-ui, sans-serif;
+    --font-mono: 'Coda', 'SF Mono', monospace;
+
+    /* Spacing */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
+}
+
+/* ============================================
+   BASE RESET (Tailwind preflight handles most)
+   ============================================ */
 * {
     margin: 0;
     padding: 0;
@@ -113,6 +163,34 @@
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
     --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* ============================
+       BUTTON DESIGN TOKENS
+       Unified button system
+       ============================ */
+
+    /* Button Sizes */
+    --btn-height-sm: 36px;
+    --btn-height-md: 44px;
+    --btn-height-lg: 50px;
+    --btn-padding-sm: 8px 16px;
+    --btn-padding-md: 12px 24px;
+    --btn-padding-lg: 16px 32px;
+
+    /* Button Radius */
+    --btn-radius-sm: 8px;
+    --btn-radius-md: 10px;
+    --btn-radius-lg: 12px;
+
+    /* Icon Button Sizes (square) */
+    --btn-icon-sm: 36px;
+    --btn-icon-md: 44px;
+    --btn-icon-lg: 50px;
+
+    /* Focus Ring */
+    --focus-ring-color: rgba(255, 107, 53, 0.5);
+    --focus-ring-offset: 2px;
+    --focus-ring-width: 3px;
 }
 
 /* Light Theme - Deep Blue + Orange */
@@ -1512,6 +1590,48 @@ button {
     font-family: inherit;
 }
 
+/* ============================================ */
+/* BUTTON BASE RESET & ACCESSIBILITY */
+/* ============================================ */
+
+/* Base button styles for all buttons */
+button,
+[role="button"],
+.btn,
+[class*="btn-"] {
+    position: relative;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Universal focus-visible state for accessibility */
+button:focus-visible,
+[role="button"]:focus-visible,
+.btn:focus-visible,
+[class*="btn-"]:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    box-shadow: 0 0 0 calc(var(--focus-ring-width) + var(--focus-ring-offset)) var(--focus-ring-color);
+}
+
+/* Active state feedback */
+button:active:not(:disabled),
+[role="button"]:active:not(:disabled),
+.btn:active:not(:disabled),
+[class*="btn-"]:active:not(:disabled) {
+    transform: scale(0.97);
+}
+
+/* Disabled state */
+button:disabled,
+[role="button"]:disabled,
+.btn:disabled,
+[class*="btn-"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* Scrollbar Styling - White/Light */
 ::-webkit-scrollbar {
     width: 8px;
@@ -1545,15 +1665,16 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
     background: var(--orange-gradient);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--btn-radius-md);
     color: white;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-base);
     box-shadow: 0 4px 15px var(--orange-glow);
     white-space: nowrap;
 }
@@ -1564,7 +1685,12 @@ button {
 }
 
 .btn-primary-action:active {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.98);
+}
+
+.btn-primary-action:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .btn-primary-action .material-symbols-rounded {
@@ -1572,19 +1698,21 @@ button {
     color: white;
 }
 
-/* Icon Button */
+/* Icon Button - Touch accessible (44px minimum) */
 .btn-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: var(--btn-icon-md);
+    height: var(--btn-icon-md);
+    min-width: var(--btn-icon-md);
+    min-height: var(--btn-icon-md);
     background: var(--bg-tertiary);
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
+    border-radius: var(--btn-radius-sm);
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 }
 
 .btn-icon:hover {
@@ -1593,39 +1721,59 @@ button {
     border-color: var(--border-color);
 }
 
+.btn-icon:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
 .btn-icon .material-symbols-rounded {
     font-size: 20px;
 }
 
-/* Action Edit Button - Table row edit buttons */
+/* Small icon button variant (for tight spaces, still accessible) */
+.btn-icon-sm {
+    width: var(--btn-icon-sm);
+    height: var(--btn-icon-sm);
+    min-width: var(--btn-icon-sm);
+    min-height: var(--btn-icon-sm);
+}
+
+/* Action Edit Button - Table row edit buttons (touch accessible) */
 .btn-action-edit {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: var(--btn-icon-md);
+    height: var(--btn-icon-md);
+    min-width: var(--btn-icon-md);
+    min-height: var(--btn-icon-md);
     background: linear-gradient(135deg, rgba(0, 51, 179, 0.15) 0%, rgba(0, 51, 179, 0.08) 100%);
     border: 1px solid rgba(0, 51, 179, 0.3);
-    border-radius: 8px;
+    border-radius: var(--btn-radius-sm);
     color: var(--accent-primary);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 }
 
 .btn-action-edit:hover {
-    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
-    border-color: var(--accent-primary);
+    background: var(--orange-gradient);
+    border-color: var(--orange-primary);
     color: white;
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(0, 51, 179, 0.4);
+    box-shadow: 0 4px 12px var(--orange-glow);
 }
 
 .btn-action-edit:active {
     transform: scale(0.98);
 }
 
+.btn-action-edit:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
 .btn-action-edit .material-symbols-rounded {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 300;
 }
 
@@ -1634,15 +1782,16 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
     background: linear-gradient(135deg, rgba(0, 51, 179, 0.2) 0%, rgba(0, 71, 224, 0.15) 100%);
     border: 2px solid var(--accent-primary);
-    border-radius: 12px;
+    border-radius: var(--btn-radius-lg);
     color: #ffffff;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-base);
     box-shadow: 0 0 20px rgba(0, 51, 179, 0.2);
 }
 
@@ -1686,36 +1835,44 @@ button {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 24px;
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
     background: transparent;
     border: 1px solid var(--border-subtle);
-    border-radius: 8px;
+    border-radius: var(--btn-radius-md);
     color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 }
 
 .btn-modal-cancel:hover {
     background: var(--bg-tertiary);
     color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.btn-modal-cancel:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .btn-modal-save {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 14px 28px;
-    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
+    background: var(--orange-gradient);
     border: none;
-    border-radius: 12px;
+    border-radius: var(--btn-radius-lg);
     color: white;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.35);
+    transition: all var(--transition-base);
+    box-shadow: 0 6px 20px var(--orange-glow);
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
@@ -1723,6 +1880,11 @@ button {
     transform: translateY(-2px);
     box-shadow: 0 10px 30px rgba(255, 107, 53, 0.45);
     background: linear-gradient(135deg, #ff7a47 0%, #ff9b6a 100%);
+}
+
+.btn-modal-save:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .btn-modal-save:disabled {
@@ -4322,21 +4484,27 @@ button {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
+    background: var(--orange-gradient);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--btn-radius-md);
     color: white;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 51, 179, 0.3);
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 12px var(--orange-glow);
 }
 
 .btn-add-user:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 51, 179, 0.4);
+    box-shadow: 0 6px 20px var(--orange-glow);
+}
+
+.btn-add-user:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .btn-add-user .nav-icon {
@@ -4360,19 +4528,26 @@ button {
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 16px;
+    padding: var(--btn-padding-sm);
+    min-height: var(--btn-height-md);
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
-    border-radius: 8px;
+    border-radius: var(--btn-radius-sm);
     color: var(--danger);
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 }
 
 .btn-delete-selected:hover {
     background: rgba(239, 68, 68, 0.2);
+    border-color: var(--danger);
+}
+
+.btn-delete-selected:focus-visible {
+    outline: 3px solid rgba(239, 68, 68, 0.5);
+    outline-offset: 2px;
 }
 
 .btn-delete-selected .nav-icon {
@@ -5044,15 +5219,16 @@ button {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    padding: 16px 36px;
+    padding: var(--btn-padding-lg);
+    min-height: var(--btn-height-lg);
     background: linear-gradient(135deg, #ff4500 0%, #ff5722 30%, #ff6b35 60%, #ff8c5a 100%);
     border: none;
-    border-radius: 14px;
+    border-radius: var(--btn-radius-lg);
     color: white;
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-base);
     box-shadow:
         0 4px 20px rgba(255, 69, 0, 0.5),
         0 8px 30px rgba(255, 107, 53, 0.35),
@@ -5098,33 +5274,45 @@ button {
     box-shadow: none;
 }
 
+.btn-create-user:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
 .btn-create-user .nav-icon {
     font-size: 20px;
 }
 
-/* Cancel button in modals */
-.btn-modal-cancel,
-.btn-cancel {
+/* Cancel button in modals - Staff module specific */
+.staff-module .btn-modal-cancel,
+.staff-module .btn-cancel {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px 28px;
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 12px;
+    border-radius: var(--btn-radius-lg);
     color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.25s ease;
+    transition: all var(--transition-fast);
 }
 
-.btn-modal-cancel:hover,
-.btn-cancel:hover {
+.staff-module .btn-modal-cancel:hover,
+.staff-module .btn-cancel:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.25);
     color: var(--text-primary);
+}
+
+.staff-module .btn-modal-cancel:focus-visible,
+.staff-module .btn-cancel:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 /* Light theme adjustments for Staff */
@@ -5192,21 +5380,27 @@ button {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
+    background: var(--orange-gradient);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--btn-radius-md);
     color: white;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 51, 179, 0.3);
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 12px var(--orange-glow);
 }
 
 .btn-add-supplier:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 51, 179, 0.4);
+    box-shadow: 0 6px 20px var(--orange-glow);
+}
+
+.btn-add-supplier:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .suppliers-toolbar {
@@ -5531,22 +5725,30 @@ button {
     border-top: 1px solid var(--border-subtle);
 }
 
+/* Generic cancel button */
 .btn-cancel {
     flex: 1;
-    padding: 14px 20px;
-    border-radius: 10px;
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
+    border-radius: var(--btn-radius-md);
     border: 1px solid var(--border-subtle);
     background: transparent;
     color: var(--text-secondary);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 }
 
 .btn-cancel:hover {
     border-color: var(--accent-primary);
     color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-cancel:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .modal-supplier .btn-create-user {
@@ -5922,21 +6124,27 @@ button {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
+    padding: var(--btn-padding-md);
+    min-height: var(--btn-height-md);
+    background: var(--orange-gradient);
     border: none;
-    border-radius: 10px;
+    border-radius: var(--btn-radius-md);
     color: white;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 51, 179, 0.3);
+    transition: all var(--transition-base);
+    box-shadow: 0 4px 12px var(--orange-glow);
 }
 
 .btn-add-material:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 51, 179, 0.4);
+    box-shadow: 0 6px 20px var(--orange-glow);
+}
+
+.btn-add-material:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
 }
 
 .btn-add-material .nav-icon {
@@ -8790,27 +8998,27 @@ button {
     margin-bottom: 16px;
 }
 
-.btn-add-material {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
+/* Mini add material button for operations context */
+.operations-module .btn-add-material,
+.stage-editor .btn-add-material {
+    padding: var(--btn-padding-sm);
+    min-height: var(--btn-height-sm);
     background: rgba(0, 51, 179, 0.15);
-    border: none;
-    border-radius: 8px;
+    border-radius: var(--btn-radius-sm);
     color: var(--accent-primary);
     font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    box-shadow: none;
 }
 
-.btn-add-material:hover {
+.operations-module .btn-add-material:hover,
+.stage-editor .btn-add-material:hover {
     background: var(--accent-primary);
     color: white;
+    box-shadow: 0 4px 12px rgba(0, 51, 179, 0.3);
 }
 
-.btn-add-material .nav-icon {
+.operations-module .btn-add-material .nav-icon,
+.stage-editor .btn-add-material .nav-icon {
     font-size: 18px;
 }
 
