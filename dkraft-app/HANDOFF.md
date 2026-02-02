@@ -229,19 +229,22 @@ api.{entidad}.delete(id)
 
 | Módulo | Backend | QB Sync | Estado |
 |--------|---------|---------|--------|
-| Clients | API + Supabase | ✅ | Funcional |
-| Suppliers | API + Supabase | ❌ | Funcional |
-| Materials | API + Supabase | ✅ | Funcional |
-| Products | API + Supabase | ✅ | Funcional |
-| Projects | API + Supabase | ❌ | Funcional |
-| **Quotations** | ⚠️ localStorage | ✅ | **Pendiente migrar** |
-| **Requisitions** | ⚠️ localStorage | ✅ | **Pendiente migrar** |
-| Operations | API + Supabase | ❌ | Funcional |
-| BOM | API + Supabase | ❌ | Funcional |
-| Warehouses | API + Supabase | ❌ | Funcional |
-| Staff | Supabase | ❌ | Funcional |
-| Quality | API | ❌ | Funcional |
-| Performance | API | ❌ | Funcional |
+| Clients | API + Supabase | ✅ | ✅ Funcional |
+| Suppliers | API + Supabase | ❌ | ✅ Funcional |
+| Materials | API + Supabase | ✅ | ✅ Funcional |
+| Products | API + Supabase | ✅ | ✅ Funcional |
+| Projects | API + Supabase | ❌ | ✅ Funcional |
+| Quotations | ✅ API | ✅ | ✅ **Migrado** |
+| Requisitions | ✅ API | ✅ | ✅ **Migrado** |
+| Operations | API + Supabase | ❌ | ✅ Funcional |
+| BOM | API + Supabase | ❌ | ✅ Funcional |
+| Warehouses | API + Supabase | ❌ | ✅ Funcional |
+| Staff | Supabase | ❌ | ✅ Funcional |
+| Categories | API | ❌ | ✅ Funcional |
+| Units | API | ❌ | ✅ Funcional |
+| Quality | API | ❌ | ✅ Funcional |
+| Performance | API | ❌ | ✅ Funcional |
+| ActivityLog | API | ❌ | ✅ Funcional |
 
 ---
 
@@ -337,16 +340,21 @@ const handleConvertToSalesOrder = async (quotationId) => {
 
 ## 10. PENDIENTES MVP
 
-### Prioridad Alta
-- [ ] Migrar Quotations de localStorage a API
-- [ ] Migrar Requisitions de localStorage a API
+### ✅ Completado
+- [x] Migrar Quotations de localStorage a API
+- [x] Migrar Requisitions de localStorage a API
+- [x] UI polish (status toggles, delete modals, icons)
+- [x] Documentación completa
+
+### Prioridad Alta (Backend/Deploy)
 - [ ] Verificar endpoints de API funcionando
-- [ ] Deploy a producción
+- [ ] Deploy a producción (Vercel recomendado)
+- [ ] Configurar variables de entorno en producción
 
 ### Prioridad Media
 - [ ] Probar sync QuickBooks completo
 - [ ] Exportar reportes a PDF
-- [ ] Code splitting para bundle
+- [ ] Code splitting para reducir bundle (807KB)
 
 ### Prioridad Baja
 - [ ] PWA móvil
@@ -388,7 +396,7 @@ vercel --prod        # Producción
 2. **Dos backends** - Supabase para CRUD simple, API para lógica compleja
 3. **billingEntity** - DOVECREEK sync QB, INNOVATIVE no
 4. **Icon component** - Usar `<Icon name="x" />` no react-icons
-5. **localStorage** - Solo Quotations y Requisitions (migrar a API)
+5. **Frontend LISTO** - Todos los módulos conectados a API
 
 ---
 
