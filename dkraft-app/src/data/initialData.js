@@ -36,7 +36,7 @@ export const navSections = [
             { id: 'materials', label: 'Materials', icon: 'inventory_2' },
             { id: 'products', label: 'Products', icon: 'category' },
             { id: 'warehouses', label: 'Warehouses', icon: 'warehouse' },
-            { id: 'bom', label: 'Bill of Materials', icon: 'receipt_long' },
+            { id: 'bom', label: 'Bill of Material (BOM)', icon: 'receipt_long' },
         ]
     },
     {
