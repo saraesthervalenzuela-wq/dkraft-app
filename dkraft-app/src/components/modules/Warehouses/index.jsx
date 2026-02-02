@@ -18,6 +18,7 @@ import {
 } from 'react-icons/fa';
 import Card from '../../common/Card';
 import Modal from '../../common/Modal';
+import { FactoryIcon } from '../../common';
 import { useDataService } from '../../../hooks/useService';
 import './styles.css';
 
@@ -214,8 +215,8 @@ const WarehousesModule = () => {
             {/* Header - Same style as Staff */}
             <div className="page-header">
                 <div className="header-content">
-                    <div className="header-icon">
-                        <span className="material-symbols-rounded">warehouse</span>
+                    <div className="header-icon factory-icon-wrapper">
+                        <FactoryIcon name="storage" size={32} />
                     </div>
                     <div className="header-text">
                         <h1>Warehouses</h1>
@@ -229,29 +230,38 @@ const WarehousesModule = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="staff-stats-grid">
-                <div className="staff-stat-card">
-                    <div className="staff-stat-icon blue">
+            <div className="module-stats-row">
+                <div className="module-stat-card">
+                    <div className="stat-icon blue">
                         <span className="material-symbols-rounded">warehouse</span>
                     </div>
-                    <div className="staff-stat-info">
-                        <div className="staff-stat-value">{warehouses.length}</div>
-                        <div className="staff-stat-label">TOTAL WAREHOUSES</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{warehouses.length}</span>
+                        <span className="stat-label">Total Warehouses</span>
                     </div>
                 </div>
-                <div className="staff-stat-card">
-                    <div className="staff-stat-icon green">
+                <div className="module-stat-card">
+                    <div className="stat-icon green">
                         <span className="material-symbols-rounded">inventory_2</span>
                     </div>
-                    <div className="staff-stat-info">
-                        <div className="staff-stat-value">{warehouses.filter(w => w.description).length}</div>
-                        <div className="staff-stat-label">ACTIVE ZONES</div>
+                    <div className="stat-info">
+                        <span className="stat-value">{warehouses.filter(w => w.description).length}</span>
+                        <span className="stat-label">Active Zones</span>
+                    </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon orange">
+                        <span className="material-symbols-rounded">location_on</span>
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{[...new Set(warehouses.map(w => w.location).filter(Boolean))].length}</span>
+                        <span className="stat-label">Locations</span>
                     </div>
                 </div>
             </div>
 
             {/* Toolbar */}
-            <div className="staff-toolbar">
+            <div className="module-toolbar">
                 <div className="search-container">
                     <span className="material-symbols-rounded search-icon">search</span>
                     <input
@@ -262,21 +272,23 @@ const WarehousesModule = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className="view-toggle-buttons">
-                    <button
-                        className={`view-toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
-                        onClick={() => setViewMode('table')}
-                        title="Table view"
-                    >
-                        <span className="material-symbols-rounded">view_list</span>
-                    </button>
-                    <button
-                        className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                        onClick={() => setViewMode('grid')}
-                        title="Grid view"
-                    >
-                        <span className="material-symbols-rounded">grid_view</span>
-                    </button>
+                <div className="toolbar-right">
+                    <div className="view-toggle">
+                        <button
+                            className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
+                            onClick={() => setViewMode('table')}
+                            title="Table view"
+                        >
+                            <span className="material-symbols-rounded">view_list</span>
+                        </button>
+                        <button
+                            className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
+                            onClick={() => setViewMode('grid')}
+                            title="Grid view"
+                        >
+                            <span className="material-symbols-rounded">grid_view</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -390,86 +402,108 @@ const WarehousesModule = () => {
                 </Card>
             )}
 
-            {/* Create/Edit Modal */}
+            {/* Create/Edit Modal - Using new Modal props */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 title={currentWarehouse.id ? 'Edit Warehouse' : 'New Warehouse'}
+                subtitle={currentWarehouse.id ? 'Update warehouse details' : 'Add a new storage location'}
+                icon={currentWarehouse.id ? 'edit' : 'add_box'}
                 size="medium"
+                onSave={handleSave}
+                saveText={currentWarehouse.id ? 'Update' : 'Create'}
+                saveIcon={currentWarehouse.id ? 'save' : 'add'}
+                saveDisabled={!currentWarehouse.name || !currentWarehouse.location}
             >
-                <div className="warehouse-form">
-                    <div className="form-group">
-                        <label>Name *</label>
-                        <input
-                            type="text"
-                            name="name"
-                            value={currentWarehouse.name}
-                            onChange={handleInputChange}
-                            placeholder="Warehouse name"
-                            required
-                        />
+                <div className="modal-form">
+                    {/* Section: Basic Info */}
+                    <div className="form-section">
+                        <div className="form-section-header">
+                            <span className="material-symbols-rounded">info</span>
+                            <h4>Basic Information</h4>
+                        </div>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>
+                                    <span className="material-symbols-rounded">warehouse</span>
+                                    Name *
+                                </label>
+                                <div className="input-with-icon">
+                                    <span className="material-symbols-rounded input-icon">inventory_2</span>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={currentWarehouse.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter warehouse name"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <span className="material-symbols-rounded">location_on</span>
+                                    Location *
+                                </label>
+                                <div className="input-with-icon">
+                                    <span className="material-symbols-rounded input-icon">pin_drop</span>
+                                    <input
+                                        type="text"
+                                        name="location"
+                                        value={currentWarehouse.location}
+                                        onChange={handleInputChange}
+                                        placeholder="Address or zone"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div className="form-group">
-                        <label>Location *</label>
-                        <input
-                            type="text"
-                            name="location"
-                            value={currentWarehouse.location}
-                            onChange={handleInputChange}
-                            placeholder="Address or location"
-                            required
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Description</label>
-                        <textarea
-                            name="description"
-                            value={currentWarehouse.description}
-                            onChange={handleInputChange}
-                            placeholder="Warehouse description..."
-                            rows="3"
-                        />
-                    </div>
-                    <div className="form-actions">
-                        <button className="btn-secondary" onClick={handleCloseModal}>
-                            Cancel
-                        </button>
-                        <button
-                            className="btn-primary"
-                            onClick={handleSave}
-                            disabled={!currentWarehouse.name || !currentWarehouse.location}
-                        >
-                            {currentWarehouse.id ? 'Update' : 'Create'}
-                        </button>
+
+                    {/* Section: Details */}
+                    <div className="form-section">
+                        <div className="form-section-header">
+                            <span className="material-symbols-rounded">description</span>
+                            <h4>Additional Details</h4>
+                        </div>
+                        <div className="form-group">
+                            <label>
+                                <span className="material-symbols-rounded">notes</span>
+                                Description
+                            </label>
+                            <div className="input-with-icon textarea-wrapper">
+                                <span className="material-symbols-rounded input-icon">edit_note</span>
+                                <textarea
+                                    name="description"
+                                    value={currentWarehouse.description}
+                                    onChange={handleInputChange}
+                                    placeholder="Describe the warehouse purpose, capacity, special conditions..."
+                                    rows="4"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </Modal>
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete Confirmation Modal - Using new Modal props */}
             <Modal
                 isOpen={isDeleteModalOpen}
                 onClose={() => setIsDeleteModalOpen(false)}
-                title="Confirm Deletion"
+                title="Delete Warehouse"
+                subtitle="This action cannot be undone"
+                icon="warning"
                 size="small"
+                variant="danger"
+                onSave={handleDelete}
+                saveText="Delete"
+                confirmOnClose={false}
             >
                 <div className="delete-confirmation">
-                    <FaExclamationTriangle className="warning-icon" />
                     <p>
                         Are you sure you want to delete warehouse{' '}
                         <strong>{warehouseToDelete?.name}</strong>?
                     </p>
-                    <p className="warning-text">This action cannot be undone.</p>
-                    <div className="confirmation-actions">
-                        <button
-                            className="btn-secondary"
-                            onClick={() => setIsDeleteModalOpen(false)}
-                        >
-                            Cancel
-                        </button>
-                        <button className="btn-danger" onClick={handleDelete}>
-                            Delete
-                        </button>
-                    </div>
                 </div>
             </Modal>
         </div>

@@ -6,8 +6,8 @@ import { statsData as defaultStats, chartData as defaultChart, quickActions, rec
 /**
  * StatCard Component
  */
-const StatCard = ({ label, value, icon, delay }) => (
-    <div className={`stat-card animate-in delay-${delay}`}>
+const StatCard = ({ label, value, icon, delay, onClick }) => (
+    <div className={`stat-card animate-in delay-${delay} ${onClick ? 'clickable' : ''}`} onClick={onClick}>
         <div className="stat-label">{label}</div>
         <div className="stat-value">{value}</div>
         <div className="stat-footer">
@@ -136,14 +136,14 @@ const ActionCard = ({ title, desc, progress }) => (
 /**
  * StaffOnDutyCard Component
  */
-const StaffOnDutyCard = ({ staff }) => (
+const StaffOnDutyCard = ({ staff, onViewAll }) => (
     <div className="staff-duty-card animate-in delay-5">
         <div className="card-header">
             <div>
                 <div className="card-title">Staff on Duty</div>
                 <div className="card-subtitle">{staff.filter(s => s.status === 'working').length} actively working</div>
             </div>
-            <button className="btn-view-all">
+            <button className="btn-view-all" onClick={onViewAll}>
                 View All <Icon name="arrow_forward" />
             </button>
         </div>
@@ -171,14 +171,14 @@ const StaffOnDutyCard = ({ staff }) => (
 /**
  * TopClientsCard Component
  */
-const TopClientsCard = ({ clients }) => (
+const TopClientsCard = ({ clients, onViewAll }) => (
     <div className="top-clients-card animate-in delay-6">
         <div className="card-header">
             <div>
                 <div className="card-title">Top Clients</div>
                 <div className="card-subtitle">By total revenue</div>
             </div>
-            <button className="btn-view-all">
+            <button className="btn-view-all" onClick={onViewAll}>
                 View All <Icon name="arrow_forward" />
             </button>
         </div>
@@ -245,13 +245,31 @@ const CommunicationCard = () => (
 /**
  * Dashboard Module Component
  */
-const Dashboard = () => {
+const Dashboard = ({ setActiveNav }) => {
     const [statsData, _setStatsData] = useState(defaultStats);
     const [topClients, setTopClients] = useState(defaultTopClients);
     const [recentOrders, _setRecentOrders] = useState(defaultOrders);
     const [staffOnDuty, _setStaffOnDuty] = useState(defaultStaff);
     const [chartData, _setChartData] = useState(defaultChart);
     const [_isLoading, setIsLoading] = useState(false);
+
+    // Navigation handlers for dashboard widgets
+    const navigateTo = (navId) => {
+        if (setActiveNav) {
+            setActiveNav(navId);
+        }
+    };
+
+    // Map stat labels to navigation targets
+    const getStatNavTarget = (label) => {
+        const navMap = {
+            'Active Projects': 'projects',
+            'In Production': 'operations',
+            'Pending Approval': 'requisitions',
+            'Completed': 'reports'
+        };
+        return navMap[label] || 'dashboard';
+    };
 
     // Load data from API on mount
     useEffect(() => {
@@ -311,6 +329,7 @@ const Dashboard = () => {
                             value={stat.value}
                             icon={stat.icon}
                             delay={index + 1}
+                            onClick={() => navigateTo(getStatNavTarget(stat.label))}
                         />
                     ))}
                 </div>
@@ -346,7 +365,7 @@ const Dashboard = () => {
                             <div className="card-title">Recent Orders</div>
                             <div className="card-subtitle">Latest project orders and their status</div>
                         </div>
-                        <button className="btn-view-all">
+                        <button className="btn-view-all" onClick={() => navigateTo('projects')}>
                             View All <Icon name="arrow_forward" />
                         </button>
                     </div>
@@ -378,8 +397,8 @@ const Dashboard = () => {
 
             {/* Staff & Clients Section */}
             <div className="dashboard-staff-clients-grid">
-                <StaffOnDutyCard staff={staffOnDuty} />
-                <TopClientsCard clients={topClients} />
+                <StaffOnDutyCard staff={staffOnDuty} onViewAll={() => navigateTo('staff-duty')} />
+                <TopClientsCard clients={topClients} onViewAll={() => navigateTo('clients')} />
             </div>
         </div>
     );

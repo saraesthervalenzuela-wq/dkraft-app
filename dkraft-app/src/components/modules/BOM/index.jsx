@@ -702,6 +702,10 @@ const BOMModule = () => {
                 title={modalMode === 'add' ? 'New BOM' : modalMode === 'edit' ? 'Edit BOM' : 'BOM Details'}
                 onClose={() => setShowModal(false)}
                 icon={modalMode === 'add' ? 'add_box' : modalMode === 'edit' ? 'edit' : 'visibility'}
+                size="large"
+                onSave={modalMode !== 'view' ? handleSave : undefined}
+                saveText={modalMode === 'add' ? 'Create BOM' : 'Save Changes'}
+                isViewMode={modalMode === 'view'}
             >
                 <div className="bom-form">
                     <div className="form-row">
@@ -875,16 +879,6 @@ const BOMModule = () => {
                         </div>
                     </div>
 
-                    {modalMode !== 'view' && (
-                        <div className="form-actions">
-                            <button className="btn-secondary" onClick={() => setShowModal(false)}>
-                                Cancel
-                            </button>
-                            <button className="btn-primary" onClick={handleSave}>
-                                {modalMode === 'add' ? 'Create BOM' : 'Save Changes'}
-                            </button>
-                        </div>
-                    )}
                 </div>
             </Modal>
 
@@ -894,6 +888,10 @@ const BOMModule = () => {
                 title={componentMode === 'add' ? 'Add Component' : 'Edit Component'}
                 onClose={() => setShowComponentModal(false)}
                 icon="add_circle"
+                size="medium"
+                onSave={handleSaveComponent}
+                saveText={componentMode === 'add' ? 'Add Component' : 'Update Component'}
+                saveDisabled={!currentComponent.itemId && !currentComponent.subBomId}
             >
                 <div className="component-form">
                     <div className="form-group">
@@ -1007,18 +1005,6 @@ const BOMModule = () => {
                         />
                     </div>
 
-                    <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowComponentModal(false)}>
-                            Cancel
-                        </button>
-                        <button
-                            className="btn-primary"
-                            onClick={handleSaveComponent}
-                            disabled={!currentComponent.itemId && !currentComponent.subBomId}
-                        >
-                            {componentMode === 'add' ? 'Add Component' : 'Update Component'}
-                        </button>
-                    </div>
                 </div>
             </Modal>
 
@@ -1028,19 +1014,15 @@ const BOMModule = () => {
                 title="Delete BOM"
                 onClose={() => setShowDeleteConfirm(false)}
                 icon="warning"
+                size="small"
+                variant="danger"
+                onSave={confirmDelete}
+                saveText="Delete"
+                confirmOnClose={false}
             >
                 <div className="delete-confirm">
-                    <Icon name="warning" className="warning-icon" />
                     <p>Are you sure you want to delete <strong>{bomToDelete?.name}</strong>?</p>
                     <p className="text-muted">This action cannot be undone.</p>
-                    <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
-                            Cancel
-                        </button>
-                        <button className="btn-danger" onClick={confirmDelete}>
-                            Delete
-                        </button>
-                    </div>
                 </div>
             </Modal>
         </div>

@@ -99,7 +99,7 @@ const AppContent = () => {
                 return <UnitsModule />;
             case 'dashboard':
             default:
-                return <Dashboard />;
+                return <Dashboard setActiveNav={setActiveNav} />;
         }
     };
 

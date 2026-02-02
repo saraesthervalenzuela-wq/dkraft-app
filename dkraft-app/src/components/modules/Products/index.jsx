@@ -950,6 +950,11 @@ const ProductsModule = () => {
                 title={modalMode === 'add' ? 'New Product' : modalMode === 'edit' ? 'Edit Product' : 'Product Details'}
                 onClose={() => setShowModal(false)}
                 icon={modalMode === 'add' ? 'add_box' : modalMode === 'edit' ? 'edit' : 'visibility'}
+                size="large"
+                onSave={modalMode !== 'view' ? handleSave : undefined}
+                saveText={modalMode === 'add' ? 'Create Product' : 'Save Changes'}
+                saveDisabled={!currentProduct.name || !currentProduct.categoryId}
+                isViewMode={modalMode === 'view'}
             >
                 <div className="material-form">
                     <div className="form-row">
@@ -1079,21 +1084,6 @@ const ProductsModule = () => {
                         </div>
                     )}
 
-                    {modalMode !== 'view' && (
-                        <div className="form-actions">
-                            <button className="btn-secondary" onClick={() => setShowModal(false)}>
-                                Cancel
-                            </button>
-                            <button
-                                className="btn-primary"
-                                onClick={handleSave}
-                                disabled={!currentProduct.name || !currentProduct.categoryId}
-                            >
-                                <Icon name="save" />
-                                {modalMode === 'add' ? 'Create product' : 'Save changes'}
-                            </button>
-                        </div>
-                    )}
                 </div>
             </Modal>
 
@@ -1103,19 +1093,15 @@ const ProductsModule = () => {
                 title="Delete Product"
                 onClose={() => setShowDeleteConfirm(false)}
                 icon="warning"
+                size="small"
+                variant="danger"
+                onSave={confirmDelete}
+                saveText="Delete"
+                confirmOnClose={false}
             >
                 <div className="delete-confirm">
-                    <Icon name="warning" className="warning-icon" />
                     <p>Are you sure you want to delete <strong>{productToDelete?.name}</strong>?</p>
                     <p className="text-muted">This action cannot be undone.</p>
-                    <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
-                            Cancel
-                        </button>
-                        <button className="btn-danger" onClick={confirmDelete}>
-                            Delete
-                        </button>
-                    </div>
                 </div>
             </Modal>
         </div>

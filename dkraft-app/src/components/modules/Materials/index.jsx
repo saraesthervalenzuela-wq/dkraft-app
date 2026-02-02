@@ -880,9 +880,14 @@ const MaterialsModule = () => {
             {/* Add/Edit Modal */}
             <Modal
                 isOpen={showModal}
-                title={modalMode === 'add' ? 'Add Material' : modalMode === 'edit' ? 'Edit Material' : 'Material Details'}
+                title={modalMode === 'add' ? 'New Material' : modalMode === 'edit' ? 'Edit Material' : 'Material Details'}
                 onClose={() => setShowModal(false)}
                 icon={modalMode === 'add' ? 'add_box' : modalMode === 'edit' ? 'edit' : 'visibility'}
+                size="large"
+                onSave={modalMode !== 'view' ? handleSave : undefined}
+                saveText={modalMode === 'add' ? 'Add Material' : 'Save Changes'}
+                saveDisabled={!currentMaterial.name || !currentMaterial.categoryId || !currentMaterial.unitId || !currentMaterial.supplierId}
+                isViewMode={modalMode === 'view'}
             >
                 <div className="material-form" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '8px' }}>
                     <div className="form-row">
@@ -1030,20 +1035,6 @@ const MaterialsModule = () => {
                         </div>
                     )}
 
-                    {modalMode !== 'view' && (
-                        <div className="form-actions">
-                            <button className="btn-secondary" onClick={() => setShowModal(false)}>
-                                Cancel
-                            </button>
-                            <button
-                                className="btn-primary"
-                                onClick={handleSave}
-                                disabled={!currentMaterial.name || !currentMaterial.categoryId || !currentMaterial.unitId || !currentMaterial.supplierId}
-                            >
-                                {modalMode === 'add' ? 'Add Material' : 'Save Changes'}
-                            </button>
-                        </div>
-                    )}
                 </div>
             </Modal>
 
@@ -1053,19 +1044,15 @@ const MaterialsModule = () => {
                 title="Delete Material"
                 onClose={() => setShowDeleteConfirm(false)}
                 icon="warning"
+                size="small"
+                variant="danger"
+                onSave={confirmDelete}
+                saveText="Delete"
+                confirmOnClose={false}
             >
                 <div className="delete-confirm">
-                    <Icon name="warning" className="warning-icon" />
                     <p>Are you sure you want to delete <strong>{materialToDelete?.name}</strong>?</p>
                     <p className="text-muted">This action cannot be undone.</p>
-                    <div className="form-actions">
-                        <button className="btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
-                            Cancel
-                        </button>
-                        <button className="btn-danger" onClick={confirmDelete}>
-                            Delete
-                        </button>
-                    </div>
                 </div>
             </Modal>
         </div>

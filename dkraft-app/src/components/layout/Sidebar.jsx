@@ -1,14 +1,41 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Icon } from '../common';
 import { navSections } from '../../data/initialData';
 
 /**
  * Sidebar Component
  * Main navigation sidebar with theme toggle and user menu
+ * Collapsible on mobile with hamburger menu
  */
 const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) => {
     const [showDropdown, setShowDropdown] = useState(false);
     const [expandedMenus, setExpandedMenus] = useState({});
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+    // Close mobile menu when clicking a nav item
+    const handleNavItemClick = (item) => {
+        if (item.hasSubmenu && item.submenu) {
+            toggleSubmenu(item.id);
+        } else {
+            setActiveNav(item.id);
+            // Close mobile menu after selection
+            if (window.innerWidth <= 768) {
+                setIsMobileOpen(false);
+            }
+        }
+    };
+
+    // Close mobile menu on window resize
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth > 768) {
+                setIsMobileOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // Get user initials from display name or email
     const getUserInitials = () => {
@@ -49,11 +76,7 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
     };
 
     const handleNavClick = (item) => {
-        if (item.hasSubmenu && item.submenu) {
-            toggleSubmenu(item.id);
-        } else {
-            setActiveNav(item.id);
-        }
+        handleNavItemClick(item);
     };
 
     const isSubmenuActive = (item) => {
@@ -62,8 +85,35 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
     };
 
     return (
-        <aside className="sidebar">
-            <div className="logo-section">
+        <>
+            {/* Mobile Menu Toggle Button */}
+            <button
+                className="mobile-menu-toggle"
+                onClick={() => setIsMobileOpen(!isMobileOpen)}
+                aria-label="Toggle menu"
+            >
+                <Icon name={isMobileOpen ? 'close' : 'menu'} />
+            </button>
+
+            {/* Mobile Overlay */}
+            {isMobileOpen && (
+                <div
+                    className="mobile-overlay"
+                    onClick={() => setIsMobileOpen(false)}
+                />
+            )}
+
+            <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
+                {/* Collapse Toggle for Desktop */}
+                <button
+                    className="sidebar-collapse-toggle"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                >
+                    <Icon name={isCollapsed ? 'chevron_right' : 'chevron_left'} />
+                </button>
+
+                <div className="logo-section">
                 <div className="logo-container">
                     <div className="logo-icon">DC</div>
                     <div className="logo-text">
@@ -145,6 +195,7 @@ const Sidebar = ({ activeNav, setActiveNav, theme, setTheme, user, onLogout }) =
                 </div>
             </div>
         </aside>
+        </>
     );
 };
 

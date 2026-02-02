@@ -995,8 +995,12 @@ const QuotationsModule = () => {
                         modalMode === 'edit' ? 'Edit Quotation' :
                         `Quotation ${currentQuotation.folio}`
                     }
-                    icon={modalMode === 'view' ? 'visibility' : 'request_quote'}
+                    icon={modalMode === 'add' ? 'add_box' : modalMode === 'edit' ? 'edit' : 'visibility'}
                     size="large"
+                    onSave={modalMode !== 'view' ? handleSave : undefined}
+                    saveText={currentQuotation.id ? 'Update Quotation' : 'Create Quotation'}
+                    saveDisabled={!currentQuotation.clientId || currentQuotation.items.length === 0}
+                    isViewMode={modalMode === 'view'}
                 >
                     <div className="quotation-form" style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
                         {/* General Info Section */}
@@ -1268,19 +1272,6 @@ const QuotationsModule = () => {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Actions */}
-                        {modalMode !== 'view' && (
-                            <div className="modal-actions">
-                                <button className="btn-cancel" onClick={handleCloseModal}>
-                                    Cancel
-                                </button>
-                                <button className="btn-save" onClick={handleSave}>
-                                    <Icon name="save" />
-                                    {currentQuotation.id ? 'Update' : 'Create'} Quotation
-                                </button>
-                            </div>
-                        )}
                     </div>
                 </Modal>
             )}
