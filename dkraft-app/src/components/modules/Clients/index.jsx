@@ -6,85 +6,7 @@ import { isApiEnabled, clientsApi } from '../../../services/api';
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
 
-/**
- * Initial clients data matching MySQL schema
- * Fields: id, name, email, phone, address, city, state, country, zipCode,
- *         rfc, companyName, contactName, website, status, qbListId, qbSyncStatus, notes
- */
-const initialClientsData = [
-    {
-        id: '1',
-        name: 'Acme Corporation',
-        companyName: 'Acme Corporation',
-        email: 'contact@acme.com',
-        phone: '555-123-4567',
-        address: '123 Main Street',
-        city: 'San Diego',
-        state: 'California',
-        country: 'USA',
-        zipCode: '92101',
-        rfc: 'ACM123456ABC',
-        contactName: 'Robert Johnson',
-        website: 'https://acme.com',
-        status: 'ACTIVE',
-        qbSyncStatus: 'synced',
-        notes: 'Key account - furniture projects'
-    },
-    {
-        id: '2',
-        name: 'TechStart Inc',
-        companyName: 'TechStart Inc',
-        email: 'office@techstart.com',
-        phone: '555-234-5678',
-        address: '456 Innovation Blvd',
-        city: 'Los Angeles',
-        state: 'California',
-        country: 'USA',
-        zipCode: '90001',
-        rfc: 'TSI987654XYZ',
-        contactName: 'Sarah Williams',
-        website: 'https://techstart.com',
-        status: 'ACTIVE',
-        qbSyncStatus: 'synced',
-        notes: ''
-    },
-    {
-        id: '3',
-        name: 'Global Designs',
-        companyName: 'Global Designs LLC',
-        email: 'info@globaldesigns.mx',
-        phone: '664-555-3344',
-        address: '789 Design Ave',
-        city: 'Tijuana',
-        state: 'Baja California',
-        country: 'Mexico',
-        zipCode: '22000',
-        rfc: 'GDL456789DEF',
-        contactName: 'Carlos Mendoza',
-        website: 'https://globaldesigns.mx',
-        status: 'ACTIVE',
-        qbSyncStatus: 'pending',
-        notes: 'Interior design firm'
-    },
-    {
-        id: '4',
-        name: 'HomeStyle Interiors',
-        companyName: 'HomeStyle Interiors',
-        email: 'sales@homestyle.com',
-        phone: '555-345-6789',
-        address: '321 Decor Lane',
-        city: 'Phoenix',
-        state: 'Arizona',
-        country: 'USA',
-        zipCode: '85001',
-        rfc: 'HSI321654GHI',
-        contactName: 'Emily Davis',
-        website: 'https://homestyle.com',
-        status: 'PENDING',
-        qbSyncStatus: 'pending',
-        notes: 'New client - awaiting first order'
-    },
-];
+// No local data - all data comes from Supabase
 
 /**
  * Empty client template matching MySQL schema
@@ -177,12 +99,12 @@ const ClientsSkeleton = ({ viewMode = 'grid' }) => (
 
 const ClientsModule = () => {
     // Data state
-    const [clients, setClients] = useState(initialClientsData);
+    const [clients, setClients] = useState([]);
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedClients, setSelectedClients] = useState([]);
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' }); // Newest first
     const [viewMode, setViewMode] = useState('grid');
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -392,9 +314,21 @@ const ClientsModule = () => {
         c.rfc?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Sort clients
+    // Sort clients - default newest first
     const sortedClients = [...filteredClients].sort((a, b) => {
-        if (!sortConfig.key) return 0;
+        if (!sortConfig.key) {
+            // Default: newest first by created_at
+            const aDate = new Date(a.created_at || 0);
+            const bDate = new Date(b.created_at || 0);
+            return bDate - aDate;
+        }
+        // Handle date fields
+        if (sortConfig.key === 'created_at' || sortConfig.key === 'updated_at') {
+            const aDate = new Date(a[sortConfig.key] || 0);
+            const bDate = new Date(b[sortConfig.key] || 0);
+            return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+        }
+        // Handle string fields
         const aVal = String(a[sortConfig.key] || '').toLowerCase();
         const bVal = String(b[sortConfig.key] || '').toLowerCase();
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;

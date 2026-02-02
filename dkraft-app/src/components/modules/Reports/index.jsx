@@ -444,21 +444,31 @@ const ReportsModule = () => {
                             <span className="legend-item in-progress"><span className="legend-dot"></span> In Progress</span>
                             <span className="legend-item pending"><span className="legend-dot"></span> Pending</span>
                         </div>
-                        <div className="line-chart-container">
-                            {timeSeriesData.operationsOverTime.map((data, i) => {
-                                const maxOps = Math.max(...timeSeriesData.operationsOverTime.map(d => d.completed + d.inProgress + d.pending));
-                                const totalHeight = ((data.completed + data.inProgress + data.pending) / maxOps) * 100;
-                                return (
-                                    <div key={i} className="chart-column">
-                                        <div className="stacked-bar" style={{ height: `${totalHeight}%` }}>
-                                            <div className="bar-segment completed" style={{ height: `${(data.completed / (data.completed + data.inProgress + data.pending)) * 100}%` }}></div>
-                                            <div className="bar-segment in-progress" style={{ height: `${(data.inProgress / (data.completed + data.inProgress + data.pending)) * 100}%` }}></div>
-                                            <div className="bar-segment pending" style={{ height: `${(data.pending / (data.completed + data.inProgress + data.pending)) * 100}%` }}></div>
+                        <div className="chart-with-axis">
+                            <div className="y-axis-labels">
+                                {(() => {
+                                    const maxOps = Math.max(...timeSeriesData.operationsOverTime.map(d => d.completed + d.inProgress + d.pending));
+                                    return [100, 75, 50, 25, 0].map((percent, i) => (
+                                        <span key={i} className="y-label">{Math.round((maxOps * percent) / 100)}</span>
+                                    ));
+                                })()}
+                            </div>
+                            <div className="line-chart-container">
+                                {timeSeriesData.operationsOverTime.map((data, i) => {
+                                    const maxOps = Math.max(...timeSeriesData.operationsOverTime.map(d => d.completed + d.inProgress + d.pending));
+                                    const totalHeight = ((data.completed + data.inProgress + data.pending) / maxOps) * 100;
+                                    return (
+                                        <div key={i} className="chart-column">
+                                            <div className="stacked-bar" style={{ height: `${totalHeight}%` }}>
+                                                <div className="bar-segment completed" style={{ height: `${(data.completed / (data.completed + data.inProgress + data.pending)) * 100}%` }}></div>
+                                                <div className="bar-segment in-progress" style={{ height: `${(data.inProgress / (data.completed + data.inProgress + data.pending)) * 100}%` }}></div>
+                                                <div className="bar-segment pending" style={{ height: `${(data.pending / (data.completed + data.inProgress + data.pending)) * 100}%` }}></div>
+                                            </div>
+                                            <span className="chart-label">{data.month}</span>
                                         </div>
-                                        <span className="chart-label">{data.month}</span>
-                                    </div>
-                                );
-                            })}
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -473,65 +483,82 @@ const ReportsModule = () => {
                             <span className="legend-item revenue"><span className="legend-dot"></span> Revenue</span>
                             <span className="legend-item projected"><span className="legend-dot"></span> Projected</span>
                         </div>
-                        <div className="area-chart-container">
-                            <svg viewBox="0 0 400 150" preserveAspectRatio="none">
-                                {/* Projected area */}
-                                <path
-                                    d={`M 0 150 ${timeSeriesData.revenueOverTime.map((d, i) => {
-                                        const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
-                                        const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
-                                        const y = 150 - (d.projected / maxRev) * 130;
-                                        return `L ${x} ${y}`;
-                                    }).join(' ')} L 400 150 Z`}
-                                    fill="rgba(139, 92, 246, 0.1)"
-                                />
-                                {/* Revenue area */}
-                                <path
-                                    d={`M 0 150 ${timeSeriesData.revenueOverTime.map((d, i) => {
-                                        const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
-                                        const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
-                                        const y = 150 - (d.revenue / maxRev) * 130;
-                                        return `L ${x} ${y}`;
-                                    }).join(' ')} L 400 150 Z`}
-                                    fill="rgba(16, 185, 129, 0.2)"
-                                />
-                                {/* Projected line */}
-                                <path
-                                    d={`M ${timeSeriesData.revenueOverTime.map((d, i) => {
-                                        const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
-                                        const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
-                                        const y = 150 - (d.projected / maxRev) * 130;
-                                        return `${i === 0 ? '' : 'L'} ${x} ${y}`;
-                                    }).join(' ')}`}
-                                    fill="none"
-                                    stroke="#06b6d4"
-                                    strokeWidth="2"
-                                    strokeDasharray="5,5"
-                                />
-                                {/* Revenue line */}
-                                <path
-                                    d={`M ${timeSeriesData.revenueOverTime.map((d, i) => {
-                                        const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
-                                        const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
-                                        const y = 150 - (d.revenue / maxRev) * 130;
-                                        return `${i === 0 ? '' : 'L'} ${x} ${y}`;
-                                    }).join(' ')}`}
-                                    fill="none"
-                                    stroke="#10b981"
-                                    strokeWidth="2"
-                                />
-                                {/* Data points */}
-                                {timeSeriesData.revenueOverTime.map((d, i) => {
-                                    const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
+                        <div className="chart-with-axis">
+                            <div className="y-axis-labels">
+                                {(() => {
                                     const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
-                                    const y = 150 - (d.revenue / maxRev) * 130;
-                                    return <circle key={i} cx={x} cy={y} r="4" fill="#10b981" />;
-                                })}
-                            </svg>
-                            <div className="chart-x-labels">
-                                {timeSeriesData.revenueOverTime.map((d, i) => (
-                                    <span key={i}>{d.month}</span>
-                                ))}
+                                    return [100, 75, 50, 25, 0].map((percent, i) => (
+                                        <span key={i} className="y-label">${Math.round((maxRev * percent) / 100 / 1000)}k</span>
+                                    ));
+                                })()}
+                            </div>
+                            <div className="area-chart-container">
+                                <svg viewBox="0 0 400 150" preserveAspectRatio="none">
+                                    {/* Grid lines */}
+                                    {[0, 1, 2, 3, 4].map(i => (
+                                        <line key={`h${i}`} x1="0" y1={i * 37.5} x2="400" y2={i * 37.5} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
+                                    ))}
+                                    {[0, 1, 2, 3, 4, 5].map(i => (
+                                        <line key={`v${i}`} x1={i * 80} y1="0" x2={i * 80} y2="150" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                                    ))}
+                                    {/* Projected area */}
+                                    <path
+                                        d={`M 0 150 ${timeSeriesData.revenueOverTime.map((d, i) => {
+                                            const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
+                                            const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
+                                            const y = 150 - (d.projected / maxRev) * 130;
+                                            return `L ${x} ${y}`;
+                                        }).join(' ')} L 400 150 Z`}
+                                        fill="rgba(139, 92, 246, 0.1)"
+                                    />
+                                    {/* Revenue area */}
+                                    <path
+                                        d={`M 0 150 ${timeSeriesData.revenueOverTime.map((d, i) => {
+                                            const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
+                                            const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
+                                            const y = 150 - (d.revenue / maxRev) * 130;
+                                            return `L ${x} ${y}`;
+                                        }).join(' ')} L 400 150 Z`}
+                                        fill="rgba(16, 185, 129, 0.2)"
+                                    />
+                                    {/* Projected line */}
+                                    <path
+                                        d={`M ${timeSeriesData.revenueOverTime.map((d, i) => {
+                                            const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
+                                            const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
+                                            const y = 150 - (d.projected / maxRev) * 130;
+                                            return `${i === 0 ? '' : 'L'} ${x} ${y}`;
+                                        }).join(' ')}`}
+                                        fill="none"
+                                        stroke="#06b6d4"
+                                        strokeWidth="2"
+                                        strokeDasharray="5,5"
+                                    />
+                                    {/* Revenue line */}
+                                    <path
+                                        d={`M ${timeSeriesData.revenueOverTime.map((d, i) => {
+                                            const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
+                                            const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
+                                            const y = 150 - (d.revenue / maxRev) * 130;
+                                            return `${i === 0 ? '' : 'L'} ${x} ${y}`;
+                                        }).join(' ')}`}
+                                        fill="none"
+                                        stroke="#10b981"
+                                        strokeWidth="2"
+                                    />
+                                    {/* Data points */}
+                                    {timeSeriesData.revenueOverTime.map((d, i) => {
+                                        const x = (i / (timeSeriesData.revenueOverTime.length - 1)) * 400;
+                                        const maxRev = Math.max(...timeSeriesData.revenueOverTime.map(r => Math.max(r.revenue, r.projected)));
+                                        const y = 150 - (d.revenue / maxRev) * 130;
+                                        return <circle key={i} cx={x} cy={y} r="4" fill="#10b981" />;
+                                    })}
+                                </svg>
+                                <div className="chart-x-labels">
+                                    {timeSeriesData.revenueOverTime.map((d, i) => (
+                                        <span key={i}>{d.month}</span>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -548,23 +575,33 @@ const ReportsModule = () => {
                         <span className="legend-item used"><span className="legend-dot"></span> Materials Used</span>
                         <span className="legend-item purchased"><span className="legend-dot"></span> Materials Purchased</span>
                     </div>
-                    <div className="grouped-bar-chart">
-                        {timeSeriesData.materialsOverTime.map((data, i) => {
-                            const maxVal = Math.max(...timeSeriesData.materialsOverTime.map(d => Math.max(d.used, d.purchased)));
-                            return (
-                                <div key={i} className="bar-group">
-                                    <div className="bar-pair">
-                                        <div className="bar used" style={{ height: `${(data.used / maxVal) * 100}%` }}>
-                                            <span className="bar-tooltip">{data.used}</span>
+                    <div className="chart-with-axis">
+                        <div className="y-axis-labels">
+                            {(() => {
+                                const maxVal = Math.max(...timeSeriesData.materialsOverTime.map(d => Math.max(d.used, d.purchased)));
+                                return [100, 75, 50, 25, 0].map((percent, i) => (
+                                    <span key={i} className="y-label">{Math.round((maxVal * percent) / 100)}</span>
+                                ));
+                            })()}
+                        </div>
+                        <div className="grouped-bar-chart">
+                            {timeSeriesData.materialsOverTime.map((data, i) => {
+                                const maxVal = Math.max(...timeSeriesData.materialsOverTime.map(d => Math.max(d.used, d.purchased)));
+                                return (
+                                    <div key={i} className="bar-group">
+                                        <div className="bar-pair">
+                                            <div className="bar used" style={{ height: `${(data.used / maxVal) * 100}%` }}>
+                                                <span className="bar-tooltip">{data.used}</span>
+                                            </div>
+                                            <div className="bar purchased" style={{ height: `${(data.purchased / maxVal) * 100}%` }}>
+                                                <span className="bar-tooltip">{data.purchased}</span>
+                                            </div>
                                         </div>
-                                        <div className="bar purchased" style={{ height: `${(data.purchased / maxVal) * 100}%` }}>
-                                            <span className="bar-tooltip">{data.purchased}</span>
-                                        </div>
+                                        <span className="bar-label">{data.month}</span>
                                     </div>
-                                    <span className="bar-label">{data.month}</span>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>

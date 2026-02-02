@@ -36,81 +36,7 @@ const SUPPLIER_CATEGORIES = [
     { id: 'other', name: 'Other', icon: 'category', color: '#9E9E9E' },
 ];
 
-/**
- * Initial suppliers data matching MySQL schema
- * Fields: id, name, email, phone, address, city, state, country, zipCode,
- *         rfc, contactName, website, status, qbListId, qbSyncStatus, notes, category
- */
-const initialSuppliersData = [
-    {
-        id: '1',
-        name: 'Northern Woods',
-        email: 'sales@northernwoods.com',
-        phone: '664 354 1662',
-        address: '941 Francisco I. Madero Ave',
-        city: 'Tijuana',
-        state: 'Baja California',
-        country: 'Mexico',
-        zipCode: '22000',
-        rfc: 'NWO123456ABC',
-        contactName: 'John Smith',
-        website: 'https://northernwoods.com',
-        status: 'ACTIVE',
-        qbSyncStatus: 'synced',
-        notes: 'Primary wood supplier'
-    },
-    {
-        id: '2',
-        name: 'Board Supplier Co',
-        email: 'contact@boardsupplier.com',
-        phone: '664 555 2233',
-        address: '123 Industrial Blvd',
-        city: 'Tijuana',
-        state: 'Baja California',
-        country: 'Mexico',
-        zipCode: '22100',
-        rfc: 'BSC987654XYZ',
-        contactName: 'Maria Garcia',
-        website: 'https://boardsupplier.com',
-        status: 'ACTIVE',
-        qbSyncStatus: 'synced',
-        notes: ''
-    },
-    {
-        id: '3',
-        name: 'Industrial Hardware',
-        email: 'orders@indhardware.com',
-        phone: '664 555 3344',
-        address: '456 Manufacturing Dr',
-        city: 'Tijuana',
-        state: 'Baja California',
-        country: 'Mexico',
-        zipCode: '22200',
-        rfc: 'IHW456789DEF',
-        contactName: 'Carlos Rodriguez',
-        website: 'https://indhardware.com',
-        status: 'ACTIVE',
-        qbSyncStatus: 'pending',
-        notes: 'Hardware and fasteners'
-    },
-    {
-        id: '4',
-        name: 'Blum Mexico',
-        email: 'ventas@blum.mx',
-        phone: '664 555 4455',
-        address: '789 Premium Ave',
-        city: 'Mexicali',
-        state: 'Baja California',
-        country: 'Mexico',
-        zipCode: '21000',
-        rfc: 'BLM321654GHI',
-        contactName: 'Ana Martinez',
-        website: 'https://blum.com/mx',
-        status: 'ACTIVE',
-        qbSyncStatus: 'synced',
-        notes: 'Premium hinges and slides'
-    },
-];
+// No local data - all data comes from Supabase
 
 /**
  * Empty supplier template matching MySQL schema
@@ -142,12 +68,12 @@ const statusOptions = [
 
 const SuppliersModule = () => {
     // Data state
-    const [suppliers, setSuppliers] = useState(initialSuppliersData);
+    const [suppliers, setSuppliers] = useState([]);
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedSuppliers, setSelectedSuppliers] = useState([]);
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' }); // Newest first
     const [viewMode, setViewMode] = useState('grid');
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -253,9 +179,21 @@ const SuppliersModule = () => {
         s.rfc?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Sort suppliers
+    // Sort suppliers - default newest first
     const sortedSuppliers = [...filteredSuppliers].sort((a, b) => {
-        if (!sortConfig.key) return 0;
+        if (!sortConfig.key) {
+            // Default: newest first by created_at
+            const aDate = new Date(a.created_at || 0);
+            const bDate = new Date(b.created_at || 0);
+            return bDate - aDate;
+        }
+        // Handle date fields
+        if (sortConfig.key === 'created_at' || sortConfig.key === 'updated_at') {
+            const aDate = new Date(a[sortConfig.key] || 0);
+            const bDate = new Date(b[sortConfig.key] || 0);
+            return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+        }
+        // Handle string fields
         const aVal = String(a[sortConfig.key] || '').toLowerCase();
         const bVal = String(b[sortConfig.key] || '').toLowerCase();
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
@@ -405,7 +343,8 @@ const SuppliersModule = () => {
                 } else {
                     newSupplier = await suppliersService.create(supplierToSave);
                 }
-                setSuppliers(prev => [...prev, { ...supplierToSave, id: newSupplier?.id || newSupplier }]);
+                // Add to beginning so it appears first (newest first)
+                setSuppliers(prev => [{ ...supplierToSave, id: newSupplier?.id || newSupplier, created_at: new Date().toISOString() }, ...prev]);
             } else if (modalMode === 'edit') {
                 if (useApi) {
                     console.log('[Suppliers] Calling suppliersApi.update...');

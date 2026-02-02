@@ -3479,14 +3479,22 @@ textarea:focus-visible {
     animation: pulse-orange 1.5s infinite;
 }
 
-.card-status-badge.inactive,
+.card-status-badge.inactive {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 .card-status-badge.gray {
     background: rgba(100, 116, 139, 0.15);
     color: #64748b;
     border: 1px solid rgba(100, 116, 139, 0.3);
 }
 
-.card-status-badge.inactive .status-dot,
+.card-status-badge.inactive .status-dot {
+    background: #ef4444;
+}
+
 .card-status-badge.gray .status-dot {
     background: #64748b;
     opacity: 0.5;
@@ -6386,14 +6394,15 @@ textarea:focus-visible {
 /* Modal Styles - Premium Glassmorphism */
 .modal-overlay {
     position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0, 5, 15, 0.75);
     backdrop-filter: blur(12px) saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 1000;
     animation: fadeIn 0.25s ease;
@@ -6426,6 +6435,8 @@ textarea:focus-visible {
     animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
+    margin: auto; /* Center when scrolling */
+    flex-shrink: 0;
 }
 
 /* Modal glow effect */
@@ -7579,14 +7590,22 @@ label .required {
     50% { opacity: 0.6; transform: scale(1.15); }
 }
 
-.status-badge.inactive,
+.status-badge.inactive {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 .status-badge.gray {
     background: rgba(100, 116, 139, 0.15);
     color: #64748b;
     border: 1px solid rgba(100, 116, 139, 0.3);
 }
 
-.status-badge.inactive .status-dot,
+.status-badge.inactive .status-dot {
+    background: #ef4444;
+}
+
 .status-badge.gray .status-dot {
     background: #64748b;
     opacity: 0.6;
@@ -10137,9 +10156,9 @@ label .required {
 }
 
 .status-toggle-btn.active.status-inactive {
-    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
     color: white;
-    box-shadow: 0 4px 15px rgba(100, 116, 139, 0.35);
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
 }
 
 .status-toggle-btn.active.status-on-hold {
@@ -10489,8 +10508,8 @@ label .required {
 }
 
 .projects-table-row .status-badge.inactive {
-    background: rgba(100, 116, 139, 0.15);
-    color: #64748b;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
 }
 
 .projects-table-row .status-badge.completed {
@@ -13028,8 +13047,8 @@ label .required {
 }
 
 .status-pill.inactive {
-    background: rgba(100, 116, 139, 0.15);
-    color: var(--text-secondary);
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
 }
 
 .progress-cell {
@@ -13627,6 +13646,28 @@ label .required {
 .legend-item.used .legend-dot { background: #06b6d4; }
 .legend-item.purchased .legend-dot { background: #f59e0b; }
 
+/* Chart with Y-axis */
+.chart-with-axis {
+    display: flex;
+    gap: 8px;
+    align-items: stretch;
+}
+
+.y-axis-labels {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 30px;
+    min-width: 40px;
+    text-align: right;
+}
+
+.y-axis-labels .y-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
 /* Stacked Bar Chart (Operations Over Time) */
 .line-chart-container {
     display: flex;
@@ -13635,6 +13676,13 @@ label .required {
     align-items: flex-end;
     padding-bottom: 30px;
     position: relative;
+    flex: 1;
+    background-image:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 100% 25%;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-left: 8px;
 }
 
 .chart-column {
@@ -13675,11 +13723,21 @@ label .required {
 /* Area Chart (Revenue Trend) */
 .area-chart-container {
     position: relative;
+    flex: 1;
+    background-image:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 100% 25%;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px;
 }
 
 .area-chart-container svg {
     width: 100%;
     height: 150px;
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20% 100%;
 }
 
 .chart-x-labels {
@@ -13700,6 +13758,14 @@ label .required {
     height: 180px;
     align-items: flex-end;
     padding-bottom: 30px;
+    position: relative;
+    flex: 1;
+    background-image:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 100% 20%;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-left: 8px;
 }
 
 .bar-group {
@@ -13761,6 +13827,20 @@ label .required {
 [data-theme="light"] .report-stat-card,
 [data-theme="light"] .report-panel {
     background: white;
+}
+
+/* Light theme chart grid lines */
+[data-theme="light"] .line-chart-container,
+[data-theme="light"] .area-chart-container,
+[data-theme="light"] .grouped-bar-chart {
+    background-image:
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+    border-left: 1px solid rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .area-chart-container svg line {
+    stroke: rgba(0, 0, 0, 0.1);
 }
 
 [data-theme="light"] .progress-bar-container,
@@ -18142,14 +18222,13 @@ label .required {
 }
 
 .client-status-badge.inactive {
-    background: rgba(100, 116, 139, 0.15);
-    color: #64748b;
-    border: 1px solid rgba(100, 116, 139, 0.3);
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .client-status-badge.inactive .status-dot {
-    background: #64748b;
-    opacity: 0.5;
+    background: #ef4444;
 }
 
 /* Gray for truly inactive clients */
@@ -18535,8 +18614,8 @@ label .required {
 }
 
 .supplier-status-badge.inactive {
-    background: rgba(100, 116, 139, 0.15);
-    color: #64748b;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
 }
 
 .supplier-card-body {

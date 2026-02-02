@@ -2,37 +2,23 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, usersApi } from '../../../services/api';
 
-// Fallback data when API is not available
-const fallbackStaffData = [
-    { id: 1, username: 'Carlos Mendoza', email: 'carlos.mendoza@dkraft.com', role: 'ADMIN' },
-    { id: 2, username: 'Ana Garcia', email: 'ana.garcia@dkraft.com', role: 'MANAGEMENT' },
-    { id: 3, username: 'Roberto Silva', email: 'roberto.silva@dkraft.com', role: 'SALES' },
-    { id: 4, username: 'Maria Lopez', email: 'maria.lopez@dkraft.com', role: 'ADMIN_DEV' },
-    { id: 5, username: 'Juan Hernandez', email: 'juan.hernandez@dkraft.com', role: 'USER' },
-    { id: 6, username: 'Patricia Ruiz', email: 'patricia.ruiz@dkraft.com', role: 'STORE' },
-    { id: 7, username: 'Miguel Torres', email: 'miguel.torres@dkraft.com', role: 'REQUISITOR' },
-    { id: 8, username: 'Laura Sanchez', email: 'laura.sanchez@dkraft.com', role: 'COST' },
-    { id: 9, username: 'David Martinez', email: 'david.martinez@dkraft.com', role: 'USER' },
-    { id: 10, username: 'Sofia Rodriguez', email: 'sofia.rodriguez@dkraft.com', role: 'SALES' },
-    { id: 11, username: 'Eduardo Flores', email: 'eduardo.flores@dkraft.com', role: 'USER' },
-    { id: 12, username: 'Carmen Diaz', email: 'carmen.diaz@dkraft.com', role: 'MANAGEMENT' },
-];
-
-const initialStaffData = [];
+// No local data - all data comes from Supabase
 
 const roleOptions = ['ADMIN_DEV', 'ADMIN', 'USER', 'STORE', 'SALES', 'COST', 'REQUISITOR', 'MANAGEMENT'];
 
 const StaffModule = () => {
-    const [users, setUsers] = useState(initialStaffData);
+    const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' }); // Newest first
     const [newUser, setNewUser] = useState({ username: '', email: '', password: '', role: '' });
     const [editingUser, setEditingUser] = useState(null);
     const [viewMode, setViewMode] = useState('table');
     const [isLoading, setIsLoading] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
 
     // Load data on mount
     useEffect(() => {
@@ -42,30 +28,25 @@ const StaffModule = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            if (isApiEnabled()) {
-                console.log('[Staff] Loading users from API...');
-                const usersData = await usersApi.getAll();
-                console.log('[Staff] API response:', usersData);
-                if (usersData?.length > 0) {
-                    // Normalize user data
-                    const normalizedUsers = usersData.map(u => ({
-                        id: u.id || u.idUser,
-                        username: u.username || u.name || '',
-                        email: u.email || '',
-                        role: u.role || 'VIEWER',
-                    }));
-                    setUsers(normalizedUsers);
-                } else {
-                    setUsers(fallbackStaffData);
-                }
+            console.log('[Staff] Loading users from Supabase...');
+            const usersData = await usersApi.getAll();
+            console.log('[Staff] Response:', usersData);
+            if (usersData?.length > 0) {
+                // Normalize user data
+                const normalizedUsers = usersData.map(u => ({
+                    id: u.id || u.idUser,
+                    username: u.username || u.name || '',
+                    email: u.email || '',
+                    role: u.role || 'USER',
+                    created_at: u.created_at,
+                }));
+                setUsers(normalizedUsers);
             } else {
-                // Use fallback data when API is disabled
-                setUsers(fallbackStaffData);
+                setUsers([]);
             }
         } catch (error) {
             console.error('[Staff] Error loading users:', error);
-            // Use fallback data on error
-            setUsers(fallbackStaffData);
+            setUsers([]);
         } finally {
             setIsLoading(false);
         }
@@ -77,10 +58,23 @@ const StaffModule = () => {
         user.role.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // Sort users - default newest first
     const sortedUsers = [...filteredUsers].sort((a, b) => {
-        if (!sortConfig.key) return 0;
-        const aVal = a[sortConfig.key].toLowerCase();
-        const bVal = b[sortConfig.key].toLowerCase();
+        if (!sortConfig.key) {
+            // Default: newest first by created_at
+            const aDate = new Date(a.created_at || 0);
+            const bDate = new Date(b.created_at || 0);
+            return bDate - aDate;
+        }
+        // Handle date fields
+        if (sortConfig.key === 'created_at' || sortConfig.key === 'updated_at') {
+            const aDate = new Date(a[sortConfig.key] || 0);
+            const bDate = new Date(b[sortConfig.key] || 0);
+            return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+        }
+        // Handle string fields
+        const aVal = String(a[sortConfig.key] || '').toLowerCase();
+        const bVal = String(b[sortConfig.key] || '').toLowerCase();
         if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
         if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
@@ -134,8 +128,32 @@ const StaffModule = () => {
         }
     };
 
+    const handleDelete = (user) => {
+        setUserToDelete(user);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!userToDelete) return;
+        try {
+            if (isApiEnabled()) {
+                await usersApi.delete(userToDelete.id);
+            }
+            setShowDeleteConfirm(false);
+            setUserToDelete(null);
+            await loadData();
+        } catch (error) {
+            console.error('[Staff] Error deleting user:', error);
+            alert('Error deleting user: ' + error.message);
+        }
+    };
+
     const handleDeleteSelected = async () => {
         if (selectedUsers.length === 0) return;
+        // Show confirmation for multiple delete
+        if (!window.confirm(`Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`)) {
+            return;
+        }
         try {
             if (isApiEnabled()) {
                 for (const id of selectedUsers) {
@@ -338,6 +356,9 @@ const StaffModule = () => {
                                         <button className="btn-action-edit" onClick={() => handleEditUser(user)}>
                                             <Icon name="edit" />
                                         </button>
+                                        <button className="btn-action-delete" onClick={() => handleDelete(user)}>
+                                            <Icon name="delete" />
+                                        </button>
                                     </span>
                                 </div>
                             ))}
@@ -367,6 +388,9 @@ const StaffModule = () => {
                                     </div>
                                     <button className="btn-action-edit" onClick={() => handleEditUser(user)}>
                                         <Icon name="edit" />
+                                    </button>
+                                    <button className="btn-action-delete" onClick={() => handleDelete(user)}>
+                                        <Icon name="delete" />
                                     </button>
                                 </div>
                                 <div className="staff-card-body">
@@ -483,6 +507,41 @@ const StaffModule = () => {
                             >
                                 <span className="material-symbols-rounded">save</span>
                                 {editingUser ? 'Update user' : 'Create user'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && (
+                <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                    <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-header-icon" style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}>
+                                <Icon name="warning" />
+                            </div>
+                            <div className="modal-header-text">
+                                <h3>Delete User</h3>
+                            </div>
+                            <button className="modal-close" onClick={() => setShowDeleteConfirm(false)}>
+                                <Icon name="close" />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="delete-confirm">
+                                <p>Are you sure you want to delete <strong>{userToDelete?.username}</strong>?</p>
+                                <p className="text-muted">This action cannot be undone.</p>
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-modal-cancel" onClick={() => setShowDeleteConfirm(false)}>
+                                <Icon name="close" />
+                                Cancel
+                            </button>
+                            <button className="btn-modal-danger" onClick={confirmDelete}>
+                                <Icon name="delete" />
+                                Delete
                             </button>
                         </div>
                     </div>

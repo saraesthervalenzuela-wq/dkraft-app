@@ -6,46 +6,7 @@ import { isApiEnabled, materialsApi, suppliersApi, categoriesApi, unitsApi } fro
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
 
-/**
- * Default data (used if Firebase/API is empty)
- * Field names match MySQL schema for consistency
- */
-const defaultSuppliers = [
-    { id: '1', name: 'Northern Woods' },
-    { id: '2', name: 'Board Supplier Co' },
-    { id: '3', name: 'Industrial Hardware' },
-    { id: '4', name: 'Blum Mexico' },
-    { id: '5', name: 'Industrial Adhesives' },
-    { id: '6', name: 'Premium Paints' },
-];
-
-const defaultCategories = [
-    { id: '1', name: 'Woods' },
-    { id: '2', name: 'Hardware' },
-    { id: '3', name: 'Adhesives' },
-    { id: '4', name: 'Finishes' },
-    { id: '5', name: 'Metals' },
-    { id: '6', name: 'Plastics' },
-];
-
-const defaultUnits = [
-    { id: '1', name: 'Sheet', abbreviation: 'sht' },
-    { id: '2', name: 'Box', abbreviation: 'box' },
-    { id: '3', name: 'Pair', abbreviation: 'pr' },
-    { id: '4', name: 'Gallon', abbreviation: 'gal' },
-    { id: '5', name: 'Liter', abbreviation: 'L' },
-    { id: '6', name: 'Piece', abbreviation: 'pz' },
-    { id: '7', name: 'Meter', abbreviation: 'm' },
-    { id: '8', name: 'Kg', abbreviation: 'kg' },
-];
-
-/**
- * Initial materials data matching MySQL schema
- * Fields: id, code_qb, name, description, categoryId, unitId, supplierId,
- *         price, minStock, status, qbListId, qbSyncStatus
- * Empty - materials will be loaded from API or added manually
- */
-const initialMaterialsData = [];
+// No local data - all data comes from Supabase
 
 /**
  * Empty material template matching MySQL schema
@@ -121,17 +82,17 @@ const MaterialsSkeleton = () => (
 
 const MaterialsModule = () => {
     // Data state
-    const [materials, setMaterials] = useState(initialMaterialsData);
-    const [suppliers, setSuppliers] = useState(defaultSuppliers);
-    const [categories, setCategories] = useState(defaultCategories);
-    const [units, setUnits] = useState(defaultUnits);
+    const [materials, setMaterials] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [units, setUnits] = useState([]);
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMaterials, setSelectedMaterials] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(8);
-    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' }); // Newest first
     const [activeTab, setActiveTab] = useState('materials');
     const [isSyncing, setIsSyncing] = useState(false);
     const [viewMode, setViewMode] = useState('table');
@@ -389,9 +350,21 @@ const MaterialsModule = () => {
         m.description?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Sort materials
+    // Sort materials - default newest first
     const sortedMaterials = [...filteredMaterials].sort((a, b) => {
-        if (!sortConfig.key) return 0;
+        // Default: newest first by created_at
+        if (!sortConfig.key) {
+            const aDate = new Date(a.created_at || 0);
+            const bDate = new Date(b.created_at || 0);
+            return bDate - aDate;
+        }
+
+        // Handle date fields
+        if (sortConfig.key === 'created_at' || sortConfig.key === 'updated_at') {
+            const aDate = new Date(a[sortConfig.key] || 0);
+            const bDate = new Date(b[sortConfig.key] || 0);
+            return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+        }
 
         let aVal, bVal;
 
