@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, SkeletonStatsRow, Skeleton } from '../../common';
 import { materialsService, suppliersService, categoriesService, unitsService } from '../../../firebase';
 import { isApiEnabled, materialsApi, suppliersApi, categoriesApi, unitsApi } from '../../../services/api';
 
@@ -72,6 +72,52 @@ const statusOptions = [
     { value: 'LOW_STOCK', label: 'Low Stock', color: 'orange' },
     { value: 'INACTIVE', label: 'Inactive', color: 'gray' },
 ];
+
+/**
+ * Materials Skeleton - Sexy loading state
+ */
+const MaterialsSkeleton = () => (
+    <div className="module-page materials-module">
+        <div className="page-header">
+            <div className="header-content">
+                <Skeleton width="48px" height="48px" radius="12px" />
+                <div className="header-text">
+                    <Skeleton width="140px" height="1.5rem" />
+                    <Skeleton width="200px" height="0.875rem" />
+                </div>
+            </div>
+            <div className="header-actions" style={{ display: 'flex', gap: '0.75rem' }}>
+                <Skeleton width="120px" height="40px" radius="8px" />
+                <Skeleton width="150px" height="40px" radius="8px" />
+            </div>
+        </div>
+
+        <SkeletonStatsRow count={4} />
+
+        <div className="materials-toolbar">
+            <Skeleton width="280px" height="44px" radius="8px" />
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <Skeleton width="100px" height="40px" radius="8px" />
+                <Skeleton width="80px" height="40px" radius="8px" />
+            </div>
+        </div>
+
+        <div className="skeleton-table skeleton-glow">
+            <div className="skeleton-table-header">
+                {[1, 2, 3, 4, 5, 6, 7].map(i => (
+                    <Skeleton key={i} width="80%" height="0.75rem" />
+                ))}
+            </div>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                <div key={i} className="skeleton-table-row">
+                    {[1, 2, 3, 4, 5, 6, 7].map(j => (
+                        <Skeleton key={j} width={j === 1 ? '24px' : '70%'} height="1rem" />
+                    ))}
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 const MaterialsModule = () => {
     // Data state
@@ -528,6 +574,11 @@ const MaterialsModule = () => {
     const lowStockCount = materials.filter(m => m.status === 'LOW_STOCK').length;
     const totalValue = materials.reduce((sum, m) => sum + ((m.stock || 0) * (m.price || 0)), 0);
 
+    // Show skeleton while loading
+    if (isLoading) {
+        return <MaterialsSkeleton />;
+    }
+
     return (
         <div className="module-page materials-page">
             {/* Page Header */}
@@ -653,12 +704,7 @@ const MaterialsModule = () => {
                 </div>
             </div>
 
-            {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading materials...</p>
-                </div>
-            ) : viewMode === 'grid' ? (
+            {viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="materials-cards-grid">
                     {paginatedMaterials.map((material) => {

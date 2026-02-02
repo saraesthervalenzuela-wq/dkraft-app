@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, SkeletonStatsRow, SkeletonCard, Skeleton, EmptyState } from '../../common';
 import { clientsService } from '../../../firebase';
 import { isApiEnabled, clientsApi } from '../../../services/api';
 
@@ -117,6 +117,63 @@ const statusOptions = [
     { value: 'INACTIVE', label: 'Inactive', color: 'gray' },
     { value: 'PENDING', label: 'Pending', color: 'orange' },
 ];
+
+/**
+ * Clients Skeleton - Sexy loading state
+ */
+const ClientsSkeleton = ({ viewMode = 'grid' }) => (
+    <div className="module-page clients-module">
+        {/* Header skeleton */}
+        <div className="page-header">
+            <div className="header-content">
+                <Skeleton width="48px" height="48px" radius="12px" />
+                <div className="header-text">
+                    <Skeleton width="120px" height="1.5rem" />
+                    <Skeleton width="180px" height="0.875rem" />
+                </div>
+            </div>
+            <div className="header-actions" style={{ display: 'flex', gap: '0.75rem' }}>
+                <Skeleton width="120px" height="40px" radius="8px" />
+                <Skeleton width="140px" height="40px" radius="8px" />
+            </div>
+        </div>
+
+        {/* Stats skeleton */}
+        <SkeletonStatsRow count={4} />
+
+        {/* Toolbar skeleton */}
+        <div className="clients-toolbar">
+            <Skeleton width="300px" height="44px" radius="8px" />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <Skeleton width="80px" height="40px" radius="8px" />
+            </div>
+        </div>
+
+        {/* Content skeleton */}
+        {viewMode === 'grid' ? (
+            <div className="clients-cards-grid">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                    <SkeletonCard key={i} />
+                ))}
+            </div>
+        ) : (
+            <div className="skeleton-table skeleton-glow">
+                <div className="skeleton-table-header">
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <Skeleton key={i} width="80%" height="0.75rem" />
+                    ))}
+                </div>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                    <div key={i} className="skeleton-table-row">
+                        {[1, 2, 3, 4, 5, 6].map(j => (
+                            <Skeleton key={j} width={j === 1 ? '40px' : '80%'} height="1rem" />
+                        ))}
+                    </div>
+                ))}
+            </div>
+        )}
+    </div>
+);
 
 const ClientsModule = () => {
     // Data state
@@ -526,6 +583,11 @@ const ClientsModule = () => {
     const pendingClients = clients.filter(c => c.status === 'PENDING').length;
     const uniqueCompanies = [...new Set(clients.map(c => c.companyName).filter(Boolean))].length;
 
+    // Show skeleton while loading
+    if (isLoading) {
+        return <ClientsSkeleton viewMode={viewMode} />;
+    }
+
     return (
         <div className="module-page clients-module">
             {/* Page Header */}
@@ -631,12 +693,7 @@ const ClientsModule = () => {
                 </div>
             </div>
 
-            {isLoading ? (
-                <div className="materials-loading">
-                    <div className="loading-spinner"></div>
-                    <p>Loading clients...</p>
-                </div>
-            ) : viewMode === 'grid' ? (
+            {viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="clients-cards-grid">
                     {sortedClients.map((client) => {
@@ -698,10 +755,11 @@ const ClientsModule = () => {
                         );
                     })}
                     {sortedClients.length === 0 && (
-                        <div className="clients-empty-grid">
-                            <Icon name="group" />
-                            <p>No clients found</p>
-                        </div>
+                        <EmptyState
+                            type={searchTerm ? 'search' : 'clients'}
+                            onAction={searchTerm ? () => setSearchTerm('') : handleAdd}
+                            size="medium"
+                        />
                     )}
                 </div>
             ) : (
@@ -790,10 +848,11 @@ const ClientsModule = () => {
                             })}
 
                             {sortedClients.length === 0 && (
-                                <div className="clients-empty">
-                                    <Icon name="group" />
-                                    <p>No clients found</p>
-                                </div>
+                                <EmptyState
+                                    type={searchTerm ? 'search' : 'clients'}
+                                    onAction={searchTerm ? () => setSearchTerm('') : handleAdd}
+                                    size="small"
+                                />
                             )}
                         </div>
                     </div>

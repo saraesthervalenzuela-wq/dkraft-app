@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { AuthLayout } from './components/auth';
 import { Sidebar } from './components/layout';
+import { KeyboardShortcuts, GlobalSearch } from './components/common';
 import {
     Dashboard,
     StaffModule,
@@ -46,6 +47,7 @@ const LoadingScreen = () => (
 const AppContent = () => {
     const { logout, user } = useAuth();
     const [activeNav, setActiveNav] = useState('dashboard');
+    const [showGlobalSearch, setShowGlobalSearch] = useState(false);
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('dkraft-theme');
         return savedTheme || 'dark';
@@ -116,6 +118,19 @@ const AppContent = () => {
             <main className="main-content">
                 {renderContent()}
             </main>
+
+            {/* Global keyboard shortcuts */}
+            <KeyboardShortcuts
+                setActiveNav={setActiveNav}
+                onOpenSearch={() => setShowGlobalSearch(true)}
+            />
+
+            {/* Global search (Cmd+K) */}
+            <GlobalSearch
+                isOpen={showGlobalSearch}
+                onClose={() => setShowGlobalSearch(false)}
+                setActiveNav={setActiveNav}
+            />
         </div>
     );
 };

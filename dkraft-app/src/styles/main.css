@@ -74,6 +74,263 @@
     50% { box-shadow: 0 0 25px rgba(211, 84, 0, 0.7), 0 0 40px rgba(211, 84, 0, 0.4); }
 }
 
+/* ============================================
+   SEXY TRANSITIONS - Fregonas Visuales
+   ============================================ */
+
+/* Page enter animations */
+@keyframes pageSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pageFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes popIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    60% {
+        transform: scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes blurIn {
+    from {
+        opacity: 0;
+        filter: blur(10px);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+/* Stagger animation delays for lists */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+.stagger-7 { animation-delay: 0.35s; }
+.stagger-8 { animation-delay: 0.4s; }
+
+/* Apply to module pages */
+.module-page {
+    animation: pageSlideIn 0.4s ease-out;
+}
+
+.module-page .page-header {
+    animation: slideUp 0.5s ease-out;
+}
+
+.module-page .module-stats-row {
+    animation: slideUp 0.5s ease-out 0.1s both;
+}
+
+/* Cards grid animation */
+.clients-cards-grid,
+.materials-cards-grid,
+.suppliers-cards-grid,
+.products-cards-grid {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.clients-cards-grid > *,
+.materials-cards-grid > *,
+.suppliers-cards-grid > *,
+.products-cards-grid > * {
+    animation: popIn 0.4s ease-out both;
+}
+
+.clients-cards-grid > *:nth-child(1),
+.materials-cards-grid > *:nth-child(1) { animation-delay: 0.05s; }
+.clients-cards-grid > *:nth-child(2),
+.materials-cards-grid > *:nth-child(2) { animation-delay: 0.1s; }
+.clients-cards-grid > *:nth-child(3),
+.materials-cards-grid > *:nth-child(3) { animation-delay: 0.15s; }
+.clients-cards-grid > *:nth-child(4),
+.materials-cards-grid > *:nth-child(4) { animation-delay: 0.2s; }
+.clients-cards-grid > *:nth-child(5),
+.materials-cards-grid > *:nth-child(5) { animation-delay: 0.25s; }
+.clients-cards-grid > *:nth-child(6),
+.materials-cards-grid > *:nth-child(6) { animation-delay: 0.3s; }
+
+/* Table rows animation */
+.clients-table-row,
+.materials-table-row,
+.suppliers-table-row,
+.products-table-row,
+.operations-table-row {
+    animation: slideUp 0.3s ease-out both;
+}
+
+.clients-table-row:nth-child(1) { animation-delay: 0.02s; }
+.clients-table-row:nth-child(2) { animation-delay: 0.04s; }
+.clients-table-row:nth-child(3) { animation-delay: 0.06s; }
+.clients-table-row:nth-child(4) { animation-delay: 0.08s; }
+.clients-table-row:nth-child(5) { animation-delay: 0.1s; }
+.clients-table-row:nth-child(6) { animation-delay: 0.12s; }
+.clients-table-row:nth-child(7) { animation-delay: 0.14s; }
+.clients-table-row:nth-child(8) { animation-delay: 0.16s; }
+
+/* Stat cards sexy entrance */
+.module-stat-card,
+.stat-card {
+    animation: popIn 0.4s ease-out both;
+}
+
+.module-stat-card:nth-child(1),
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.module-stat-card:nth-child(2),
+.stat-card:nth-child(2) { animation-delay: 0.08s; }
+.module-stat-card:nth-child(3),
+.stat-card:nth-child(3) { animation-delay: 0.16s; }
+.module-stat-card:nth-child(4),
+.stat-card:nth-child(4) { animation-delay: 0.24s; }
+
+/* Interactive hover states */
+.module-stat-card:hover,
+.stat-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button click feedback */
+button:active:not(:disabled) {
+    transform: scale(0.97);
+    transition: transform 0.1s ease;
+}
+
+/* Ripple effect on buttons */
+.btn-primary-action,
+.btn-add-user,
+.btn-sync,
+.btn-view-all {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Table row hover glow */
+.clients-table-row:hover,
+.materials-table-row:hover,
+.suppliers-table-row:hover {
+    background: rgba(211, 84, 0, 0.08);
+    transition: background 0.2s ease;
+}
+
+/* Smooth icon transitions */
+.material-symbols-rounded {
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.btn-icon:hover .material-symbols-rounded {
+    transform: scale(1.15);
+}
+
+.btn-icon.danger:hover .material-symbols-rounded {
+    color: #ef4444;
+}
+
+/* Modal animation */
+.modal-overlay {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-container {
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Toolbar slide in */
+.clients-toolbar,
+.materials-toolbar,
+.suppliers-toolbar {
+    animation: slideUp 0.4s ease-out 0.15s both;
+}
+
+/* Status badge pulse on change */
+.status-badge {
+    transition: all 0.3s ease;
+}
+
+.status-badge:hover {
+    transform: scale(1.05);
+}
+
+/* Search box focus animation */
+.search-box input:focus {
+    box-shadow:
+        0 0 0 3px rgba(211, 84, 0, 0.2),
+        0 10px 30px rgba(0, 0, 0, 0.2);
+    transition: box-shadow 0.3s ease;
+}
+
+/* Chart animations */
+.chart-container {
+    animation: blurIn 0.6s ease-out 0.3s both;
+}
+
+/* Smooth content transitions when switching views */
+.clients-cards-grid,
+.materials-cards-grid,
+.clients-table,
+.materials-table {
+    transition: opacity 0.2s ease;
+}
+
+/* Loading to content transition */
+.module-page > * {
+    transition: opacity 0.3s ease;
+}
+
 /* Card hover effects */
 .client-card,
 .staff-stat-card,

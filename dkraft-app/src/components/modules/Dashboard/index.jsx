@@ -1,7 +1,54 @@
 import { useEffect, useRef, useState } from 'react';
-import { Icon } from '../../common';
+import { Icon, SkeletonStatsRow, SkeletonChart, SkeletonTable, Skeleton } from '../../common';
 import { isApiEnabled, reportsApi, clientsApi } from '../../../services/api';
 import { statsData as defaultStats, chartData as defaultChart, quickActions, recentOrders as defaultOrders, staffOnDuty as defaultStaff, topClients as defaultTopClients, getStatusClass, getStatusLabel } from '../../../data/initialData';
+
+/**
+ * Dashboard Skeleton - Sexy loading state
+ */
+const DashboardSkeleton = () => (
+    <div className="dashboard-content">
+        <div className="card skeleton-glow">
+            <div className="card-header">
+                <div>
+                    <Skeleton width="180px" height="1.25rem" />
+                    <Skeleton width="280px" height="0.875rem" className="mt-2" />
+                </div>
+            </div>
+            <SkeletonStatsRow count={4} />
+            <div className="chart-header mt-6">
+                <Skeleton width="140px" height="1rem" />
+                <Skeleton width="100px" height="36px" radius="8px" />
+            </div>
+            <SkeletonChart type="line" />
+        </div>
+
+        <div className="quick-actions">
+            {[1, 2, 3].map(i => (
+                <div key={i} className="action-card skeleton-card">
+                    <Skeleton width="140px" height="1rem" />
+                    <Skeleton width="100%" height="0.75rem" />
+                    <Skeleton width="100%" height="8px" radius="4px" />
+                </div>
+            ))}
+        </div>
+
+        <div className="dashboard-bottom-grid">
+            <div className="recent-orders-card skeleton-glow">
+                <div className="card-header">
+                    <div>
+                        <Skeleton width="140px" height="1.25rem" />
+                        <Skeleton width="200px" height="0.75rem" className="mt-2" />
+                    </div>
+                </div>
+                <SkeletonTable rows={5} columns={5} />
+            </div>
+            <div className="comm-card skeleton-glow">
+                <Skeleton width="100%" height="200px" radius="12px" />
+            </div>
+        </div>
+    </div>
+);
 
 /**
  * StatCard Component
@@ -251,7 +298,7 @@ const Dashboard = ({ setActiveNav }) => {
     const [recentOrders, _setRecentOrders] = useState(defaultOrders);
     const [staffOnDuty, _setStaffOnDuty] = useState(defaultStaff);
     const [chartData, _setChartData] = useState(defaultChart);
-    const [_isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Navigation handlers for dashboard widgets
     const navigateTo = (navId) => {
@@ -274,38 +321,47 @@ const Dashboard = ({ setActiveNav }) => {
     // Load data from API on mount
     useEffect(() => {
         const loadDashboardData = async () => {
-            if (!isApiEnabled()) return;
-
             setIsLoading(true);
-            try {
-                // Try to load KPIs from reports API
-                const kpis = await reportsApi.getDashboardKPIs().catch(() => null);
-                if (kpis) {
-                    console.log('[Dashboard] Loaded KPIs from API');
-                    // Transform KPIs to statsData format if needed
-                }
 
-                // Load top clients
-                const clients = await clientsApi.getAll().catch(() => []);
-                if (clients?.length > 0) {
-                    const topClientsData = clients.slice(0, 5).map((c, i) => ({
-                        id: c.id,
-                        name: c.name || c.companyName,
-                        totalOrders: c.totalOrders || Math.floor(Math.random() * 50) + 10,
-                        totalRevenue: c.totalRevenue || Math.floor(Math.random() * 100000) + 20000,
-                        trend: ['up', 'down', 'stable'][i % 3]
-                    }));
-                    setTopClients(topClientsData);
+            // Minimum loading time for sexy skeleton effect
+            const minLoadTime = new Promise(resolve => setTimeout(resolve, 800));
+
+            try {
+                if (isApiEnabled()) {
+                    // Try to load KPIs from reports API
+                    const kpis = await reportsApi.getDashboardKPIs().catch(() => null);
+                    if (kpis) {
+                        console.log('[Dashboard] Loaded KPIs from API');
+                    }
+
+                    // Load top clients
+                    const clients = await clientsApi.getAll().catch(() => []);
+                    if (clients?.length > 0) {
+                        const topClientsData = clients.slice(0, 5).map((c, i) => ({
+                            id: c.id,
+                            name: c.name || c.companyName,
+                            totalOrders: c.totalOrders || Math.floor(Math.random() * 50) + 10,
+                            totalRevenue: c.totalRevenue || Math.floor(Math.random() * 100000) + 20000,
+                            trend: ['up', 'down', 'stable'][i % 3]
+                        }));
+                        setTopClients(topClientsData);
+                    }
                 }
             } catch (error) {
                 console.error('[Dashboard] Error loading data:', error);
-            } finally {
-                setIsLoading(false);
             }
+
+            await minLoadTime;
+            setIsLoading(false);
         };
 
         loadDashboardData();
     }, []);
+
+    // Show skeleton while loading
+    if (isLoading) {
+        return <DashboardSkeleton />;
+    }
 
     return (
         <div className="dashboard-content">
