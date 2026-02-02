@@ -1,29 +1,25 @@
 /**
  * Sales Orders Module (Requisitions)
  * Manages sales orders in MRP flow - converted from approved quotations
- * Uses localStorage for offline functionality
+ * Connected to requisitionsApi for backend persistence
  */
 
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
-import { isApiEnabled, clientsApi, warehousesApi, projectsApi } from '../../../services/api';
-
-// LocalStorage keys
-const STORAGE_KEY = 'dkraft_sales_orders';
-const QUOTATIONS_KEY = 'dkraft_quotations';
+import { isApiEnabled, clientsApi, warehousesApi, projectsApi, requisitionsApi, quotationsApi } from '../../../services/api';
 
 /**
  * Status configuration with colors and icons
  */
 const STATUS_CONFIG = {
-    DRAFT: { label: 'Draft', color: '#6c757d', icon: FaEdit },
-    PENDING_APPROVAL: { label: 'Pending Approval', color: '#ffc107', icon: FaClock },
-    APPROVED: { label: 'Approved', color: '#28a745', icon: FaCheckCircle },
-    REJECTED: { label: 'Rejected', color: '#dc3545', icon: FaTimes },
-    ORDERED: { label: 'Ordered', color: '#17a2b8', icon: FaShoppingCart },
-    PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', color: '#fd7e14', icon: FaTruck },
-    FULFILLED: { label: 'Fulfilled', color: '#20c997', icon: FaCheck },
-    CANCELLED: { label: 'Cancelled', color: '#6c757d', icon: FaTimes },
+    DRAFT: { label: 'Draft', color: '#6c757d', icon: 'edit' },
+    PENDING_APPROVAL: { label: 'Pending Approval', color: '#ffc107', icon: 'schedule' },
+    APPROVED: { label: 'Approved', color: '#28a745', icon: 'check_circle' },
+    REJECTED: { label: 'Rejected', color: '#dc3545', icon: 'cancel' },
+    ORDERED: { label: 'Ordered', color: '#17a2b8', icon: 'shopping_cart' },
+    PARTIALLY_FULFILLED: { label: 'Partially Fulfilled', color: '#fd7e14', icon: 'local_shipping' },
+    FULFILLED: { label: 'Fulfilled', color: '#20c997', icon: 'task_alt' },
+    CANCELLED: { label: 'Cancelled', color: '#6c757d', icon: 'cancel' },
 };
 
 const ITEM_STATUS_CONFIG = {
@@ -122,35 +118,6 @@ const emptyItem = {
 };
 
 const Requisitions = () => {
-    // LocalStorage functions
-    const loadFromStorage = () => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
-    };
-
-    const saveToStorage = (data) => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        } catch (error) {
-            console.error('[SalesOrders] Error saving to localStorage:', error);
-        }
-    };
-
-    const loadQuotationsFromStorage = () => {
-        try {
-            const saved = localStorage.getItem(QUOTATIONS_KEY);
-            const all = saved ? JSON.parse(saved) : [];
-            // Only return approved quotations with deposit paid that haven't been converted
-            return all.filter(q => q.status === 'APPROVED' && q.depositPaid);
-        } catch {
-            return [];
-        }
-    };
-
     // State
     const [requisitions, setRequisitions] = useState([]);
     const [filteredRequisitions, setFilteredRequisitions] = useState([]);
@@ -188,26 +155,38 @@ const Requisitions = () => {
         setLoading(true);
         setError(null);
         try {
-            // Load sales orders from localStorage
-            const localSalesOrders = loadFromStorage();
-            const normalized = localSalesOrders.map(normalizeRequisition);
-            setRequisitions(normalized);
-            setFilteredRequisitions(normalized);
-
-            // Load quotations from localStorage
-            const localQuotations = loadQuotationsFromStorage();
-            setQuotations(localQuotations);
-
-            // Try to load related data from API if available
             if (isApiEnabled()) {
-                const [clientsData, warehousesData, projectsData] = await Promise.all([
+                // Load all data from API
+                const [requisitionsData, quotationsData, clientsData, warehousesData, projectsData] = await Promise.all([
+                    requisitionsApi.getAll().catch((err) => {
+                        console.warn('[SalesOrders] Error loading requisitions:', err.message);
+                        return [];
+                    }),
+                    quotationsApi.getAll({ status: 'APPROVED' }).catch(() => []),
                     clientsApi.getAll().catch(() => []),
                     warehousesApi.getAll().catch(() => []),
                     projectsApi.getAll().catch(() => []),
                 ]);
+
+                const normalized = (requisitionsData || []).map(normalizeRequisition);
+                setRequisitions(normalized);
+                setFilteredRequisitions(normalized);
+
+                // Filter quotations that are approved with deposit paid
+                const approvedQuotations = (quotationsData || []).filter(q => q.status === 'APPROVED' && q.depositPaid);
+                setQuotations(approvedQuotations);
+
                 setClients(clientsData || []);
                 setWarehouses(warehousesData || []);
                 setProjects(projectsData || []);
+
+                console.log('[SalesOrders] Loaded from API:', normalized.length, 'orders');
+            } else {
+                // No API available - empty state
+                setRequisitions([]);
+                setFilteredRequisitions([]);
+                setQuotations([]);
+                console.log('[SalesOrders] API not enabled, using empty state');
             }
         } catch (err) {
             console.error('[SalesOrders] Error loading data:', err);
@@ -360,15 +339,37 @@ const Requisitions = () => {
         }));
     };
 
-    // Helper to update a single requisition in state and storage
-    const updateRequisitionInStorage = (requisitionId, updates) => {
-        const updatedRequisitions = requisitions.map(r =>
-            r.id === requisitionId ? { ...r, ...updates, updatedAt: new Date().toISOString() } : r
-        );
-        setRequisitions(updatedRequisitions);
-        setFilteredRequisitions(updatedRequisitions);
-        saveToStorage(updatedRequisitions);
-        return updatedRequisitions;
+    // Helper to update a single requisition via API
+    const updateRequisitionInState = async (requisitionId, updates) => {
+        const updatedData = { ...updates, updatedAt: new Date().toISOString() };
+
+        if (isApiEnabled() && !requisitionId.startsWith('local-')) {
+            try {
+                const requisition = requisitions.find(r => r.id === requisitionId);
+                const updated = await requisitionsApi.update(requisitionId, { ...requisition, ...updatedData });
+                const normalized = normalizeRequisition(updated);
+                setRequisitions(prev => prev.map(r => r.id === requisitionId ? normalized : r));
+                setFilteredRequisitions(prev => prev.map(r => r.id === requisitionId ? normalized : r));
+                return normalized;
+            } catch (error) {
+                console.error('[SalesOrders] API update failed:', error);
+                // Fallback to local update
+                const localUpdated = requisitions.map(r =>
+                    r.id === requisitionId ? { ...r, ...updatedData } : r
+                );
+                setRequisitions(localUpdated);
+                setFilteredRequisitions(localUpdated);
+                return localUpdated.find(r => r.id === requisitionId);
+            }
+        } else {
+            // Local update only
+            const localUpdated = requisitions.map(r =>
+                r.id === requisitionId ? { ...r, ...updatedData } : r
+            );
+            setRequisitions(localUpdated);
+            setFilteredRequisitions(localUpdated);
+            return localUpdated.find(r => r.id === requisitionId);
+        }
     };
 
     const handleSave = async () => {
@@ -392,49 +393,62 @@ const Requisitions = () => {
                 updatedAt: new Date().toISOString(),
             };
 
-            let updatedRequisitions;
-            if (currentRequisition.id) {
-                // Update existing
-                updatedRequisitions = requisitions.map(r =>
-                    r.id === currentRequisition.id ? dataToSave : r
-                );
-            } else {
-                // Create new
-                dataToSave.id = `local-${Date.now()}`;
-                dataToSave.createdAt = new Date().toISOString();
-                dataToSave.requestedAt = new Date().toISOString();
-                updatedRequisitions = [...requisitions, dataToSave];
-            }
+            console.log('[SalesOrders] Saving via API:', dataToSave);
 
-            setRequisitions(updatedRequisitions);
-            setFilteredRequisitions(updatedRequisitions);
-            saveToStorage(updatedRequisitions);
+            if (isApiEnabled()) {
+                if (currentRequisition.id && !currentRequisition.id.startsWith('local-')) {
+                    // Update existing via API
+                    const updated = await requisitionsApi.update(currentRequisition.id, dataToSave);
+                    const normalized = normalizeRequisition(updated);
+                    setRequisitions(prev => prev.map(r => r.id === currentRequisition.id ? normalized : r));
+                    setFilteredRequisitions(prev => prev.map(r => r.id === currentRequisition.id ? normalized : r));
+                } else {
+                    // Create new via API
+                    const created = await requisitionsApi.create(dataToSave);
+                    const normalized = normalizeRequisition(created);
+                    setRequisitions(prev => [...prev, normalized]);
+                    setFilteredRequisitions(prev => [...prev, normalized]);
+                }
+            } else {
+                // Fallback for when API is not enabled
+                if (currentRequisition.id) {
+                    setRequisitions(prev => prev.map(r => r.id === currentRequisition.id ? dataToSave : r));
+                    setFilteredRequisitions(prev => prev.map(r => r.id === currentRequisition.id ? dataToSave : r));
+                } else {
+                    dataToSave.id = `local-${Date.now()}`;
+                    dataToSave.createdAt = new Date().toISOString();
+                    dataToSave.requestedAt = new Date().toISOString();
+                    setRequisitions(prev => [...prev, dataToSave]);
+                    setFilteredRequisitions(prev => [...prev, dataToSave]);
+                }
+            }
 
             handleCloseModal();
         } catch (err) {
             console.error('[SalesOrders] Error saving:', err);
-            alert('Error saving sales order');
+            alert('Error saving sales order: ' + err.message);
         }
     };
 
     const handleDelete = async () => {
         try {
-            const updatedRequisitions = requisitions.filter(r => r.id !== requisitionToDelete.id);
-            setRequisitions(updatedRequisitions);
-            setFilteredRequisitions(updatedRequisitions);
-            saveToStorage(updatedRequisitions);
+            if (isApiEnabled() && !requisitionToDelete.id.startsWith('local-')) {
+                await requisitionsApi.delete(requisitionToDelete.id);
+            }
+            setRequisitions(prev => prev.filter(r => r.id !== requisitionToDelete.id));
+            setFilteredRequisitions(prev => prev.filter(r => r.id !== requisitionToDelete.id));
             setIsDeleteModalOpen(false);
             setRequisitionToDelete(null);
         } catch (err) {
             console.error('[SalesOrders] Error deleting:', err);
-            alert('Error deleting order');
+            alert('Error deleting order: ' + err.message);
         }
     };
 
     const handleApprove = async (decision, comments = '') => {
         try {
             const newStatus = decision === 'APPROVED' ? 'APPROVED' : 'REJECTED';
-            updateRequisitionInStorage(currentRequisition.id, {
+            await updateRequisitionInState(currentRequisition.id, {
                 status: newStatus,
                 approvalComments: comments,
                 approvalDate: decision === 'APPROVED' ? new Date().toISOString() : null,
@@ -442,16 +456,16 @@ const Requisitions = () => {
             setIsApprovalModalOpen(false);
         } catch (err) {
             console.error('[SalesOrders] Error updating status:', err);
-            alert('Error processing approval');
+            alert('Error processing approval: ' + err.message);
         }
     };
 
     const handleSubmitForApproval = async (requisition) => {
         try {
-            updateRequisitionInStorage(requisition.id, { status: 'PENDING_APPROVAL' });
+            await updateRequisitionInState(requisition.id, { status: 'PENDING_APPROVAL' });
         } catch (err) {
             console.error('[SalesOrders] Error submitting for approval:', err);
-            alert('Error submitting for approval');
+            alert('Error submitting for approval: ' + err.message);
         }
     };
 
@@ -981,7 +995,7 @@ const Requisitions = () => {
 
                         {currentRequisition.quotationId && (
                             <p className="info-text">
-                                <FaCheckCircle style={{ color: '#28a745', marginRight: '8px' }} />
+                                <Icon name="check_circle" style={{ color: '#28a745', marginRight: '8px' }} />
                                 Items loaded from quotation {currentRequisition.quotationFolio}
                             </p>
                         )}

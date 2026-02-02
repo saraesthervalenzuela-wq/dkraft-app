@@ -244,32 +244,6 @@ const normalizeProduct = (product) => ({
 });
 
 const QuotationsModule = () => {
-    // LocalStorage key for quotations
-    const STORAGE_KEY = 'dkraft_quotations';
-
-    // Load quotations from localStorage
-    const loadFromStorage = () => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                return parsed.length > 0 ? parsed : dummyQuotations;
-            }
-            return dummyQuotations;
-        } catch {
-            return dummyQuotations;
-        }
-    };
-
-    // Save quotations to localStorage
-    const saveToStorage = (data) => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        } catch (error) {
-            console.error('[Quotations] Error saving to localStorage:', error);
-        }
-    };
-
     // Data state
     const [quotations, setQuotations] = useState([]);
     const [clients, setClients] = useState([]);
@@ -296,20 +270,20 @@ const QuotationsModule = () => {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // Try to load quotations from API first
+            // Load quotations from API
             let quotationsData = [];
             if (isApiEnabled()) {
                 try {
                     quotationsData = await quotationsApi.getAll();
                     console.log('[Quotations] Loaded from API:', quotationsData?.length || 0);
                 } catch (err) {
-                    console.warn('[Quotations] API error, using localStorage:', err.message);
+                    console.warn('[Quotations] API error:', err.message);
+                    // Fallback to demo data if API fails
+                    quotationsData = dummyQuotations;
                 }
-            }
-
-            // Fallback to localStorage if API didn't return data
-            if (!quotationsData || quotationsData.length === 0) {
-                quotationsData = loadFromStorage();
+            } else {
+                // No API, use demo data
+                quotationsData = dummyQuotations;
             }
             setQuotations(quotationsData);
 
@@ -506,7 +480,7 @@ const QuotationsModule = () => {
         }));
     };
 
-    // Save quotation (uses localStorage)
+    // Save quotation via API
     const handleSave = async () => {
         try {
             // Auto-add current item if there's pending data
@@ -550,23 +524,28 @@ const QuotationsModule = () => {
                 dataToSave.folio = generateFolio();
             }
 
-            console.log('[Quotations] Saving to localStorage:', dataToSave);
+            console.log('[Quotations] Saving via API:', dataToSave);
 
-            let updatedQuotations;
-            if (currentQuotation.id) {
-                // Update existing
-                updatedQuotations = quotations.map(q =>
-                    q.id === currentQuotation.id ? dataToSave : q
-                );
+            if (isApiEnabled()) {
+                if (currentQuotation.id && !currentQuotation.id.startsWith('demo-')) {
+                    // Update existing via API
+                    const updated = await quotationsApi.update(currentQuotation.id, dataToSave);
+                    setQuotations(quotations.map(q => q.id === currentQuotation.id ? updated : q));
+                } else {
+                    // Create new via API
+                    const created = await quotationsApi.create(dataToSave);
+                    setQuotations([...quotations, created]);
+                }
             } else {
-                // Create new
-                dataToSave.id = `local-${Date.now()}`;
-                dataToSave.createdAt = new Date().toISOString();
-                updatedQuotations = [...quotations, dataToSave];
+                // Fallback for when API is not enabled (demo mode)
+                if (currentQuotation.id) {
+                    setQuotations(quotations.map(q => q.id === currentQuotation.id ? dataToSave : q));
+                } else {
+                    dataToSave.id = `local-${Date.now()}`;
+                    dataToSave.createdAt = new Date().toISOString();
+                    setQuotations([...quotations, dataToSave]);
+                }
             }
-
-            setQuotations(updatedQuotations);
-            saveToStorage(updatedQuotations);
 
             handleCloseModal();
         } catch (error) {
@@ -575,13 +554,24 @@ const QuotationsModule = () => {
         }
     };
 
-    // Update quotation status locally
-    const updateQuotationStatus = (quotationId, updates) => {
-        const updatedQuotations = quotations.map(q =>
-            q.id === quotationId ? { ...q, ...updates, updatedAt: new Date().toISOString() } : q
-        );
-        setQuotations(updatedQuotations);
-        saveToStorage(updatedQuotations);
+    // Update quotation status via API
+    const updateQuotationStatus = async (quotationId, updates) => {
+        const updatedData = { ...updates, updatedAt: new Date().toISOString() };
+
+        if (isApiEnabled() && !quotationId.startsWith('demo-')) {
+            try {
+                const quotation = quotations.find(q => q.id === quotationId);
+                const updated = await quotationsApi.update(quotationId, { ...quotation, ...updatedData });
+                setQuotations(quotations.map(q => q.id === quotationId ? updated : q));
+            } catch (error) {
+                console.error('[Quotations] API update failed:', error);
+                // Fallback to local update
+                setQuotations(quotations.map(q => q.id === quotationId ? { ...q, ...updatedData } : q));
+            }
+        } else {
+            // Demo mode - update locally
+            setQuotations(quotations.map(q => q.id === quotationId ? { ...q, ...updatedData } : q));
+        }
     };
 
     // Status actions
@@ -608,53 +598,34 @@ const QuotationsModule = () => {
 
     const handleConvertToSalesOrder = async (quotation) => {
         try {
-            // Update quotation status to CONVERTED
-            updateQuotationStatus(quotation.id, { status: 'CONVERTED' });
-
-            // Create a Sales Order in localStorage
-            const SALES_ORDERS_KEY = 'dkraft_sales_orders';
-            const existingSalesOrders = JSON.parse(localStorage.getItem(SALES_ORDERS_KEY) || '[]');
-
-            const newSalesOrder = {
-                id: `local-${Date.now()}`,
-                folio: `SO-${quotation.folio.replace('COT-', '')}`,
-                quotationId: quotation.id,
-                quotationFolio: quotation.folio,
-                clientId: quotation.clientId,
-                clientName: quotation.clientName,
-                billingEntity: quotation.billingEntity,
-                status: 'PENDING',
-                approvalDate: quotation.approvalDate,
-                eta: quotation.eta,
-                deposit: quotation.deposit,
-                depositPaid: quotation.depositPaid,
-                items: quotation.items,
-                subtotal: quotation.subtotal,
-                tax: quotation.tax,
-                total: quotation.total,
-                notes: quotation.notes,
-                createdAt: new Date().toISOString(),
-                skipQBSync: quotation.billingEntity !== 'DOVECREEK',
-            };
-
-            localStorage.setItem(SALES_ORDERS_KEY, JSON.stringify([...existingSalesOrders, newSalesOrder]));
-
-            alert(`Quotation converted to Sales Order: ${newSalesOrder.folio}`);
+            if (isApiEnabled() && !quotation.id.startsWith('demo-')) {
+                // Use API to create sales order
+                const salesOrder = await quotationsApi.createSalesOrder(quotation.id);
+                // Update local state
+                await updateQuotationStatus(quotation.id, { status: 'CONVERTED' });
+                alert(`Quotation converted to Sales Order: ${salesOrder.folio}`);
+            } else {
+                // Demo mode - just update status locally
+                await updateQuotationStatus(quotation.id, { status: 'CONVERTED' });
+                const demoFolio = `SO-${quotation.folio.replace('COT-', '')}`;
+                alert(`Quotation converted to Sales Order: ${demoFolio} (demo mode)`);
+            }
         } catch (error) {
             console.error('[Quotations] Error converting:', error);
-            alert('Error converting quotation');
+            alert('Error converting quotation: ' + error.message);
         }
     };
 
     const handleDelete = async (quotation) => {
         if (!confirm(`Delete quotation ${quotation.folio}?`)) return;
         try {
-            const updatedQuotations = quotations.filter(q => q.id !== quotation.id);
-            setQuotations(updatedQuotations);
-            saveToStorage(updatedQuotations);
+            if (isApiEnabled() && !quotation.id.startsWith('demo-')) {
+                await quotationsApi.delete(quotation.id);
+            }
+            setQuotations(quotations.filter(q => q.id !== quotation.id));
         } catch (error) {
             console.error('[Quotations] Error deleting:', error);
-            alert('Error deleting quotation');
+            alert('Error deleting quotation: ' + error.message);
         }
     };
 
