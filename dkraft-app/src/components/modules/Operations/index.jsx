@@ -260,10 +260,23 @@ const OperationsModule = () => {
         }
     };
 
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async () => {
         if (selectedOperations.length === 0) return;
-        setOperations(operations.filter(op => !selectedOperations.includes(op.id)));
-        setSelectedOperations([]);
+
+        try {
+            // Delete each selected operation from Supabase
+            for (const opId of selectedOperations) {
+                await operationsService.delete(opId);
+                console.log('[Operations] Deleted from Supabase:', opId);
+            }
+
+            // Update local state
+            setOperations(operations.filter(op => !selectedOperations.includes(op.id)));
+            setSelectedOperations([]);
+        } catch (error) {
+            console.error('[Operations] Error deleting:', error);
+            alert('Error deleting operations: ' + error.message);
+        }
     };
 
     // Handle status change from Kanban drag & drop
