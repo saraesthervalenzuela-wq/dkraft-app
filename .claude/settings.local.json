@@ -49,7 +49,9 @@
       "Bash(git restore:*)",
       "Bash(node tests/database-test.js:*)",
       "Bash(node tests/run-migration.js:*)",
-      "Bash(node tests/execute-sql.js:*)"
+      "Bash(node tests/execute-sql.js:*)",
+      "WebFetch(domain:dkraft.com.mx)",
+      "Bash(timeout 10 npm run dev)"
     ]
   }
 }
