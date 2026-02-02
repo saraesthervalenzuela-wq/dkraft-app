@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
 import { isApiEnabled, categoriesApi } from '../../../services/api';
+import { categoriesService } from '../../../lib/supabase';
 
 const initialCategories = [
     { id: 1, name: 'Woods', description: 'All types of wood and plywood materials' },
@@ -91,28 +92,66 @@ const CategoriesModule = () => {
         );
     };
 
-    const handleCreateCategory = () => {
+    const handleCreateCategory = async () => {
         if (!newCategory.name) return;
-        const category = {
-            id: categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1,
-            ...newCategory
-        };
-        setCategories([...categories, category]);
-        resetForm();
+
+        try {
+            const categoryData = {
+                name: newCategory.name,
+                description: newCategory.description || '',
+            };
+
+            const saved = await categoriesService.create(categoryData);
+
+            if (!saved || !saved.id) {
+                throw new Error('Failed to create category');
+            }
+
+            setCategories([...categories, saved]);
+            console.log('[Categories] Created:', saved.id);
+            resetForm();
+        } catch (error) {
+            console.error('[Categories] Error creating:', error);
+            alert('Error creating category: ' + error.message);
+        }
     };
 
-    const handleUpdateCategory = () => {
+    const handleUpdateCategory = async () => {
         if (!newCategory.name) return;
-        setCategories(categories.map(c =>
-            c.id === editingCategory.id ? { ...c, ...newCategory } : c
-        ));
-        resetForm();
+
+        try {
+            const categoryData = {
+                name: newCategory.name,
+                description: newCategory.description || '',
+            };
+
+            await categoriesService.update(editingCategory.id, categoryData);
+
+            setCategories(categories.map(c =>
+                c.id === editingCategory.id ? { ...c, ...categoryData } : c
+            ));
+            console.log('[Categories] Updated:', editingCategory.id);
+            resetForm();
+        } catch (error) {
+            console.error('[Categories] Error updating:', error);
+            alert('Error updating category: ' + error.message);
+        }
     };
 
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async () => {
         if (selectedCategories.length === 0) return;
-        setCategories(categories.filter(c => !selectedCategories.includes(c.id)));
-        setSelectedCategories([]);
+
+        try {
+            for (const catId of selectedCategories) {
+                await categoriesService.delete(catId);
+            }
+            setCategories(categories.filter(c => !selectedCategories.includes(c.id)));
+            setSelectedCategories([]);
+            console.log('[Categories] Deleted:', selectedCategories.length);
+        } catch (error) {
+            console.error('[Categories] Error deleting:', error);
+            alert('Error deleting categories: ' + error.message);
+        }
     };
 
     const handleEditCategory = (category) => {
@@ -240,8 +279,15 @@ const CategoriesModule = () => {
                             }}>
                                 Cancel
                             </button>
-                            <button className="btn-modal-delete" onClick={() => {
-                                setCategories(categories.filter(c => c.id !== categoryToDelete.id));
+                            <button className="btn-modal-delete" onClick={async () => {
+                                try {
+                                    await categoriesService.delete(categoryToDelete.id);
+                                    setCategories(categories.filter(c => c.id !== categoryToDelete.id));
+                                    console.log('[Categories] Deleted:', categoryToDelete.id);
+                                } catch (error) {
+                                    console.error('[Categories] Error deleting:', error);
+                                    alert('Error deleting category: ' + error.message);
+                                }
                                 setShowDeleteConfirm(false);
                                 setCategoryToDelete(null);
                             }}>

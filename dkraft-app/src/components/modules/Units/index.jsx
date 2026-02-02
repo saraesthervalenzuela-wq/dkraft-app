@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, unitsApi } from '../../../services/api';
+import { unitsService } from '../../../lib/supabase';
 
 const initialUnits = [
     { id: 1, name: 'Sheet', description: 'Full sheet of material (4x8 ft typical)' },
@@ -68,28 +69,66 @@ const UnitsModule = () => {
         );
     };
 
-    const handleCreateUnit = () => {
+    const handleCreateUnit = async () => {
         if (!newUnit.name) return;
-        const unit = {
-            id: units.length > 0 ? Math.max(...units.map(u => u.id)) + 1 : 1,
-            ...newUnit
-        };
-        setUnits([...units, unit]);
-        resetForm();
+
+        try {
+            const unitData = {
+                name: newUnit.name,
+                description: newUnit.description || '',
+            };
+
+            const saved = await unitsService.create(unitData);
+
+            if (!saved || !saved.id) {
+                throw new Error('Failed to create unit');
+            }
+
+            setUnits([...units, saved]);
+            console.log('[Units] Created:', saved.id);
+            resetForm();
+        } catch (error) {
+            console.error('[Units] Error creating:', error);
+            alert('Error creating unit: ' + error.message);
+        }
     };
 
-    const handleUpdateUnit = () => {
+    const handleUpdateUnit = async () => {
         if (!newUnit.name) return;
-        setUnits(units.map(u =>
-            u.id === editingUnit.id ? { ...u, ...newUnit } : u
-        ));
-        resetForm();
+
+        try {
+            const unitData = {
+                name: newUnit.name,
+                description: newUnit.description || '',
+            };
+
+            await unitsService.update(editingUnit.id, unitData);
+
+            setUnits(units.map(u =>
+                u.id === editingUnit.id ? { ...u, ...unitData } : u
+            ));
+            console.log('[Units] Updated:', editingUnit.id);
+            resetForm();
+        } catch (error) {
+            console.error('[Units] Error updating:', error);
+            alert('Error updating unit: ' + error.message);
+        }
     };
 
-    const handleDeleteSelected = () => {
+    const handleDeleteSelected = async () => {
         if (selectedUnits.length === 0) return;
-        setUnits(units.filter(u => !selectedUnits.includes(u.id)));
-        setSelectedUnits([]);
+
+        try {
+            for (const unitId of selectedUnits) {
+                await unitsService.delete(unitId);
+            }
+            setUnits(units.filter(u => !selectedUnits.includes(u.id)));
+            setSelectedUnits([]);
+            console.log('[Units] Deleted:', selectedUnits.length);
+        } catch (error) {
+            console.error('[Units] Error deleting:', error);
+            alert('Error deleting units: ' + error.message);
+        }
     };
 
     const handleEditUnit = (unit) => {
@@ -225,8 +264,15 @@ const UnitsModule = () => {
                             }}>
                                 Cancel
                             </button>
-                            <button className="btn-modal-delete" onClick={() => {
-                                setUnits(units.filter(u => u.id !== unitToDelete.id));
+                            <button className="btn-modal-delete" onClick={async () => {
+                                try {
+                                    await unitsService.delete(unitToDelete.id);
+                                    setUnits(units.filter(u => u.id !== unitToDelete.id));
+                                    console.log('[Units] Deleted:', unitToDelete.id);
+                                } catch (error) {
+                                    console.error('[Units] Error deleting:', error);
+                                    alert('Error deleting unit: ' + error.message);
+                                }
                                 setShowDeleteConfirm(false);
                                 setUnitToDelete(null);
                             }}>

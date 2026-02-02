@@ -262,22 +262,30 @@ const QualityModule = () => {
         setShowModal(true);
     };
 
-    const handleUpdateInspection = () => {
+    const handleUpdateInspection = async () => {
         const result = calculateResult(newInspection.checklist, newInspection.templateId);
         const inspector = staffData.find(s => s.id === parseInt(newInspection.inspectorId));
 
-        setInspections(prev => prev.map(insp =>
-            insp.id === selectedInspection.id
-                ? {
-                    ...insp,
-                    ...newInspection,
-                    inspectorName: inspector?.name || insp.inspectorName,
-                    result
-                }
-                : insp
-        ));
-        setShowModal(false);
-        setSelectedInspection(null);
+        const updatedData = {
+            ...newInspection,
+            inspectorName: inspector?.name || '',
+            result
+        };
+
+        try {
+            if (isApiEnabled()) {
+                await qualityApi.update(selectedInspection.id, updatedData);
+                console.log('[Quality] Updated inspection:', selectedInspection.id);
+            }
+            setInspections(prev => prev.map(insp =>
+                insp.id === selectedInspection.id ? { ...insp, ...updatedData } : insp
+            ));
+            setShowModal(false);
+            setSelectedInspection(null);
+        } catch (error) {
+            console.error('[Quality] Error updating inspection:', error);
+            alert('Error updating inspection: ' + error.message);
+        }
     };
 
     const handleNewInspection = () => {
@@ -353,12 +361,11 @@ const QualityModule = () => {
         return 'Failed';
     };
 
-    const handleSaveInspection = () => {
+    const handleSaveInspection = async () => {
         const result = calculateResult(newInspection.checklist, newInspection.templateId);
         const inspector = staffData.find(s => s.id === parseInt(newInspection.inspectorId));
 
         const inspection = {
-            id: Math.max(...inspections.map(i => i.id), 0) + 1,
             ...newInspection,
             inspectorName: inspector?.name || '',
             status: 'Completed',
@@ -366,10 +373,23 @@ const QualityModule = () => {
             findings: newInspection.findings || []
         };
 
-        setInspections(prev => [inspection, ...prev]); // Add at beginning (newest first)
-        setLastSavedInspection(inspection);
-        setShowModal(false);
-        setShowSuccessModal(true); // Show success modal
+        try {
+            if (isApiEnabled()) {
+                const saved = await qualityApi.create(inspection);
+                setInspections(prev => [saved, ...prev]);
+                setLastSavedInspection(saved);
+                console.log('[Quality] Created inspection:', saved.id);
+            } else {
+                inspection.id = Math.max(...inspections.map(i => i.id), 0) + 1;
+                setInspections(prev => [inspection, ...prev]);
+                setLastSavedInspection(inspection);
+            }
+            setShowModal(false);
+            setShowSuccessModal(true);
+        } catch (error) {
+            console.error('[Quality] Error saving inspection:', error);
+            alert('Error saving inspection: ' + error.message);
+        }
     };
 
     const handleAddFinding = () => {
