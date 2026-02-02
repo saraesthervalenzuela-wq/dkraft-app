@@ -6386,12 +6386,9 @@ textarea:focus-visible {
 /* Modal Styles - Premium Glassmorphism */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 100vw;
-    height: 100vh;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     background: rgba(0, 5, 15, 0.75);
     backdrop-filter: blur(12px) saturate(150%);
     -webkit-backdrop-filter: blur(12px) saturate(150%);
@@ -6400,7 +6397,7 @@ textarea:focus-visible {
     justify-content: center;
     z-index: 1000;
     animation: fadeIn 0.25s ease;
-    padding: 20px;
+    padding: 24px;
     box-sizing: border-box;
     overflow-y: auto;
 }
@@ -6408,18 +6405,17 @@ textarea:focus-visible {
 .modal-content {
     /* Blue glassmorphism - transparent to see background */
     background: linear-gradient(145deg,
-        rgba(15, 30, 60, 0.75) 0%,
-        rgba(10, 25, 55, 0.80) 50%,
-        rgba(8, 20, 50, 0.85) 100%);
+        rgba(15, 30, 60, 0.92) 0%,
+        rgba(10, 25, 55, 0.95) 50%,
+        rgba(8, 20, 50, 0.97) 100%);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     border: 1px solid rgba(100, 150, 255, 0.15);
     border-top: 1px solid rgba(150, 180, 255, 0.2);
     border-radius: 20px;
     width: 100%;
-    max-width: 900px;
+    max-width: 560px; /* Default size - medium */
     max-height: 85vh;
-    margin: auto;
     display: flex;
     flex-direction: column;
     box-shadow:
@@ -6462,28 +6458,32 @@ textarea:focus-visible {
 /* Large modals for complex forms */
 .modal-lg .modal-content,
 .modal-large .modal-content {
-    max-width: 800px;
+    max-width: 720px;
 }
 
 .modal-xl .modal-content {
-    max-width: 1000px;
+    max-width: 900px;
 }
 
-/* Modal Size Classes */
+/* Modal Size Classes - Consistent sizing system */
 .modal-small {
-    max-width: 420px;
+    max-width: 420px !important;
+    width: 100%;
 }
 
 .modal-medium {
-    max-width: 600px;
+    max-width: 560px !important;
+    width: 100%;
 }
 
 .modal-large {
-    max-width: 800px;
+    max-width: 720px !important;
+    width: 100%;
 }
 
 .modal-xlarge {
-    max-width: 1000px;
+    max-width: 900px !important;
+    width: 100%;
 }
 
 /* Modal Footer Styles */

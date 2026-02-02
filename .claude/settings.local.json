@@ -46,7 +46,10 @@
       "Bash(__NEW_LINE_525e837f4c1049b5__ echo \"=== SAMPLE DATA CHECK ===\")",
       "Bash(__NEW_LINE_f3a2636c670e1dff__ echo \"=== ACTUAL SCHEMA CHECK ===\")",
       "Bash(wc:*)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(node tests/database-test.js:*)",
+      "Bash(node tests/run-migration.js:*)",
+      "Bash(node tests/execute-sql.js:*)"
     ]
   }
 }
