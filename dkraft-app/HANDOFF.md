@@ -1,429 +1,392 @@
-# D-KRAFT MRP System - Documentación Completa
+# D-KRAFT MRP System - Developer Handoff
 
-**Última actualización:** 1 Feb 2026
-**Estado:** MVP en desarrollo
+**Fecha de handoff:** 1 Feb 2026
+**Estado:** Frontend 100% completo, Database creada, Backend pendiente
 
 ---
 
-## 1. RESUMEN DEL PROYECTO
+## 🚀 INICIO RÁPIDO
 
-D-KRAFT es un sistema MRP (Material Requirements Planning) para una empresa de manufactura de muebles/carpintería en Tijuana. Maneja el flujo completo desde cotizaciones hasta producción.
+```bash
+# 1. Clonar e instalar
+git clone https://github.com/saraesthervalenzuela-wq/dkraft-app.git
+cd dkraft-app/dkraft-app
+npm install
+
+# 2. Configurar .env
+cp .env.example .env
+# Editar con las credenciales de Supabase
+
+# 3. Correr en desarrollo
+npm run dev
+# Abre http://localhost:5173
+```
+
+### Variables de Entorno (.env)
+```env
+VITE_SUPABASE_URL=https://qalqscfrcxzzvrcvqqbp.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhbHFzY2ZyY3h6enZyY3ZxcWJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4ODUxMjQsImV4cCI6MjA4NTQ2MTEyNH0.nngJeNqoq9yuBiiQYqzw_GOKCNMiPxjFsQusch0rQxo
+VITE_API_URL=https://dkraft.com.mx/api
+VITE_USE_API=true
+```
+
+---
+
+## 📋 RESUMEN DEL PROYECTO
+
+**D-KRAFT** es un sistema MRP (Material Requirements Planning) para manufactura de muebles en Tijuana.
 
 ### Flujo de Negocio
 ```
 Cotización → Aprobación → Sales Order → Proyecto → Operaciones → Producción
+     ↓            ↓
+    QB           QB
+(DOVECREEK)  (DOVECREEK)
 ```
 
-### Entidades de Facturación (IMPORTANTE)
-| Entidad | QuickBooks Sync | Descripción |
-|---------|-----------------|-------------|
-| **DOVECREEK** | ✅ SÍ sincroniza | Dovecreek Maquila - Facturación USA |
-| **INNOVATIVE** | ❌ NO sincroniza | Innovative Mx - Facturación México |
+### Entidades de Facturación (CRÍTICO)
+| Entidad | QuickBooks | Descripción |
+|---------|------------|-------------|
+| **DOVECREEK** | ✅ Sincroniza | Facturación USA |
+| **INNOVATIVE** | ❌ NO sincroniza | Facturación México |
 
 ---
 
-## 2. TECH STACK
+## ✅ LO QUE ESTÁ LISTO
 
-| Capa | Tecnología |
-|------|------------|
-| Frontend | React 18 + Vite 7 |
-| Estilos | CSS puro (main.css 23K+ líneas) |
-| Backend 1 | Supabase (PostgreSQL directo) |
-| Backend 2 | API Custom (https://dkraft.com.mx/api) |
-| Auth | Supabase Auth + JWT API |
-| QuickBooks | Integración via API Custom |
-| Hosting | Pendiente (Vercel recomendado) |
-
-### Diseño Visual
-- **Colores**: Deep Blue (#0033b3) + Electric Orange (#d35400)
-- **Estilo**: Glassmorphism con blur y transparencias
-- **Iconos**: Material Symbols Rounded (Google)
+| Componente | Estado | Notas |
+|------------|--------|-------|
+| **Frontend React** | ✅ 100% | Todos los módulos funcionan |
+| **UI/UX** | ✅ Pulido | Glassmorphism, Deep Blue + Orange |
+| **Database Schema** | ✅ Ejecutado | 26 tablas en Supabase |
+| **API Client** | ✅ Listo | `src/services/api.js` |
+| **Supabase Client** | ✅ Listo | `src/lib/supabase.js` |
+| **Documentación** | ✅ Completa | Este archivo + diagramas |
 
 ---
 
-## 3. ARQUITECTURA DE BACKEND (DOS SISTEMAS)
+## 🔧 LO QUE FALTA (TU TRABAJO)
 
-### Sistema 1: Supabase (Acceso Directo)
-**Archivo:** `src/lib/supabase.js`
-**Uso:** CRUD simple, auth, realtime
+### 1. Backend API (Prioridad ALTA)
 
+El frontend espera una API REST en `https://dkraft.com.mx/api`
+
+**Formato de respuesta esperado:**
 ```javascript
-import { db, auth, clientsService } from '../lib/supabase'
+// Éxito
+{
+  "success": true,
+  "data": { ... },
+  "message": "OK"
+}
 
-// Auth
-await auth.signIn(email, password)
-await auth.signOut()
-
-// CRUD genérico
-await db.getAll('tabla')
-await db.create('tabla', data)
-await db.update('tabla', id, data)
-await db.delete('tabla', id)
-
-// Servicios específicos
-await clientsService.getAll()
-await materialsService.create(data)
+// Error
+{
+  "success": false,
+  "error": "Mensaje de error"
+}
 ```
 
-### Sistema 2: API Custom (https://dkraft.com.mx/api)
-**Archivo:** `src/services/api.js`
-**Uso:** Lógica de negocio, QuickBooks, MRP, workflows
+**Endpoints requeridos:**
+
+#### Auth
+```
+POST /auth/login     → { email, password } → { token, user }
+```
+
+#### CRUD (para cada entidad)
+```
+GET    /{entity}        → Lista todos
+GET    /{entity}/:id    → Obtiene uno
+POST   /{entity}        → Crea nuevo
+PUT    /{entity}/:id    → Actualiza
+DELETE /{entity}/:id    → Elimina
+```
+
+**Entidades:** clients, suppliers, materials, products, projects, quotations, requisitions, operations, warehouses, categories, units, bom
+
+#### Workflows Especiales
+```
+POST /quotations/:id/send              → Enviar a cliente (status: SENT)
+POST /quotations/:id/approve           → Aprobar (status: APPROVED)
+POST /quotations/:id/reject            → Rechazar (status: REJECTED)
+POST /quotations/:id/create-sales-order → Convertir a Sales Order
+POST /quotations/:id/send-to-qb        → Sincronizar con QuickBooks
+
+POST /requisitions/:id/submit          → Enviar para aprobación
+POST /requisitions/:id/approve         → Aprobar
+POST /requisitions/:id/reject          → Rechazar
+```
+
+#### QuickBooks (si aplica)
+```
+GET  /quickbooks/status         → Estado de conexión
+POST /quickbooks/sync/clients   → Sincronizar clientes
+POST /clients/:id/sync-qb       → Sync cliente individual
+GET  /quickbooks/queue          → Cola de sincronización
+POST /quickbooks/queue/retry-failed → Reintentar fallidos
+```
+
+### 2. Deploy Frontend (Prioridad ALTA)
+
+```bash
+# Build
+npm run build
+
+# Deploy a Vercel
+vercel --prod
+
+# O cualquier hosting estático (Netlify, etc.)
+```
+
+**Variables en producción:**
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_API_URL`
+- `VITE_USE_API=true`
+
+### 3. QuickBooks Integration (Prioridad MEDIA)
+
+Solo entidades con `billing_entity = 'DOVECREEK'` sincronizan.
+
+Campos QB en tablas:
+- `qb_customer_id` - ID del Customer en QB
+- `qb_item_id` - ID del Item en QB
+- `qb_estimate_id` - ID del Estimate
+- `qb_sales_order_id` - ID del Sales Order
+- `sync_status` - Estado de sync
+- `skip_qb_sync` - Flag para omitir sync
+
+---
+
+## 🗄️ BASE DE DATOS
+
+### Supabase Project
+- **URL:** https://qalqscfrcxzzvrcvqqbp.supabase.co
+- **Dashboard:** https://supabase.com/dashboard/project/qalqscfrcxzzvrcvqqbp
+
+### Tablas Creadas (26)
+
+| Grupo | Tablas |
+|-------|--------|
+| **Catálogos** | categories, units, warehouses, warehouse_sections |
+| **Entidades** | clients, suppliers, materials, products |
+| **Documentos** | quotations, quotation_items, requisitions, requisition_items |
+| **Proyectos** | projects |
+| **Producción** | operations, operation_stages, operation_materials, bom, bom_components |
+| **Calidad** | quality_inspections |
+| **Inventario** | stock_movements |
+| **Staff** | profiles, attendance, performance_metrics |
+| **Sistema** | activity_log, settings, qb_sync_queue |
+
+### Archivos de Schema
+```
+database/
+├── schema.sql           ← SQL completo (997 líneas)
+└── SCHEMA_DIAGRAM.md    ← Diagramas ER en Mermaid
+```
+
+### Relaciones Principales
+```
+clients ─────┬──► quotations ──► quotation_items
+             │
+             ├──► requisitions ──► requisition_items
+             │
+             └──► projects ──► operations ──► operation_stages
+                                    │
+                                    └──► operation_materials
+
+products ──► bom ──► bom_components ──► materials
+
+materials ◄── suppliers
+materials ◄── categories
+materials ◄── units
+materials ◄── warehouses
+```
+
+---
+
+## 📁 ESTRUCTURA DEL PROYECTO
+
+```
+dkraft-app/
+├── database/
+│   ├── schema.sql              ← ⭐ SQL completo
+│   └── SCHEMA_DIAGRAM.md       ← ⭐ Diagramas ER
+├── src/
+│   ├── components/
+│   │   ├── common/             ← Componentes reutilizables
+│   │   │   ├── Icon.jsx        ← Material Symbols wrapper
+│   │   │   ├── Modal.jsx       ← Modal universal
+│   │   │   └── SearchBox.jsx
+│   │   ├── layout/
+│   │   │   └── Sidebar.jsx     ← Navegación principal
+│   │   └── modules/            ← ⭐ Módulos de la app
+│   │       ├── Clients/
+│   │       ├── Suppliers/
+│   │       ├── Materials/
+│   │       ├── Products/
+│   │       ├── Quotations/     ← Cotizaciones + QB
+│   │       ├── Requisitions/   ← Sales Orders + QB
+│   │       ├── Projects/
+│   │       ├── Operations/
+│   │       ├── BOM/
+│   │       ├── Warehouses/
+│   │       ├── Categories/
+│   │       ├── Units/
+│   │       ├── Staff/
+│   │       ├── Quality/
+│   │       ├── Performance/
+│   │       ├── Reports/
+│   │       ├── ActivityLog/
+│   │       └── ProjectAnalysis/
+│   ├── lib/
+│   │   └── supabase.js         ← ⭐ Cliente Supabase
+│   ├── services/
+│   │   └── api.js              ← ⭐ Cliente API (endpoints)
+│   ├── context/
+│   │   └── AuthContext.jsx     ← Autenticación
+│   ├── styles/
+│   │   └── main.css            ← ⭐ Todos los estilos (23K+ líneas)
+│   └── App.jsx
+├── HANDOFF.md                  ← Este archivo
+└── package.json
+```
+
+---
+
+## 🎨 DISEÑO VISUAL
+
+### Colores
+```css
+--primary: #0033b3;      /* Deep Blue */
+--accent: #d35400;       /* Electric Orange */
+--background: #0a0a1a;   /* Dark background */
+--surface: rgba(255,255,255,0.05); /* Glassmorphism */
+```
+
+### Iconos
+Usar componente `<Icon name="xxx" />` con Material Symbols Rounded.
+
+```jsx
+import { Icon } from '../../common';
+
+<Icon name="edit" />
+<Icon name="delete" />
+<Icon name="check_circle" />
+```
+
+**NO usar react-icons** - Todo el proyecto usa Material Symbols.
+
+---
+
+## 🔌 CÓMO FUNCIONAN LOS SERVICIOS
+
+### API Custom (`src/services/api.js`)
 
 ```javascript
-import { api, isApiEnabled } from '../services/api'
+import { isApiEnabled, clientsApi, quotationsApi } from '../services/api';
 
 // Verificar si API está habilitada
 if (isApiEnabled()) {
-    const clients = await api.clients.getAll()
-}
+    // CRUD
+    const clients = await clientsApi.getAll();
+    const client = await clientsApi.getById(id);
+    const newClient = await clientsApi.create(data);
+    await clientsApi.update(id, data);
+    await clientsApi.delete(id);
 
-// QuickBooks sync
-await api.clients.syncToQB(clientId)
-await api.quotations.sendToQB(quoteId, 'ESTIMATE')
+    // QuickBooks
+    await clientsApi.syncToQB(id);
+    await quotationsApi.sendToQB(id, 'ESTIMATE');
 
-// Workflows
-await api.requisitions.approve(id, notes)
-await api.quotations.createSalesOrder(id)
-
-// MRP
-await api.mrp.calculateRequirements(quotationId)
-await api.mrp.getShortages()
-```
-
-### Configuración .env
-```env
-# Supabase (siempre activo)
-VITE_SUPABASE_URL=https://qalqscfrcxzzvrcvqqbp.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbG...
-
-# API Custom (opcional)
-VITE_API_URL=https://dkraft.com.mx/api
-VITE_USE_API=true  # false para usar solo Supabase
-```
-
----
-
-## 4. QUICKBOOKS INTEGRATION
-
-### Endpoints QuickBooks (`src/services/api.js`)
-
-```javascript
-// Status y cola
-api.quickbooks.getStatus()           // Estado de conexión QB
-api.quickbooks.getQueue()            // Cola de sync pendientes
-api.quickbooks.retryFailed()         // Reintentar fallidos
-api.quickbooks.getAccounts()         // Cuentas de QB
-
-// Sync manual por entidad
-api.quickbooks.syncClients()         // Sync todos los clientes
-api.quickbooks.syncProducts()        // Sync todos los productos
-api.quickbooks.syncMaterials()       // Sync todos los materiales
-
-// Sync individual
-api.clients.syncToQB(id)             // Sync cliente específico
-api.products.syncToQB(id)            // Sync producto específico
-api.quotations.sendToQB(id, type)    // Enviar cotización a QB
-```
-
-### Lógica de Sync por billingEntity
-
-```javascript
-// En Quotations/Requisitions
-if (quotation.billingEntity === 'DOVECREEK') {
-    // ✅ Sincroniza con QuickBooks
-    await api.quotations.sendToQB(id, 'ESTIMATE')
-} else {
-    // ❌ INNOVATIVE - No sincroniza
+    // Workflows
+    await quotationsApi.createSalesOrder(id);
+    await requisitionsApi.approve(id, notes);
 }
 ```
 
-### Flujo Cotización → QuickBooks
-
-1. Usuario crea cotización con `billingEntity: 'DOVECREEK'`
-2. Status cambia a SENT → Se puede enviar a QB como Estimate
-3. Cliente aprueba → Status APPROVED
-4. Se crea Sales Order → `api.quotations.createSalesOrder(id)`
-5. Sales Order se sincroniza automáticamente a QB
-
----
-
-## 5. ESTRUCTURA DEL PROYECTO
-
-```
-src/
-├── components/
-│   ├── common/              # Componentes reutilizables
-│   │   ├── Icon.jsx         # Material Symbols wrapper
-│   │   ├── Modal.jsx        # Modal universal
-│   │   ├── SearchBox.jsx    # Búsqueda
-│   │   └── ...
-│   ├── layout/
-│   │   └── Sidebar.jsx      # Navegación
-│   └── modules/             # Módulos de la app
-│       ├── Clients/
-│       ├── Suppliers/
-│       ├── Materials/
-│       ├── Products/
-│       ├── Projects/
-│       ├── Quotations/      # ⚠️ localStorage + QB
-│       ├── Requisitions/    # ⚠️ localStorage (Sales Orders)
-│       ├── Operations/
-│       ├── BOM/
-│       ├── Staff/
-│       ├── Warehouses/
-│       ├── Categories/
-│       ├── Units/
-│       ├── Reports/
-│       ├── Quality/
-│       ├── Performance/
-│       ├── ActivityLog/
-│       └── ProjectAnalysis/
-├── data/
-│   └── initialData.js       # Nav + datos fallback
-├── lib/
-│   └── supabase.js          # ⭐ Cliente Supabase completo
-├── services/
-│   └── api.js               # ⭐ API Custom + QuickBooks
-├── hooks/
-│   └── useService.js        # Hook para servicios
-└── styles/
-    └── main.css             # ⭐ Todos los estilos
-```
-
----
-
-## 6. APIs DISPONIBLES (src/services/api.js)
-
-### CRUD Estándar (todas las entidades)
-```javascript
-api.{entidad}.getAll(params)
-api.{entidad}.getById(id)
-api.{entidad}.create(data)
-api.{entidad}.update(id, data)
-api.{entidad}.delete(id)
-```
-
-### APIs por Módulo
-
-| API | Métodos Especiales |
-|-----|-------------------|
-| `api.materials` | `getStock()`, `updateStock()`, `getLowStock()`, `getByCategory()` |
-| `api.products` | `syncToQB()` |
-| `api.clients` | `syncToQB()`, `getQuotations()`, `getRequisitions()` |
-| `api.suppliers` | `getMaterials()` |
-| `api.warehouses` | `getSections()`, `createSection()`, `getStock()` |
-| `api.quotations` | `sendToClient()`, `approve()`, `reject()`, `sendToQB()`, `createSalesOrder()` |
-| `api.requisitions` | `submit()`, `approve()`, `reject()`, `cancel()` |
-| `api.projects` | `getRequisitions()`, `getQuotations()` |
-| `api.bom` | `addComponent()`, `calculateCosts()`, `checkStock()` |
-| `api.mrp` | `calculateRequirements()`, `generateRequisition()`, `getShortages()` |
-| `api.operations` | `updateStage()`, `getByProject()`, `getByStatus()` |
-| `api.quality` | `getByOperation()`, `getStats()` |
-| `api.performance` | `getByStaff()`, `getByPeriod()`, `getAlerts()` |
-| `api.reports` | `getDashboardKPIs()`, `getInventoryValue()`, `getQBSyncStatus()` |
-| `api.quickbooks` | `getStatus()`, `syncClients()`, `getQueue()`, `retryFailed()` |
-
----
-
-## 7. MÓDULOS Y SU ESTADO
-
-| Módulo | Backend | QB Sync | Estado |
-|--------|---------|---------|--------|
-| Clients | API + Supabase | ✅ | ✅ Funcional |
-| Suppliers | API + Supabase | ❌ | ✅ Funcional |
-| Materials | API + Supabase | ✅ | ✅ Funcional |
-| Products | API + Supabase | ✅ | ✅ Funcional |
-| Projects | API + Supabase | ❌ | ✅ Funcional |
-| Quotations | ✅ API | ✅ | ✅ **Migrado** |
-| Requisitions | ✅ API | ✅ | ✅ **Migrado** |
-| Operations | API + Supabase | ❌ | ✅ Funcional |
-| BOM | API + Supabase | ❌ | ✅ Funcional |
-| Warehouses | API + Supabase | ❌ | ✅ Funcional |
-| Staff | Supabase | ❌ | ✅ Funcional |
-| Categories | API | ❌ | ✅ Funcional |
-| Units | API | ❌ | ✅ Funcional |
-| Quality | API | ❌ | ✅ Funcional |
-| Performance | API | ❌ | ✅ Funcional |
-| ActivityLog | API | ❌ | ✅ Funcional |
-
----
-
-## 8. TABLAS SUPABASE
-
-```sql
--- Principales
-clients          -- Clientes (con sync_status para QB)
-suppliers        -- Proveedores
-materials        -- Materiales/inventario
-products         -- Productos terminados
-projects         -- Proyectos
-
--- Documentos
-quotations       -- Cotizaciones
-quotation_items  -- Items de cotización
-requisitions     -- Sales Orders
-requisition_items
-
--- Producción
-operations       -- Órdenes de trabajo
-operation_stages -- Etapas de producción
-operation_materials
-bom              -- Bill of Materials
-bom_components
-
--- Catálogos
-warehouses
-categories
-units
-
--- Staff
-profiles
-attendance
-
--- Sistema
-activity_log
-```
-
----
-
-## 9. CÓMO USAR LOS SERVICIOS
-
-### Patrón en módulos (ejemplo Clients)
+### Supabase Directo (`src/lib/supabase.js`)
 
 ```javascript
-import { useState, useEffect } from 'react';
-import { isApiEnabled, clientsApi } from '../../../services/api';
+import { db, auth, clientsService } from '../lib/supabase';
 
-const ClientsModule = () => {
-    const [clients, setClients] = useState([]);
-    const [loading, setLoading] = useState(true);
+// Auth
+await auth.signIn(email, password);
+await auth.signOut();
 
-    useEffect(() => {
-        const loadData = async () => {
-            if (isApiEnabled()) {
-                try {
-                    const data = await clientsApi.getAll();
-                    setClients(data);
-                } catch (error) {
-                    console.error('Error:', error);
-                }
-            }
-            setLoading(false);
-        };
-        loadData();
-    }, []);
+// CRUD genérico
+const items = await db.getAll('clients');
+const item = await db.getById('clients', id);
+await db.create('clients', data);
+await db.update('clients', id, data);
+await db.delete('clients', id);
 
-    const handleSyncToQB = async (clientId) => {
-        await clientsApi.syncToQB(clientId);
-        // Refresh data
-    };
-};
-```
-
-### Patrón para Quotations con QB
-
-```javascript
-const handleSendToQB = async (quotation) => {
-    if (quotation.billingEntity === 'DOVECREEK') {
-        await quotationsApi.sendToQB(quotation.id, 'ESTIMATE');
-        // Update local state
-    }
-};
-
-const handleConvertToSalesOrder = async (quotationId) => {
-    const salesOrder = await quotationsApi.createSalesOrder(quotationId);
-    // salesOrder se crea y sincroniza automáticamente
-};
+// Servicios específicos
+await clientsService.getPendingSync();
+await materialsService.getLowStock();
+await bomService.calculateCosts(id);
 ```
 
 ---
 
-## 10. PENDIENTES MVP
+## 🔄 FLUJOS DE STATUS
 
-### ✅ Completado
-- [x] Migrar Quotations de localStorage a API
-- [x] Migrar Requisitions de localStorage a API
-- [x] UI polish (status toggles, delete modals, icons)
-- [x] Documentación completa
+### Quotations
+```
+DRAFT → SENT → APPROVED → CONVERTED
+              ↘ REJECTED
+```
 
-### Prioridad Alta (Backend/Deploy)
-- [ ] Verificar endpoints de API funcionando
-- [ ] Deploy a producción (Vercel recomendado)
-- [ ] Configurar variables de entorno en producción
+### Requisitions (Sales Orders)
+```
+DRAFT → PENDING_APPROVAL → APPROVED → ORDERED → PARTIALLY_FULFILLED → FULFILLED
+                         ↘ REJECTED
+```
 
-### Prioridad Media
-- [ ] Probar sync QuickBooks completo
-- [ ] Exportar reportes a PDF
-- [ ] Code splitting para reducir bundle (807KB)
-
-### Prioridad Baja
-- [ ] PWA móvil
-- [ ] Notificaciones push
+### Operations
+```
+pending → scheduled → in_progress → quality_check → completed
+                    ↘ on_hold ↗
+```
 
 ---
 
-## 11. COMANDOS
+## 🧪 TESTING
 
 ```bash
-# Desarrollo
-npm run dev          # http://localhost:5173
+# Verificar que el frontend compila
+npm run build
 
-# Producción
-npm run build        # Genera dist/
-npm run preview      # Preview del build
+# Preview del build
+npm run preview
 
-# Deploy Vercel
-vercel               # Primera vez
-vercel --prod        # Producción
+# Verificar conexión a Supabase
+# En la consola del navegador:
+import { supabase } from './lib/supabase'
+await supabase.from('clients').select('*').limit(1)
 ```
 
 ---
 
-## 12. COMMITS IMPORTANTES
+## 📞 CONTACTO
 
-| Commit | Descripción |
-|--------|-------------|
-| `bd2866f` | Documentación completa |
-| `59a951c` | UI polish (status toggles, icons) |
-| `962c9f0` | Estado funcional con Supabase |
-| `a55bc7a` | CSS Deep Blue/Orange |
-
----
-
-## 13. NOTAS IMPORTANTES
-
-1. **NO usar Firebase** - El proyecto usa Supabase
-2. **Dos backends** - Supabase para CRUD simple, API para lógica compleja
-3. **billingEntity** - DOVECREEK sync QB, INNOVATIVE no
-4. **Icon component** - Usar `<Icon name="x" />` no react-icons
-5. **Frontend LISTO** - Todos los módulos conectados a API
+Si tienes dudas sobre:
+- **Frontend/React:** Revisa los módulos en `src/components/modules/`
+- **API esperada:** Revisa `src/services/api.js`
+- **Database:** Revisa `database/schema.sql` y `database/SCHEMA_DIAGRAM.md`
+- **Estilos:** Revisa `src/styles/main.css`
 
 ---
 
-## 14. TROUBLESHOOTING
+## 📝 NOTAS FINALES
 
-### API no responde
-```javascript
-// Verificar en consola
-console.log(isApiEnabled())  // debe ser true
-await checkApiHealth()       // debe retornar true
-```
-
-### QuickBooks sync falla
-```javascript
-// Ver cola de errores
-const queue = await api.quickbooks.getQueue()
-// Reintentar fallidos
-await api.quickbooks.retryFailed()
-```
-
-### Supabase error
-```javascript
-// Verificar conexión
-import { supabase } from '../lib/supabase'
-const { data, error } = await supabase.from('clients').select('*').limit(1)
-```
+1. **El frontend está 100% listo** - No necesita cambios
+2. **La base de datos está creada** - 26 tablas en Supabase
+3. **Solo falta el backend API** - En `https://dkraft.com.mx/api`
+4. **QuickBooks solo para DOVECREEK** - INNOVATIVE no sincroniza
+5. **Usar Material Symbols** - NO react-icons
 
 ---
 
-*Documentación actualizada para mantener contexto entre sesiones.*
+*Última actualización: 1 Feb 2026*
