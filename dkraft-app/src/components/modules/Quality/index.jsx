@@ -837,7 +837,7 @@ const QualityModule = () => {
         const template = qaChecklistTemplates.find(t => t.id === inspection?.templateId);
 
         return (
-            <div className="modal-overlay" onClick={() => setShowModal(false)}>
+            <div className="modal-overlay">
                 <div className="modal-content modal-qa" onClick={e => e.stopPropagation()}>
                     <div className="modal-header">
                         <div className="modal-header-icon">
@@ -1101,7 +1101,7 @@ const QualityModule = () => {
         if (!showFindingModal || !selectedFinding) return null;
 
         return (
-            <div className="modal-overlay" onClick={() => setShowFindingModal(false)}>
+            <div className="modal-overlay">
                 <div className="modal-content modal-finding" onClick={e => e.stopPropagation()}>
                     <div className="modal-header">
                         <div className="modal-header-icon warning">
@@ -1349,7 +1349,7 @@ const QualityModule = () => {
 
             {/* Success Modal */}
             {showSuccessModal && lastSavedInspection && (
-                <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-success" onClick={e => e.stopPropagation()}>
                         <div className="success-modal-content">
                             <div className={`success-icon ${getResultClass(lastSavedInspection.result)}`}>

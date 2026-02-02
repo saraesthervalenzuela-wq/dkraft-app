@@ -754,7 +754,7 @@ const OperationsModule = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className="modal-overlay" onClick={resetForm}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-operation" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon">

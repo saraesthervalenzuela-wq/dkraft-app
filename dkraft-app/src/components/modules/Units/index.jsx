@@ -234,10 +234,7 @@ const UnitsModule = () => {
             </div>
 
             {showDeleteConfirm && unitToDelete && (
-                <div className="modal-overlay" onClick={() => {
-                    setShowDeleteConfirm(false);
-                    setUnitToDelete(null);
-                }}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon warning">
@@ -285,7 +282,7 @@ const UnitsModule = () => {
             )}
 
             {showModal && (
-                <div className="modal-overlay" onClick={resetForm}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-catalog" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon">

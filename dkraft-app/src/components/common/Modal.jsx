@@ -99,7 +99,7 @@ const Modal = ({
     }[size] || 'modal-medium';
 
     return (
-        <div className="modal-overlay" onClick={handleOverlayClick}>
+        <div className="modal-overlay">
             <div className={`modal-content ${sizeClass} ${className}`} onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
                     <div className="modal-header-icon">
@@ -109,7 +109,7 @@ const Modal = ({
                         <h3>{title}</h3>
                         {subtitle && <p>{subtitle}</p>}
                     </div>
-                    <button className="modal-close" onClick={handleOverlayClick}>
+                    <button className="modal-close" onClick={onClose}>
                         <Icon name="close" />
                     </button>
                 </div>

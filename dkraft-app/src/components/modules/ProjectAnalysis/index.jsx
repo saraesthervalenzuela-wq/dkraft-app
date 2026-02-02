@@ -345,7 +345,7 @@ const ProjectAnalysis = () => {
 
             {/* Module Detail Modal */}
             {showModuleModal && selectedModule && (
-                <div className="modal-overlay" onClick={closeModuleModal}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-pa-module" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon" style={{ background: `${selectedModule.color}20`, color: selectedModule.color }}>

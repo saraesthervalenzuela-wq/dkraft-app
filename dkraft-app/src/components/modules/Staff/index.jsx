@@ -421,7 +421,7 @@ const StaffModule = () => {
             </div>
 
             {showModal && (
-                <div className="modal-overlay" onClick={closeModal}>
+                <div className="modal-overlay">
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h3>{editingUser ? 'Edit User' : 'New User'}</h3>
@@ -515,7 +515,7 @@ const StaffModule = () => {
 
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
-                <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon" style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)' }}>

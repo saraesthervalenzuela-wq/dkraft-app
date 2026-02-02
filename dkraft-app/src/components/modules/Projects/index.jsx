@@ -485,7 +485,7 @@ const ProjectsModule = () => {
 
             {/* Modal */}
             {showModal && (
-                <div className="modal-overlay" onClick={resetForm}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-project" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon">
@@ -706,7 +706,7 @@ const ProjectsModule = () => {
 
             {/* View Project Modal */}
             {viewingProject && (
-                <div className="modal-overlay" onClick={() => setViewingProject(null)}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-project modal-view" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon">
@@ -841,7 +841,7 @@ const ProjectsModule = () => {
 
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && projectToDelete && (
-                <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                <div className="modal-overlay">
                     <div className="modal-confirm-dialog" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-confirm-icon danger">
                             <Icon name="warning" />

@@ -587,7 +587,7 @@ const PerformanceModule = () => {
         const divisionHours = getHoursByDivision(selectedStaff.id);
 
         return (
-            <div className="modal-overlay" onClick={() => setShowModal(false)}>
+            <div className="modal-overlay">
                 <div className="modal-content perf-modal large" onClick={e => e.stopPropagation()}>
                     <div className="modal-header">
                         <div className="modal-title-section">
@@ -735,7 +735,7 @@ const PerformanceModule = () => {
 
     // Render attendance entry modal
     const renderAttendanceModal = () => (
-        <div className="modal-overlay" onClick={() => setShowAttendanceModal(false)}>
+        <div className="modal-overlay">
             <div className="modal-content perf-modal" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>
@@ -822,7 +822,7 @@ const PerformanceModule = () => {
 
     // Render bonus modal
     const renderBonusModal = () => (
-        <div className="modal-overlay" onClick={() => setShowBonusModal(false)}>
+        <div className="modal-overlay">
             <div className="modal-content perf-modal" onClick={e => e.stopPropagation()}>
                 <div className="modal-header">
                     <h2>

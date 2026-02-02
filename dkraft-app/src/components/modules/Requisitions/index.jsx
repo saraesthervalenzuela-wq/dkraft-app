@@ -1204,7 +1204,7 @@ const Requisitions = () => {
 
             {/* Approval Modal */}
             {isApprovalModalOpen && (
-                <div className="modal-overlay" onClick={() => setIsApprovalModalOpen(false)}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-approval" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon">
@@ -1260,7 +1260,7 @@ const Requisitions = () => {
 
             {/* Delete Confirmation Modal */}
             {isDeleteModalOpen && requisitionToDelete && (
-                <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
+                <div className="modal-overlay">
                     <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <div className="modal-header-icon warning">
