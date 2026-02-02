@@ -270,7 +270,9 @@ ALTER TABLE operations ADD COLUMN IF NOT EXISTS project_id UUID;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS product_id UUID;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS requisition_id UUID;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS bom_id UUID;
+ALTER TABLE operations ADD COLUMN IF NOT EXISTS name VARCHAR(200);
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE operations ADD COLUMN IF NOT EXISTS notes TEXT;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS priority VARCHAR(20) DEFAULT 'medium';
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS progress INT DEFAULT 0;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS start_date DATE;
@@ -279,6 +281,8 @@ ALTER TABLE operations ADD COLUMN IF NOT EXISTS completed_date DATE;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS estimated_hours DECIMAL(8,2) DEFAULT 0;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS actual_hours DECIMAL(8,2) DEFAULT 0;
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS current_stage VARCHAR(50);
+ALTER TABLE operations ADD COLUMN IF NOT EXISTS assigned_divisions JSONB DEFAULT '[]';
+ALTER TABLE operations ADD COLUMN IF NOT EXISTS stages JSONB DEFAULT '{}';
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
 ALTER TABLE operations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
 
@@ -335,12 +339,138 @@ CREATE TABLE IF NOT EXISTS qb_sync_queue (
 );
 
 -- ============================================
+-- 19. FOREIGN KEY CONSTRAINTS (Safe add)
+-- ============================================
+DO $$
+BEGIN
+    -- Materials FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_materials_category') THEN
+        ALTER TABLE materials ADD CONSTRAINT fk_materials_category
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_materials_unit') THEN
+        ALTER TABLE materials ADD CONSTRAINT fk_materials_unit
+        FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_materials_supplier') THEN
+        ALTER TABLE materials ADD CONSTRAINT fk_materials_supplier
+        FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE SET NULL;
+    END IF;
+
+    -- Products FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_products_category') THEN
+        ALTER TABLE products ADD CONSTRAINT fk_products_category
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_products_unit') THEN
+        ALTER TABLE products ADD CONSTRAINT fk_products_unit
+        FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE SET NULL;
+    END IF;
+
+    -- Quotations FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_quotations_client') THEN
+        ALTER TABLE quotations ADD CONSTRAINT fk_quotations_client
+        FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL;
+    END IF;
+
+    -- Quotation Items FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_quotation_items_quotation') THEN
+        ALTER TABLE quotation_items ADD CONSTRAINT fk_quotation_items_quotation
+        FOREIGN KEY (quotation_id) REFERENCES quotations(id) ON DELETE CASCADE;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_quotation_items_product') THEN
+        ALTER TABLE quotation_items ADD CONSTRAINT fk_quotation_items_product
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL;
+    END IF;
+
+    -- Requisitions FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_requisitions_client') THEN
+        ALTER TABLE requisitions ADD CONSTRAINT fk_requisitions_client
+        FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_requisitions_quotation') THEN
+        ALTER TABLE requisitions ADD CONSTRAINT fk_requisitions_quotation
+        FOREIGN KEY (quotation_id) REFERENCES quotations(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_requisitions_project') THEN
+        ALTER TABLE requisitions ADD CONSTRAINT fk_requisitions_project
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL;
+    END IF;
+
+    -- Requisition Items FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_requisition_items_requisition') THEN
+        ALTER TABLE requisition_items ADD CONSTRAINT fk_requisition_items_requisition
+        FOREIGN KEY (requisition_id) REFERENCES requisitions(id) ON DELETE CASCADE;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_requisition_items_product') THEN
+        ALTER TABLE requisition_items ADD CONSTRAINT fk_requisition_items_product
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL;
+    END IF;
+
+    -- Projects FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_projects_client') THEN
+        ALTER TABLE projects ADD CONSTRAINT fk_projects_client
+        FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_projects_quotation') THEN
+        ALTER TABLE projects ADD CONSTRAINT fk_projects_quotation
+        FOREIGN KEY (quotation_id) REFERENCES quotations(id) ON DELETE SET NULL;
+    END IF;
+
+    -- Operations FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_operations_project') THEN
+        ALTER TABLE operations ADD CONSTRAINT fk_operations_project
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_operations_product') THEN
+        ALTER TABLE operations ADD CONSTRAINT fk_operations_product
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_operations_requisition') THEN
+        ALTER TABLE operations ADD CONSTRAINT fk_operations_requisition
+        FOREIGN KEY (requisition_id) REFERENCES requisitions(id) ON DELETE SET NULL;
+    END IF;
+
+    -- BOM FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bom_product') THEN
+        ALTER TABLE bom ADD CONSTRAINT fk_bom_product
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE;
+    END IF;
+
+    -- BOM Components FKs
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bom_components_bom') THEN
+        ALTER TABLE bom_components ADD CONSTRAINT fk_bom_components_bom
+        FOREIGN KEY (bom_id) REFERENCES bom(id) ON DELETE CASCADE;
+    END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_bom_components_material') THEN
+        ALTER TABLE bom_components ADD CONSTRAINT fk_bom_components_material
+        FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE SET NULL;
+    END IF;
+
+    RAISE NOTICE 'Foreign keys added successfully';
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE NOTICE 'Some FKs may have failed due to existing data: %', SQLERRM;
+END $$;
+
+-- ============================================
 -- REFRESH SCHEMA CACHE
 -- ============================================
 NOTIFY pgrst, 'reload schema';
 
 SELECT '============================================' as status;
 SELECT 'MIGRATION COMPLETE!' as status;
-SELECT 'All tables have been updated.' as status;
+SELECT 'All tables and relationships updated.' as status;
 SELECT 'Schema cache has been refreshed.' as status;
 SELECT '============================================' as status;

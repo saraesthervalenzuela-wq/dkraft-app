@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, KanbanBoard } from '../../common';
 import { isApiEnabled, operationsApi, projectsApi, materialsApi } from '../../../services/api';
+import { operationsService, projectsService } from '../../../lib/supabase';
 import {
     operationsData,
     operationStages,
@@ -172,23 +173,50 @@ const OperationsModule = () => {
         setShowModal(true);
     };
 
-    const handleCreateOperation = () => {
+    const handleCreateOperation = async () => {
         if (!newOperation.projectId) return;
         const selectedProject = projectsData.find(p => p.id === parseInt(newOperation.projectId));
-        const operation = {
-            id: operations.length > 0 ? Math.max(...operations.map(o => o.id)) + 1 : 1,
-            ...newOperation,
-            projectName: selectedProject?.name || '',
-            workOrderNumber: `OP-${new Date().getFullYear()}-${String(operations.length + 1).padStart(3, '0')}`,
-            createdAt: new Date().toISOString().split('T')[0],
-            currentStage: 'roughMill',
-            progress: 0
+        const workOrderNumber = `OP-${new Date().getFullYear()}-${String(operations.length + 1).padStart(3, '0')}`;
+
+        // Data to save to Supabase
+        const operationData = {
+            work_order_number: workOrderNumber,
+            project_id: newOperation.projectId,
+            name: selectedProject?.name || newOperation.projectName,
+            status: newOperation.status || 'Pending',
+            priority: newOperation.priority || 'Medium',
+            due_date: newOperation.dueDate || null,
+            notes: newOperation.notes || '',
+            progress: 0,
+            current_stage: 'roughMill',
+            assigned_divisions: newOperation.assignedDivisions || [],
+            stages: newOperation.stages || {},
         };
-        setOperations([...operations, operation]);
-        resetForm();
+
+        try {
+            // Save to Supabase
+            const savedOperation = await operationsService.create(operationData);
+            console.log('[Operations] Created:', savedOperation);
+
+            // Update local state with the saved operation
+            const operation = {
+                id: savedOperation.id,
+                ...newOperation,
+                projectName: selectedProject?.name || '',
+                workOrderNumber: workOrderNumber,
+                createdAt: new Date().toISOString().split('T')[0],
+                currentStage: 'roughMill',
+                progress: 0
+            };
+            setOperations([...operations, operation]);
+            resetForm();
+        } catch (error) {
+            console.error('[Operations] Error creating:', error);
+            alert('Error creating operation: ' + error.message);
+        }
     };
 
-    const handleUpdateOperation = () => {
+    const handleUpdateOperation = async () => {
         if (!newOperation.projectId) return;
         const selectedProject = projectsData.find(p => p.id === parseInt(newOperation.projectId));
         const updatedProgress = calculateProgress(newOperation.stages);
@@ -196,16 +224,40 @@ const OperationsModule = () => {
             || Object.entries(newOperation.stages).find(([_k, data]) => data.status === 'pending')?.[0]
             || 'shipping';
 
-        setOperations(operations.map(op =>
-            op.id === editingOperation.id ? {
-                ...op,
-                ...newOperation,
-                projectName: selectedProject?.name || op.projectName,
-                progress: updatedProgress,
-                currentStage: currentStageKey
-            } : op
-        ));
-        resetForm();
+        // Data to save to Supabase
+        const operationData = {
+            project_id: newOperation.projectId,
+            name: selectedProject?.name || newOperation.projectName,
+            status: newOperation.status || 'Pending',
+            priority: newOperation.priority || 'Medium',
+            due_date: newOperation.dueDate || null,
+            notes: newOperation.notes || '',
+            progress: updatedProgress,
+            current_stage: currentStageKey,
+            assigned_divisions: newOperation.assignedDivisions || [],
+            stages: newOperation.stages || {},
+        };
+
+        try {
+            // Save to Supabase
+            await operationsService.update(editingOperation.id, operationData);
+            console.log('[Operations] Updated:', editingOperation.id);
+
+            // Update local state
+            setOperations(operations.map(op =>
+                op.id === editingOperation.id ? {
+                    ...op,
+                    ...newOperation,
+                    projectName: selectedProject?.name || op.projectName,
+                    progress: updatedProgress,
+                    currentStage: currentStageKey
+                } : op
+            ));
+            resetForm();
+        } catch (error) {
+            console.error('[Operations] Error updating:', error);
+            alert('Error updating operation: ' + error.message);
+        }
     };
 
     const handleDeleteSelected = () => {
