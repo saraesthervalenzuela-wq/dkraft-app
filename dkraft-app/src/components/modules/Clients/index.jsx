@@ -233,7 +233,7 @@ const ClientsModule = () => {
     };
 
     /**
-     * Normalize client data to match MySQL schema
+     * Normalize client data from Supabase to frontend format
      */
     const normalizeClient = (c) => {
         // Determine qbSyncStatus based on listId
@@ -243,20 +243,20 @@ const ClientsModule = () => {
             id: c.id || c.idClient,
             code: c.code || '',
             name: c.name || '',
-            companyName: c.company || c.companyName || c.name || '',
+            companyName: c.company_name || c.company || c.companyName || c.name || '',
             email: c.email || '',
             phone: c.phone || '',
             address: c.address || '',
             city: c.city || '',
             state: c.state || '',
-            country: c.country || 'USA',
-            zipCode: c.zip || c.zipCode || '',
-            rfc: c.rfc || '',
-            contactName: c.contact || c.contactName || '',
+            country: c.country || 'México',
+            zipCode: c.postal_code || c.zip || c.zipCode || '',
+            rfc: c.tax_id || c.rfc || '',
+            contactName: c.contact_name || c.contact || c.contactName || '',
             website: c.website || '',
             status: normalizeStatus(c.status),
             qbSyncStatus,
-            listId: c.listId || null,
+            listId: c.listId || c.qb_customer_id || null,
             notes: c.notes || '',
         };
     };
@@ -461,16 +461,16 @@ const ClientsModule = () => {
                 status: currentClient.status || 'ACTIVE',
             };
 
-            // Add optional fields only if they have values (use backend field names)
+            // Add optional fields only if they have values (map to Supabase column names)
             if (currentClient.phone?.trim()) clientToSave.phone = currentClient.phone;
-            if (currentClient.companyName?.trim()) clientToSave.company = currentClient.companyName;
-            if (currentClient.contactName?.trim()) clientToSave.contact = currentClient.contactName;
+            if (currentClient.companyName?.trim()) clientToSave.company_name = currentClient.companyName;
+            if (currentClient.contactName?.trim()) clientToSave.contact_name = currentClient.contactName;
             if (currentClient.address?.trim()) clientToSave.address = currentClient.address;
             if (currentClient.city?.trim()) clientToSave.city = currentClient.city;
             if (currentClient.state?.trim()) clientToSave.state = currentClient.state;
             if (currentClient.country?.trim()) clientToSave.country = currentClient.country;
-            if (currentClient.zipCode?.trim()) clientToSave.zip = currentClient.zipCode;
-            if (currentClient.rfc?.trim()) clientToSave.rfc = currentClient.rfc;
+            if (currentClient.zipCode?.trim()) clientToSave.postal_code = currentClient.zipCode;
+            if (currentClient.rfc?.trim()) clientToSave.tax_id = currentClient.rfc;
             if (currentClient.notes?.trim()) clientToSave.notes = currentClient.notes;
             if (currentClient.website?.trim()) clientToSave.website = currentClient.website;
 

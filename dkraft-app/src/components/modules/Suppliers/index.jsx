@@ -316,14 +316,14 @@ const SuppliersModule = () => {
                 status: currentSupplier.status || 'ACTIVE',
             };
 
-            // Add optional fields only if they have values
+            // Add optional fields only if they have values (map to Supabase column names)
             if (currentSupplier.address?.trim()) supplierToSave.address = currentSupplier.address;
             if (currentSupplier.city?.trim()) supplierToSave.city = currentSupplier.city;
             if (currentSupplier.state?.trim()) supplierToSave.state = currentSupplier.state;
             if (currentSupplier.country?.trim()) supplierToSave.country = currentSupplier.country;
-            if (currentSupplier.zipCode?.trim()) supplierToSave.zipCode = currentSupplier.zipCode;
-            if (currentSupplier.rfc?.trim()) supplierToSave.rfc = currentSupplier.rfc;
-            if (currentSupplier.contactName?.trim()) supplierToSave.contactName = currentSupplier.contactName;
+            if (currentSupplier.zipCode?.trim()) supplierToSave.postal_code = currentSupplier.zipCode;
+            if (currentSupplier.rfc?.trim()) supplierToSave.tax_id = currentSupplier.rfc;
+            if (currentSupplier.contactName?.trim()) supplierToSave.contact_name = currentSupplier.contactName;
             if (currentSupplier.notes?.trim()) supplierToSave.notes = currentSupplier.notes;
             if (currentSupplier.website?.trim()) supplierToSave.website = currentSupplier.website;
 
