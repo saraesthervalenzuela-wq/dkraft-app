@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { useState, useEffect, useRef } from 'react';
+import { Icon, SearchBox, Modal } from '../../common';
 import { isApiEnabled, categoriesApi } from '../../../services/api';
 
 const initialCategories = [
@@ -13,20 +13,48 @@ const initialCategories = [
 const CategoriesModule = () => {
     const [categories, setCategories] = useState(initialCategories);
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     // Load from API
     useEffect(() => {
-        if (isApiEnabled()) {
-            categoriesApi.getAll().then(data => {
-                if (data?.length > 0) setCategories(data);
-            }).catch(console.error);
-        }
+        const loadData = async () => {
+            setIsLoading(true);
+            try {
+                if (isApiEnabled()) {
+                    const data = await categoriesApi.getAll();
+                    if (data?.length > 0) setCategories(data);
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadData();
     }, []);
+
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState(null);
     const [newCategory, setNewCategory] = useState({ name: '', description: '' });
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+    // Action menu and delete confirmation states
+    const [openActionMenu, setOpenActionMenu] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
+    const actionMenuRef = useRef(null);
+
+    // Close action menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (actionMenuRef.current && !actionMenuRef.current.contains(event.target)) {
+                setOpenActionMenu(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const filteredCategories = categories.filter(cat =>
         cat.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -164,8 +192,14 @@ const CategoriesModule = () => {
                         <span className="col-name">{category.name}</span>
                         <span className="col-description">{category.description}</span>
                         <span className="col-actions">
-                            <button className="btn-action-menu" onClick={() => handleEditCategory(category)}>
-                                <Icon name="more_horiz" />
+                            <button className="btn-action-edit" onClick={() => handleEditCategory(category)} title="Edit">
+                                <Icon name="edit" />
+                            </button>
+                            <button className="btn-action-delete" onClick={() => {
+                                setCategoryToDelete(category);
+                                setShowDeleteConfirm(true);
+                            }} title="Delete">
+                                <Icon name="delete" />
                             </button>
                         </span>
                     </div>
@@ -182,6 +216,42 @@ const CategoriesModule = () => {
             <div className="table-footer-simple">
                 <span>{sortedCategories.length} categor{sortedCategories.length !== 1 ? 'ies' : 'y'}</span>
             </div>
+
+            {showDeleteConfirm && categoryToDelete && (
+                <Modal
+                    isOpen={showDeleteConfirm}
+                    onClose={() => {
+                        setShowDeleteConfirm(false);
+                        setCategoryToDelete(null);
+                    }}
+                    title="Confirm Delete"
+                    size="small"
+                >
+                    <div className="delete-confirmation">
+                        <div className="delete-icon">
+                            <Icon name="warning" />
+                        </div>
+                        <p>Are you sure you want to delete <strong>{categoryToDelete.name}</strong>?</p>
+                        <p className="warning-text">This action cannot be undone.</p>
+                        <div className="modal-footer">
+                            <button className="btn-modal-cancel" onClick={() => {
+                                setShowDeleteConfirm(false);
+                                setCategoryToDelete(null);
+                            }}>
+                                Cancel
+                            </button>
+                            <button className="btn-modal-delete" onClick={() => {
+                                setCategories(categories.filter(c => c.id !== categoryToDelete.id));
+                                setShowDeleteConfirm(false);
+                                setCategoryToDelete(null);
+                            }}>
+                                <Icon name="delete" />
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
 
             {showModal && (
                 <div className="modal-overlay" onClick={resetForm}>

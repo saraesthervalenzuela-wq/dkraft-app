@@ -163,7 +163,26 @@ const ActivityLogModule = () => {
                         <p>Track all system changes and user actions</p>
                     </div>
                 </div>
-                <button className="btn-export">
+                <button className="btn-primary-action" onClick={() => {
+                    const csvContent = [
+                        ['Action', 'Module', 'Entity', 'User', 'Timestamp', 'Changes'].join(','),
+                        ...filteredActivities.map(a => [
+                            a.action,
+                            a.module,
+                            `"${a.entityName}"`,
+                            `"${a.user}"`,
+                            a.timestamp,
+                            `"${JSON.stringify(a.changes).replace(/"/g, '""')}"`
+                        ].join(','))
+                    ].join('\n');
+                    const blob = new Blob([csvContent], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `activity-log-${new Date().toISOString().split('T')[0]}.csv`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                }}>
                     <span className="material-symbols-rounded">download</span>
                     Export Log
                 </button>

@@ -39,6 +39,9 @@ const ProjectsModule = () => {
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [editingProject, setEditingProject] = useState(null);
     const [viewMode, setViewMode] = useState('grid');
+    const [viewingProject, setViewingProject] = useState(null);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [projectToDelete, setProjectToDelete] = useState(null);
     const [newProject, setNewProject] = useState({
         name: '', description: '', status: 'Active', client: '',
         poNumber: '', workOrder: '', estimateNumber: '', terms: '',
@@ -115,6 +118,23 @@ const ProjectsModule = () => {
         if (selectedProjects.length === 0) return;
         setProjects(projects.filter(p => !selectedProjects.includes(p.id)));
         setSelectedProjects([]);
+    };
+
+    const handleViewProject = (project) => {
+        setViewingProject(project);
+    };
+
+    const handleDeleteProject = (project) => {
+        setProjectToDelete(project);
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = () => {
+        if (projectToDelete) {
+            setProjects(projects.filter(p => p.id !== projectToDelete.id));
+            setShowDeleteConfirm(false);
+            setProjectToDelete(null);
+        }
     };
 
     const handleEditProject = (project) => {
@@ -370,8 +390,14 @@ const ProjectsModule = () => {
                                         </span>
                                     </span>
                                     <span className="col-actions">
-                                        <button className="btn-action-edit" onClick={() => handleEditProject(project)}>
+                                        <button className="btn-action-view" onClick={() => handleViewProject(project)} title="View">
+                                            <Icon name="visibility" />
+                                        </button>
+                                        <button className="btn-action-edit" onClick={() => handleEditProject(project)} title="Edit">
                                             <Icon name="edit" />
+                                        </button>
+                                        <button className="btn-action-delete" onClick={() => handleDeleteProject(project)} title="Delete">
+                                            <Icon name="delete" />
                                         </button>
                                     </span>
                                 </div>
@@ -607,6 +633,164 @@ const ProjectsModule = () => {
                             >
                                 <span className="material-symbols-rounded">save</span>
                                 {editingProject ? 'Update project' : 'Create project'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* View Project Modal */}
+            {viewingProject && (
+                <div className="modal-overlay" onClick={() => setViewingProject(null)}>
+                    <div className="modal-content modal-project modal-view" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-header-icon">
+                                <Icon name="assignment" />
+                            </div>
+                            <div className="modal-header-text">
+                                <h3>{viewingProject.name}</h3>
+                                <p>{viewingProject.client}</p>
+                            </div>
+                            <span className={`status-badge ${viewingProject.status.toLowerCase().replace(' ', '-')}`}>
+                                <span className="status-dot"></span>
+                                {viewingProject.status}
+                            </span>
+                            <button className="modal-close" onClick={() => setViewingProject(null)}>
+                                <Icon name="close" />
+                            </button>
+                        </div>
+
+                        <div className="modal-body">
+                            <div className="view-section">
+                                <h4 className="form-section-title">Project Details</h4>
+                                <p className="view-description">{viewingProject.description || 'No description'}</p>
+                            </div>
+
+                            <div className="view-grid">
+                                <div className="view-item">
+                                    <Icon name="receipt" />
+                                    <div>
+                                        <span className="view-label">PO Number</span>
+                                        <span className="view-value">{viewingProject.poNumber || '-'}</span>
+                                    </div>
+                                </div>
+                                <div className="view-item">
+                                    <Icon name="work" />
+                                    <div>
+                                        <span className="view-label">Work Order</span>
+                                        <span className="view-value">{viewingProject.workOrder || '-'}</span>
+                                    </div>
+                                </div>
+                                <div className="view-item">
+                                    <Icon name="description" />
+                                    <div>
+                                        <span className="view-label">Estimate #</span>
+                                        <span className="view-value">{viewingProject.estimateNumber || '-'}</span>
+                                    </div>
+                                </div>
+                                <div className="view-item">
+                                    <Icon name="schedule" />
+                                    <div>
+                                        <span className="view-label">Terms</span>
+                                        <span className="view-value">{viewingProject.terms || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="view-section">
+                                <h4 className="form-section-title">Contact & Shipping</h4>
+                                <div className="view-grid">
+                                    <div className="view-item">
+                                        <Icon name="location_on" />
+                                        <div>
+                                            <span className="view-label">Address</span>
+                                            <span className="view-value">{viewingProject.nameAddress || '-'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="view-item">
+                                        <Icon name="local_shipping" />
+                                        <div>
+                                            <span className="view-label">Ship To</span>
+                                            <span className="view-value">{viewingProject.shipTo || '-'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="view-item">
+                                        <Icon name="phone" />
+                                        <div>
+                                            <span className="view-label">Contact</span>
+                                            <span className="view-value">{viewingProject.contact || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="view-section">
+                                <h4 className="form-section-title">Team</h4>
+                                <div className="view-grid">
+                                    <div className="view-item">
+                                        <Icon name="person" />
+                                        <div>
+                                            <span className="view-label">Sales Rep</span>
+                                            <span className="view-value">{viewingProject.salesRep || '-'}</span>
+                                        </div>
+                                    </div>
+                                    <div className="view-item">
+                                        <Icon name="support_agent" />
+                                        <div>
+                                            <span className="view-label">CSR</span>
+                                            <span className="view-value">{viewingProject.csr || '-'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="view-financial">
+                                <div className="financial-row">
+                                    <span>Subtotal</span>
+                                    <span>${viewingProject.subtotal?.toLocaleString() || '0'}</span>
+                                </div>
+                                <div className="financial-row">
+                                    <span>Tax</span>
+                                    <span>${viewingProject.tax?.toLocaleString() || '0'}</span>
+                                </div>
+                                <div className="financial-row total">
+                                    <span>Total</span>
+                                    <span>${viewingProject.total?.toLocaleString() || '0'}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-footer">
+                            <button className="btn-modal-cancel" onClick={() => setViewingProject(null)}>
+                                <Icon name="close" />
+                                Close
+                            </button>
+                            <button className="btn-modal-save" onClick={() => { handleEditProject(viewingProject); setViewingProject(null); }}>
+                                <Icon name="edit" />
+                                Edit Project
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteConfirm && projectToDelete && (
+                <div className="modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
+                    <div className="modal-confirm-dialog" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-confirm-icon danger">
+                            <Icon name="warning" />
+                        </div>
+                        <h4>Delete Project?</h4>
+                        <p>Are you sure you want to delete <strong>"{projectToDelete.name}"</strong>? This action cannot be undone.</p>
+                        <div className="modal-confirm-actions">
+                            <button className="btn-modal-cancel" onClick={() => setShowDeleteConfirm(false)}>
+                                <Icon name="close" />
+                                Cancel
+                            </button>
+                            <button className="btn-modal-danger" onClick={confirmDelete}>
+                                <Icon name="delete" />
+                                Delete
                             </button>
                         </div>
                     </div>

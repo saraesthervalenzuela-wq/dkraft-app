@@ -30,6 +30,8 @@ const UnitsModule = () => {
     const [editingUnit, setEditingUnit] = useState(null);
     const [newUnit, setNewUnit] = useState({ name: '', description: '' });
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [unitToDelete, setUnitToDelete] = useState(null);
 
     const filteredUnits = units.filter(unit =>
         unit.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -167,8 +169,14 @@ const UnitsModule = () => {
                         <span className="col-name">{unit.name}</span>
                         <span className="col-description">{unit.description}</span>
                         <span className="col-actions">
-                            <button className="btn-action-menu" onClick={() => handleEditUnit(unit)}>
-                                <Icon name="more_horiz" />
+                            <button className="btn-action-edit" onClick={() => handleEditUnit(unit)} title="Edit">
+                                <Icon name="edit" />
+                            </button>
+                            <button className="btn-action-delete" onClick={() => {
+                                setUnitToDelete(unit);
+                                setShowDeleteConfirm(true);
+                            }} title="Delete">
+                                <Icon name="delete" />
                             </button>
                         </span>
                     </div>
@@ -185,6 +193,50 @@ const UnitsModule = () => {
             <div className="table-footer-simple">
                 <span>{sortedUnits.length} unit{sortedUnits.length !== 1 ? 's' : ''}</span>
             </div>
+
+            {showDeleteConfirm && unitToDelete && (
+                <div className="modal-overlay" onClick={() => {
+                    setShowDeleteConfirm(false);
+                    setUnitToDelete(null);
+                }}>
+                    <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-header-icon warning">
+                                <Icon name="warning" />
+                            </div>
+                            <div className="modal-header-text">
+                                <h3>Confirm Delete</h3>
+                                <p>This action cannot be undone</p>
+                            </div>
+                            <button className="modal-close" onClick={() => {
+                                setShowDeleteConfirm(false);
+                                setUnitToDelete(null);
+                            }}>
+                                <Icon name="close" />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Are you sure you want to delete <strong>{unitToDelete.name}</strong>?</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-modal-cancel" onClick={() => {
+                                setShowDeleteConfirm(false);
+                                setUnitToDelete(null);
+                            }}>
+                                Cancel
+                            </button>
+                            <button className="btn-modal-delete" onClick={() => {
+                                setUnits(units.filter(u => u.id !== unitToDelete.id));
+                                setShowDeleteConfirm(false);
+                                setUnitToDelete(null);
+                            }}>
+                                <Icon name="delete" />
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {showModal && (
                 <div className="modal-overlay" onClick={resetForm}>

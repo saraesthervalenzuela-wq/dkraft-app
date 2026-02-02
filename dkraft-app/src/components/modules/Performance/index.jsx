@@ -924,10 +924,10 @@ const PerformanceModule = () => {
                 </div>
             </div>
 
-            {/* Tabs */}
+            {/* Navigation Tabs */}
             <div className="perf-tabs-grid">
                 {[
-                    { key: 'overview', label: 'Overview', icon: 'dashboard', desc: 'General metrics & KPIs', color: 'purple', stat: `${overallMetrics.totalActive} Staff` },
+                    { key: 'overview', label: 'Overview', icon: 'monitoring', desc: 'General metrics & KPIs', color: 'orange', stat: `${overallMetrics.totalActive} Staff` },
                     { key: 'attendance', label: 'Attendance', icon: 'schedule', desc: 'Clock in/out tracking', color: 'blue', stat: `${overallMetrics.presentToday} Present` },
                     { key: 'productivity', label: 'Productivity', icon: 'assessment', desc: 'Work hours & efficiency', color: 'cyan', stat: `${overallMetrics.avgQuality}% Quality` },
                     { key: 'bonuses', label: 'Bonuses & Alerts', icon: 'payments', desc: 'Rewards & notifications', color: 'green', stat: `$${overallMetrics.totalBonuses.toLocaleString()}` }
@@ -954,27 +954,29 @@ const PerformanceModule = () => {
                 ))}
             </div>
 
-            {/* Filter Bar */}
-            <div className="perf-filter-bar">
-                <div className="perf-search">
-                    <span className="material-symbols-rounded">search</span>
-                    <input
-                        type="text"
-                        placeholder="Search staff..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            {/* Filter Bar - Compact */}
+            <div className="perf-filter-bar compact">
+                <div className="perf-filters-row">
+                    <div className="perf-search compact">
+                        <span className="material-symbols-rounded">search</span>
+                        <input
+                            type="text"
+                            placeholder="Search staff..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <select
+                        value={departmentFilter}
+                        onChange={(e) => setDepartmentFilter(e.target.value)}
+                        className="perf-filter-select"
+                    >
+                        <option value="all">All Departments</option>
+                        {departmentOptions.map(dept => (
+                            <option key={dept} value={dept}>{dept}</option>
+                        ))}
+                    </select>
                 </div>
-                <select
-                    value={departmentFilter}
-                    onChange={(e) => setDepartmentFilter(e.target.value)}
-                    className="perf-filter-select"
-                >
-                    <option value="all">All Departments</option>
-                    {departmentOptions.map(dept => (
-                        <option key={dept} value={dept}>{dept}</option>
-                    ))}
-                </select>
             </div>
 
             {/* Content */}

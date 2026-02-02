@@ -51,6 +51,47 @@ const QualityModule = () => {
     const [selectedFinding, setSelectedFinding] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [rowsPerPage, setRowsPerPage] = useState(8);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [lastSavedInspection, setLastSavedInspection] = useState(null);
+
+    // Period selection state (Month/Year organization)
+    const currentDate = new Date();
+    const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+    const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth()); // 0-11
+    const [showArchive, setShowArchive] = useState(false);
+
+    // Month names for display
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+                        'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+    // Get available years from inspections data
+    const availableYears = useMemo(() => {
+        const years = new Set(inspections.map(i => new Date(i.inspectionDate).getFullYear()));
+        years.add(currentDate.getFullYear());
+        return Array.from(years).sort((a, b) => b - a);
+    }, [inspections]);
+
+    // Check if an inspection is from the selected period
+    const isFromSelectedPeriod = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.getFullYear() === selectedYear && date.getMonth() === selectedMonth;
+    };
+
+    // Check if an inspection has pending/open items (for roll-over)
+    const hasPendingItems = (inspection) => {
+        const isPendingInspection = inspection.result === 'Pending' || inspection.status === 'Pending';
+        const hasOpenFindings = inspection.findings?.some(f => f.status === 'Open' || f.status === 'In Progress');
+        return isPendingInspection || hasOpenFindings;
+    };
+
+    // Check if inspection should be archived (> 12 months old AND completed)
+    const isArchivable = (inspection) => {
+        const date = new Date(inspection.inspectionDate);
+        const monthsAgo = (currentDate.getFullYear() - date.getFullYear()) * 12 +
+                          (currentDate.getMonth() - date.getMonth());
+        const isCompleted = inspection.result !== 'Pending' && !hasPendingItems(inspection);
+        return monthsAgo > 12 && isCompleted;
+    };
 
     // New inspection form state
     const [newInspection, setNewInspection] = useState({
@@ -95,9 +136,43 @@ const QualityModule = () => {
         };
     }, [inspections]);
 
-    // Filter inspections
+    // Separate inspections by category: current period, roll-over (pending from past), archive
+    const { periodInspections, rollOverInspections, archivedInspections } = useMemo(() => {
+        const period = [];
+        const rollOver = [];
+        const archived = [];
+
+        inspections.forEach(inspection => {
+            if (isArchivable(inspection)) {
+                archived.push(inspection);
+            } else if (isFromSelectedPeriod(inspection.inspectionDate)) {
+                period.push({ ...inspection, isRollOver: false });
+            } else if (hasPendingItems(inspection)) {
+                // Roll-over: pending items from previous periods show in current view
+                const inspDate = new Date(inspection.inspectionDate);
+                const selectedDate = new Date(selectedYear, selectedMonth, 1);
+                if (inspDate < selectedDate) {
+                    rollOver.push({ ...inspection, isRollOver: true });
+                }
+            }
+        });
+
+        return {
+            periodInspections: period.sort((a, b) => new Date(b.inspectionDate) - new Date(a.inspectionDate)),
+            rollOverInspections: rollOver.sort((a, b) => new Date(b.inspectionDate) - new Date(a.inspectionDate)),
+            archivedInspections: archived.sort((a, b) => new Date(b.inspectionDate) - new Date(a.inspectionDate))
+        };
+    }, [inspections, selectedYear, selectedMonth]);
+
+    // Combined inspections for display (roll-over first, then current period)
+    const displayInspections = useMemo(() => {
+        if (showArchive) return archivedInspections;
+        return [...rollOverInspections, ...periodInspections];
+    }, [showArchive, rollOverInspections, periodInspections, archivedInspections]);
+
+    // Filter inspections by search and status
     const filteredInspections = useMemo(() => {
-        return inspections.filter(inspection => {
+        return displayInspections.filter(inspection => {
             const matchesSearch =
                 inspection.workOrderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 inspection.projectName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -110,7 +185,7 @@ const QualityModule = () => {
 
             return matchesSearch && matchesStatus;
         });
-    }, [inspections, searchTerm, activeStatusFilter]);
+    }, [displayInspections, searchTerm, activeStatusFilter]);
 
     // Pagination
     const totalPages = Math.ceil(filteredInspections.length / rowsPerPage);
@@ -291,8 +366,10 @@ const QualityModule = () => {
             findings: newInspection.findings || []
         };
 
-        setInspections(prev => [...prev, inspection]);
+        setInspections(prev => [inspection, ...prev]); // Add at beginning (newest first)
+        setLastSavedInspection(inspection);
         setShowModal(false);
+        setShowSuccessModal(true); // Show success modal
     };
 
     const handleAddFinding = () => {
@@ -1138,6 +1215,79 @@ const QualityModule = () => {
 
             {renderMetrics()}
 
+            {/* Period Selector - Month/Year Navigation */}
+            <div className="period-selector">
+                <div className="period-nav">
+                    <button
+                        className="period-nav-btn"
+                        onClick={() => {
+                            if (selectedMonth === 0) {
+                                setSelectedMonth(11);
+                                setSelectedYear(y => y - 1);
+                            } else {
+                                setSelectedMonth(m => m - 1);
+                            }
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <Icon name="chevron_left" />
+                    </button>
+                    <div className="period-display">
+                        <span className="period-month">{monthNames[selectedMonth]}</span>
+                        <span className="period-year">{selectedYear}</span>
+                    </div>
+                    <button
+                        className="period-nav-btn"
+                        onClick={() => {
+                            if (selectedMonth === 11) {
+                                setSelectedMonth(0);
+                                setSelectedYear(y => y + 1);
+                            } else {
+                                setSelectedMonth(m => m + 1);
+                            }
+                            setCurrentPage(1);
+                        }}
+                        disabled={selectedYear === currentDate.getFullYear() && selectedMonth === currentDate.getMonth()}
+                    >
+                        <Icon name="chevron_right" />
+                    </button>
+                </div>
+
+                <div className="period-tabs">
+                    {availableYears.slice(0, 3).map(year => (
+                        <button
+                            key={year}
+                            className={`period-year-tab ${selectedYear === year && !showArchive ? 'active' : ''}`}
+                            onClick={() => { setSelectedYear(year); setShowArchive(false); setCurrentPage(1); }}
+                        >
+                            {year}
+                        </button>
+                    ))}
+                    <button
+                        className={`period-year-tab archive ${showArchive ? 'active' : ''}`}
+                        onClick={() => { setShowArchive(true); setCurrentPage(1); }}
+                    >
+                        <Icon name="inventory_2" />
+                        Archivo ({archivedInspections.length})
+                    </button>
+                </div>
+
+                <div className="period-summary">
+                    {rollOverInspections.length > 0 && !showArchive && (
+                        <div className="rollover-badge">
+                            <Icon name="push_pin" />
+                            {rollOverInspections.length} pendiente{rollOverInspections.length !== 1 ? 's' : ''} de meses anteriores
+                        </div>
+                    )}
+                    <div className="period-count">
+                        {showArchive
+                            ? `${archivedInspections.length} en archivo`
+                            : `${periodInspections.length} en ${monthNames[selectedMonth]}`
+                        }
+                    </div>
+                </div>
+            </div>
+
             <div className="qa-tabs-grid">
                 {[
                     { key: 'inspections', label: 'Inspections', icon: 'fact_check', desc: 'Quality checks & reviews', color: 'purple', stat: `${metrics.total} Total` },
@@ -1176,6 +1326,50 @@ const QualityModule = () => {
 
             {renderInspectionModal()}
             {renderFindingModal()}
+
+            {/* Success Modal */}
+            {showSuccessModal && lastSavedInspection && (
+                <div className="modal-overlay" onClick={() => setShowSuccessModal(false)}>
+                    <div className="modal-content modal-success" onClick={e => e.stopPropagation()}>
+                        <div className="success-modal-content">
+                            <div className={`success-icon ${getResultClass(lastSavedInspection.result)}`}>
+                                <Icon name={lastSavedInspection.result === 'Passed' ? 'check_circle' : lastSavedInspection.result === 'Failed' ? 'cancel' : 'info'} />
+                            </div>
+                            <h2>Inspection Complete!</h2>
+                            <p className="success-subtitle">
+                                {lastSavedInspection.workOrderNumber} - {getStageLabel(lastSavedInspection.stage)}
+                            </p>
+                            <div className={`success-result-badge ${getResultClass(lastSavedInspection.result)}`}>
+                                {lastSavedInspection.result}
+                            </div>
+                            <div className="success-details">
+                                <div className="success-detail-item">
+                                    <Icon name="assignment" />
+                                    <span>Project: {lastSavedInspection.projectName}</span>
+                                </div>
+                                <div className="success-detail-item">
+                                    <Icon name="person" />
+                                    <span>Inspector: {lastSavedInspection.inspectorName}</span>
+                                </div>
+                                <div className="success-detail-item">
+                                    <Icon name="event" />
+                                    <span>Date: {lastSavedInspection.inspectionDate}</span>
+                                </div>
+                                {lastSavedInspection.findings.length > 0 && (
+                                    <div className="success-detail-item">
+                                        <Icon name="flag" />
+                                        <span>{lastSavedInspection.findings.length} finding(s) recorded</span>
+                                    </div>
+                                )}
+                            </div>
+                            <button className="btn-success-close" onClick={() => setShowSuccessModal(false)}>
+                                <Icon name="done" />
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

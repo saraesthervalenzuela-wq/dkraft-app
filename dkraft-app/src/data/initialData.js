@@ -44,7 +44,7 @@ export const navSections = [
         label: 'PRODUCTION',
         items: [
             { id: 'projects', label: 'Projects', icon: 'assignment' },
-            { id: 'quotations', label: 'Quotations', icon: 'request_quote' },
+            { id: 'quotations', label: 'Quotes', icon: 'request_quote' },
             { id: 'requisitions', label: 'Sales Orders', icon: 'shopping_cart' },
             { id: 'operations', label: 'Operations', icon: 'engineering' },
         ]
@@ -56,8 +56,8 @@ export const navSections = [
             { id: 'reports', label: 'Reports', icon: 'analytics' },
             { id: 'quality', label: 'Quality', icon: 'verified' },
             { id: 'performance', label: 'Performance', icon: 'trending_up' },
-            { id: 'project-analysis', label: 'Project Analysis', icon: 'science' },
             { id: 'activity-log', label: 'Activity Log', icon: 'history' },
+            { id: 'project-analysis', label: 'Project Analysis', icon: 'science' },
         ]
     },
     {
@@ -809,16 +809,16 @@ export const operationsData = [
         workOrderNumber: 'OP-2024-001',
         status: 'In Progress',
         priority: 'High',
-        createdAt: '2024-12-01',
+        createdAt: '2026-01-01',
         dueDate: '2025-01-15',
         assignedDivisions: ['Carpentry', 'Assembly', 'Painting'],
         currentStage: 'assembly',
         progress: 36,
         stages: {
-            roughMill: { status: 'completed', assignedTo: [5], startDate: '2024-12-02', endDate: '2024-12-04', estimatedHours: 16, actualHours: 18, notes: '' },
-            fineMill: { status: 'completed', assignedTo: [5], startDate: '2024-12-05', endDate: '2024-12-07', estimatedHours: 12, actualHours: 10, notes: '' },
+            roughMill: { status: 'completed', assignedTo: [5], startDate: '2026-01-02', endDate: '2026-01-04', estimatedHours: 16, actualHours: 18, notes: '' },
+            fineMill: { status: 'completed', assignedTo: [5], startDate: '2026-01-05', endDate: '2026-01-07', estimatedHours: 12, actualHours: 10, notes: '' },
             metal: { status: 'skipped', assignedTo: [], startDate: '', endDate: '', estimatedHours: 0, actualHours: 0, notes: 'No metal work required' },
-            assembly: { status: 'in_progress', assignedTo: [1, 5], startDate: '2024-12-08', endDate: '', estimatedHours: 24, actualHours: 12, notes: 'In progress - desks assembly' },
+            assembly: { status: 'in_progress', assignedTo: [1, 5], startDate: '2026-01-08', endDate: '', estimatedHours: 24, actualHours: 12, notes: 'In progress - desks assembly' },
             preHanging: { status: 'pending', assignedTo: [], startDate: '', endDate: '', estimatedHours: 8, actualHours: 0, notes: '' },
             sanding: { status: 'pending', assignedTo: [], startDate: '', endDate: '', estimatedHours: 6, actualHours: 0, notes: '' },
             glazing: { status: 'skipped', assignedTo: [], startDate: '', endDate: '', estimatedHours: 0, actualHours: 0, notes: 'No glass work' },
@@ -841,21 +841,21 @@ export const operationsData = [
         workOrderNumber: 'OP-2024-002',
         status: 'In Progress',
         priority: 'Medium',
-        createdAt: '2024-12-05',
+        createdAt: '2026-01-05',
         dueDate: '2025-01-30',
         assignedDivisions: ['Carpentry', 'Assembly', 'Painting', 'Glazing'],
         currentStage: 'painting',
         progress: 73,
         stages: {
-            roughMill: { status: 'completed', assignedTo: [5], startDate: '2024-12-06', endDate: '2024-12-08', estimatedHours: 20, actualHours: 22, notes: '' },
-            fineMill: { status: 'completed', assignedTo: [5], startDate: '2024-12-09', endDate: '2024-12-11', estimatedHours: 16, actualHours: 15, notes: '' },
-            metal: { status: 'completed', assignedTo: [1], startDate: '2024-12-10', endDate: '2024-12-11', estimatedHours: 8, actualHours: 8, notes: 'Kitchen hardware' },
-            assembly: { status: 'completed', assignedTo: [1, 5], startDate: '2024-12-12', endDate: '2024-12-15', estimatedHours: 32, actualHours: 30, notes: '' },
-            preHanging: { status: 'completed', assignedTo: [1], startDate: '2024-12-16', endDate: '2024-12-16', estimatedHours: 8, actualHours: 6, notes: '' },
-            sanding: { status: 'completed', assignedTo: [5], startDate: '2024-12-17', endDate: '2024-12-17', estimatedHours: 4, actualHours: 4, notes: '' },
-            glazing: { status: 'completed', assignedTo: [1], startDate: '2024-12-18', endDate: '2024-12-18', estimatedHours: 6, actualHours: 5, notes: 'Cabinet doors glass' },
-            filling: { status: 'completed', assignedTo: [5], startDate: '2024-12-19', endDate: '2024-12-19', estimatedHours: 3, actualHours: 3, notes: '' },
-            painting: { status: 'in_progress', assignedTo: [1, 5], startDate: '2024-12-20', endDate: '', estimatedHours: 20, actualHours: 8, notes: 'White matte finish' },
+            roughMill: { status: 'completed', assignedTo: [5], startDate: '2026-01-06', endDate: '2026-01-08', estimatedHours: 20, actualHours: 22, notes: '' },
+            fineMill: { status: 'completed', assignedTo: [5], startDate: '2026-01-09', endDate: '2026-01-11', estimatedHours: 16, actualHours: 15, notes: '' },
+            metal: { status: 'completed', assignedTo: [1], startDate: '2026-01-10', endDate: '2026-01-11', estimatedHours: 8, actualHours: 8, notes: 'Kitchen hardware' },
+            assembly: { status: 'completed', assignedTo: [1, 5], startDate: '2026-01-12', endDate: '2026-01-15', estimatedHours: 32, actualHours: 30, notes: '' },
+            preHanging: { status: 'completed', assignedTo: [1], startDate: '2026-01-16', endDate: '2026-01-16', estimatedHours: 8, actualHours: 6, notes: '' },
+            sanding: { status: 'completed', assignedTo: [5], startDate: '2026-01-17', endDate: '2026-01-17', estimatedHours: 4, actualHours: 4, notes: '' },
+            glazing: { status: 'completed', assignedTo: [1], startDate: '2026-01-18', endDate: '2026-01-18', estimatedHours: 6, actualHours: 5, notes: 'Cabinet doors glass' },
+            filling: { status: 'completed', assignedTo: [5], startDate: '2026-01-19', endDate: '2026-01-19', estimatedHours: 3, actualHours: 3, notes: '' },
+            painting: { status: 'in_progress', assignedTo: [1, 5], startDate: '2026-01-20', endDate: '', estimatedHours: 20, actualHours: 8, notes: 'White matte finish' },
             qc: { status: 'pending', assignedTo: [6], startDate: '', endDate: '', estimatedHours: 6, actualHours: 0, notes: '' },
             shipping: { status: 'pending', assignedTo: [7], startDate: '', endDate: '', estimatedHours: 8, actualHours: 0, notes: '' }
         },
@@ -875,7 +875,7 @@ export const operationsData = [
         workOrderNumber: 'OP-2024-003',
         status: 'Pending',
         priority: 'Low',
-        createdAt: '2024-12-15',
+        createdAt: '2026-01-15',
         dueDate: '2025-02-28',
         assignedDivisions: ['Carpentry', 'Metal', 'Glazing', 'Painting'],
         currentStage: 'roughMill',
@@ -906,23 +906,23 @@ export const operationsData = [
         workOrderNumber: 'OP-2024-004',
         status: 'Completed',
         priority: 'High',
-        createdAt: '2024-10-01',
-        dueDate: '2024-11-15',
+        createdAt: '2025-11-01',
+        dueDate: '2025-12-15',
         assignedDivisions: ['Carpentry', 'Metal', 'Assembly', 'Painting'],
         currentStage: 'shipping',
         progress: 100,
         stages: {
-            roughMill: { status: 'completed', assignedTo: [5], startDate: '2024-10-02', endDate: '2024-10-05', estimatedHours: 24, actualHours: 26, notes: '' },
-            fineMill: { status: 'completed', assignedTo: [5], startDate: '2024-10-06', endDate: '2024-10-09', estimatedHours: 20, actualHours: 18, notes: '' },
-            metal: { status: 'completed', assignedTo: [1], startDate: '2024-10-08', endDate: '2024-10-12', estimatedHours: 16, actualHours: 20, notes: 'Bar footrail and supports' },
-            assembly: { status: 'completed', assignedTo: [1, 5], startDate: '2024-10-13', endDate: '2024-10-20', estimatedHours: 40, actualHours: 38, notes: '' },
+            roughMill: { status: 'completed', assignedTo: [5], startDate: '2025-11-02', endDate: '2025-11-05', estimatedHours: 24, actualHours: 26, notes: '' },
+            fineMill: { status: 'completed', assignedTo: [5], startDate: '2025-11-06', endDate: '2025-11-09', estimatedHours: 20, actualHours: 18, notes: '' },
+            metal: { status: 'completed', assignedTo: [1], startDate: '2025-11-08', endDate: '2025-11-12', estimatedHours: 16, actualHours: 20, notes: 'Bar footrail and supports' },
+            assembly: { status: 'completed', assignedTo: [1, 5], startDate: '2025-11-13', endDate: '2025-11-20', estimatedHours: 40, actualHours: 38, notes: '' },
             preHanging: { status: 'skipped', assignedTo: [], startDate: '', endDate: '', estimatedHours: 0, actualHours: 0, notes: 'N/A' },
-            sanding: { status: 'completed', assignedTo: [5], startDate: '2024-10-21', endDate: '2024-10-22', estimatedHours: 8, actualHours: 8, notes: '' },
+            sanding: { status: 'completed', assignedTo: [5], startDate: '2025-11-21', endDate: '2025-11-22', estimatedHours: 8, actualHours: 8, notes: '' },
             glazing: { status: 'skipped', assignedTo: [], startDate: '', endDate: '', estimatedHours: 0, actualHours: 0, notes: 'N/A' },
-            filling: { status: 'completed', assignedTo: [5], startDate: '2024-10-23', endDate: '2024-10-23', estimatedHours: 4, actualHours: 3, notes: '' },
-            painting: { status: 'completed', assignedTo: [1, 5], startDate: '2024-10-24', endDate: '2024-10-30', estimatedHours: 24, actualHours: 28, notes: 'Special dark walnut stain' },
-            qc: { status: 'completed', assignedTo: [6], startDate: '2024-10-31', endDate: '2024-11-01', estimatedHours: 6, actualHours: 6, notes: 'Passed all inspections' },
-            shipping: { status: 'completed', assignedTo: [7], startDate: '2024-11-02', endDate: '2024-11-02', estimatedHours: 8, actualHours: 10, notes: 'Delivered and installed' }
+            filling: { status: 'completed', assignedTo: [5], startDate: '2025-11-23', endDate: '2025-11-23', estimatedHours: 4, actualHours: 3, notes: '' },
+            painting: { status: 'completed', assignedTo: [1, 5], startDate: '2025-11-24', endDate: '2025-11-30', estimatedHours: 24, actualHours: 28, notes: 'Special dark walnut stain' },
+            qc: { status: 'completed', assignedTo: [6], startDate: '2025-11-31', endDate: '2025-12-01', estimatedHours: 6, actualHours: 6, notes: 'Passed all inspections' },
+            shipping: { status: 'completed', assignedTo: [7], startDate: '2025-12-02', endDate: '2025-12-02', estimatedHours: 8, actualHours: 10, notes: 'Delivered and installed' }
         },
         materials: [
             { materialId: 1, materialName: 'MDF 18mm Natural', estimated: 35, distributed: 35, unit: 'Piece' },
@@ -1015,7 +1015,7 @@ export const qaInspectionsData = [
         templateId: 2,
         inspectorId: 6,
         inspectorName: 'Patricia Ruiz',
-        inspectionDate: '2024-12-10',
+        inspectionDate: '2026-01-10',
         status: 'Completed',
         result: 'Passed',
         checklist: [
@@ -1038,7 +1038,7 @@ export const qaInspectionsData = [
         templateId: 4,
         inspectorId: 6,
         inspectorName: 'Patricia Ruiz',
-        inspectionDate: '2024-12-18',
+        inspectionDate: '2026-01-18',
         status: 'Completed',
         result: 'Failed',
         checklist: [
@@ -1059,7 +1059,7 @@ export const qaInspectionsData = [
                 photos: ['drip_photo_1.jpg'],
                 status: 'In Progress',
                 assignedTo: 5,
-                createdAt: '2024-12-18',
+                createdAt: '2026-01-18',
                 resolvedAt: null
             },
             {
@@ -1071,8 +1071,8 @@ export const qaInspectionsData = [
                 photos: [],
                 status: 'Resolved',
                 assignedTo: 5,
-                createdAt: '2024-12-18',
-                resolvedAt: '2024-12-19'
+                createdAt: '2026-01-18',
+                resolvedAt: '2026-01-19'
             }
         ],
         notes: 'Rework required before re-inspection'
@@ -1086,7 +1086,7 @@ export const qaInspectionsData = [
         templateId: 5,
         inspectorId: 6,
         inspectorName: 'Patricia Ruiz',
-        inspectionDate: '2024-11-01',
+        inspectionDate: '2025-12-01',
         status: 'Completed',
         result: 'Passed',
         checklist: [
@@ -1110,7 +1110,7 @@ export const qaInspectionsData = [
         templateId: 1,
         inspectorId: 6,
         inspectorName: 'Patricia Ruiz',
-        inspectionDate: '2024-12-04',
+        inspectionDate: '2026-01-04',
         status: 'Completed',
         result: 'Passed with Observations',
         checklist: [
@@ -1130,8 +1130,8 @@ export const qaInspectionsData = [
                 photos: ['knot_observation.jpg'],
                 status: 'Closed',
                 assignedTo: null,
-                createdAt: '2024-12-04',
-                resolvedAt: '2024-12-04'
+                createdAt: '2026-01-04',
+                resolvedAt: '2026-01-04'
             }
         ],
         notes: 'Material quality good overall'
@@ -1148,80 +1148,80 @@ export const qaResultOptions = ['Passed', 'Failed', 'Passed with Observations', 
 // Attendance records
 export const attendanceData = [
     // Carlos Mendoza - Production Manager
-    { id: 1, staffId: 1, date: '2024-12-16', clockIn: '07:55', clockOut: '17:05', hoursWorked: 9.17, status: 'Present', notes: '' },
-    { id: 2, staffId: 1, date: '2024-12-17', clockIn: '08:02', clockOut: '17:30', hoursWorked: 9.47, status: 'Present', notes: 'Overtime - project deadline' },
-    { id: 3, staffId: 1, date: '2024-12-18', clockIn: '07:58', clockOut: '17:00', hoursWorked: 9.03, status: 'Present', notes: '' },
-    { id: 4, staffId: 1, date: '2024-12-19', clockIn: '08:00', clockOut: '17:15', hoursWorked: 9.25, status: 'Present', notes: '' },
-    { id: 5, staffId: 1, date: '2024-12-20', clockIn: '07:50', clockOut: '17:00', hoursWorked: 9.17, status: 'Present', notes: '' },
+    { id: 1, staffId: 1, date: '2026-01-16', clockIn: '07:55', clockOut: '17:05', hoursWorked: 9.17, status: 'Present', notes: '' },
+    { id: 2, staffId: 1, date: '2026-01-17', clockIn: '08:02', clockOut: '17:30', hoursWorked: 9.47, status: 'Present', notes: 'Overtime - project deadline' },
+    { id: 3, staffId: 1, date: '2026-01-18', clockIn: '07:58', clockOut: '17:00', hoursWorked: 9.03, status: 'Present', notes: '' },
+    { id: 4, staffId: 1, date: '2026-01-19', clockIn: '08:00', clockOut: '17:15', hoursWorked: 9.25, status: 'Present', notes: '' },
+    { id: 5, staffId: 1, date: '2026-01-20', clockIn: '07:50', clockOut: '17:00', hoursWorked: 9.17, status: 'Present', notes: '' },
 
     // Ana Garcia - Senior Designer
-    { id: 6, staffId: 2, date: '2024-12-16', clockIn: '08:30', clockOut: '17:30', hoursWorked: 9.0, status: 'Present', notes: '' },
-    { id: 7, staffId: 2, date: '2024-12-17', clockIn: '08:25', clockOut: '17:30', hoursWorked: 9.08, status: 'Present', notes: '' },
-    { id: 8, staffId: 2, date: '2024-12-18', clockIn: null, clockOut: null, hoursWorked: 0, status: 'Absent', notes: 'Sick leave' },
-    { id: 9, staffId: 2, date: '2024-12-19', clockIn: '08:30', clockOut: '17:30', hoursWorked: 9.0, status: 'Present', notes: '' },
-    { id: 10, staffId: 2, date: '2024-12-20', clockIn: '08:35', clockOut: '17:30', hoursWorked: 8.92, status: 'Late', notes: 'Traffic' },
+    { id: 6, staffId: 2, date: '2026-01-16', clockIn: '08:30', clockOut: '17:30', hoursWorked: 9.0, status: 'Present', notes: '' },
+    { id: 7, staffId: 2, date: '2026-01-17', clockIn: '08:25', clockOut: '17:30', hoursWorked: 9.08, status: 'Present', notes: '' },
+    { id: 8, staffId: 2, date: '2026-01-18', clockIn: null, clockOut: null, hoursWorked: 0, status: 'Absent', notes: 'Sick leave' },
+    { id: 9, staffId: 2, date: '2026-01-19', clockIn: '08:30', clockOut: '17:30', hoursWorked: 9.0, status: 'Present', notes: '' },
+    { id: 10, staffId: 2, date: '2026-01-20', clockIn: '08:35', clockOut: '17:30', hoursWorked: 8.92, status: 'Late', notes: 'Traffic' },
 
     // Juan Hernandez - CNC Operator
-    { id: 11, staffId: 5, date: '2024-12-16', clockIn: '06:55', clockOut: '15:00', hoursWorked: 8.08, status: 'Present', notes: '' },
-    { id: 12, staffId: 5, date: '2024-12-17', clockIn: '06:58', clockOut: '15:30', hoursWorked: 8.53, status: 'Present', notes: '' },
-    { id: 13, staffId: 5, date: '2024-12-18', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: 'Extra shift' },
-    { id: 14, staffId: 5, date: '2024-12-19', clockIn: '06:50', clockOut: '15:00', hoursWorked: 8.17, status: 'Present', notes: '' },
-    { id: 15, staffId: 5, date: '2024-12-20', clockIn: '07:00', clockOut: '15:00', hoursWorked: 8.0, status: 'Present', notes: '' },
+    { id: 11, staffId: 5, date: '2026-01-16', clockIn: '06:55', clockOut: '15:00', hoursWorked: 8.08, status: 'Present', notes: '' },
+    { id: 12, staffId: 5, date: '2026-01-17', clockIn: '06:58', clockOut: '15:30', hoursWorked: 8.53, status: 'Present', notes: '' },
+    { id: 13, staffId: 5, date: '2026-01-18', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: 'Extra shift' },
+    { id: 14, staffId: 5, date: '2026-01-19', clockIn: '06:50', clockOut: '15:00', hoursWorked: 8.17, status: 'Present', notes: '' },
+    { id: 15, staffId: 5, date: '2026-01-20', clockIn: '07:00', clockOut: '15:00', hoursWorked: 8.0, status: 'Present', notes: '' },
 
     // Patricia Ruiz - Quality Inspector
-    { id: 16, staffId: 6, date: '2024-12-16', clockIn: '08:00', clockOut: '17:00', hoursWorked: 9.0, status: 'Present', notes: '' },
-    { id: 17, staffId: 6, date: '2024-12-17', clockIn: '08:05', clockOut: '17:00', hoursWorked: 8.92, status: 'Present', notes: '' },
-    { id: 18, staffId: 6, date: '2024-12-18', clockIn: '08:00', clockOut: '18:00', hoursWorked: 10.0, status: 'Present', notes: 'Overtime - QC inspections' },
-    { id: 19, staffId: 6, date: '2024-12-19', clockIn: '08:00', clockOut: '17:00', hoursWorked: 9.0, status: 'Present', notes: '' },
-    { id: 20, staffId: 6, date: '2024-12-20', clockIn: '07:55', clockOut: '17:00', hoursWorked: 9.08, status: 'Present', notes: '' },
+    { id: 16, staffId: 6, date: '2026-01-16', clockIn: '08:00', clockOut: '17:00', hoursWorked: 9.0, status: 'Present', notes: '' },
+    { id: 17, staffId: 6, date: '2026-01-17', clockIn: '08:05', clockOut: '17:00', hoursWorked: 8.92, status: 'Present', notes: '' },
+    { id: 18, staffId: 6, date: '2026-01-18', clockIn: '08:00', clockOut: '18:00', hoursWorked: 10.0, status: 'Present', notes: 'Overtime - QC inspections' },
+    { id: 19, staffId: 6, date: '2026-01-19', clockIn: '08:00', clockOut: '17:00', hoursWorked: 9.0, status: 'Present', notes: '' },
+    { id: 20, staffId: 6, date: '2026-01-20', clockIn: '07:55', clockOut: '17:00', hoursWorked: 9.08, status: 'Present', notes: '' },
 
     // Miguel Torres - Warehouse Supervisor
-    { id: 21, staffId: 7, date: '2024-12-16', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: '' },
-    { id: 22, staffId: 7, date: '2024-12-17', clockIn: '07:30', clockOut: '16:00', hoursWorked: 8.5, status: 'Late', notes: 'Personal appointment' },
-    { id: 23, staffId: 7, date: '2024-12-18', clockIn: '07:00', clockOut: '16:30', hoursWorked: 9.5, status: 'Present', notes: '' },
-    { id: 24, staffId: 7, date: '2024-12-19', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: '' },
-    { id: 25, staffId: 7, date: '2024-12-20', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: '' }
+    { id: 21, staffId: 7, date: '2026-01-16', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: '' },
+    { id: 22, staffId: 7, date: '2026-01-17', clockIn: '07:30', clockOut: '16:00', hoursWorked: 8.5, status: 'Late', notes: 'Personal appointment' },
+    { id: 23, staffId: 7, date: '2026-01-18', clockIn: '07:00', clockOut: '16:30', hoursWorked: 9.5, status: 'Present', notes: '' },
+    { id: 24, staffId: 7, date: '2026-01-19', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: '' },
+    { id: 25, staffId: 7, date: '2026-01-20', clockIn: '07:00', clockOut: '16:00', hoursWorked: 9.0, status: 'Present', notes: '' }
 ];
 
 // Hours worked per operation (links staff to operations)
 export const staffOperationHours = [
     // OP-2024-001 - ABC Corporate Office
-    { id: 1, staffId: 1, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'assembly', date: '2024-12-08', hours: 6, division: 'Assembly' },
-    { id: 2, staffId: 1, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'assembly', date: '2024-12-09', hours: 6, division: 'Assembly' },
-    { id: 3, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'roughMill', date: '2024-12-02', hours: 8, division: 'Carpentry' },
-    { id: 4, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'roughMill', date: '2024-12-03', hours: 8, division: 'Carpentry' },
-    { id: 5, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'fineMill', date: '2024-12-05', hours: 5, division: 'Carpentry' },
-    { id: 6, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'fineMill', date: '2024-12-06', hours: 5, division: 'Carpentry' },
-    { id: 7, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'assembly', date: '2024-12-08', hours: 4, division: 'Assembly' },
-    { id: 8, staffId: 6, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'qc', date: '2024-12-10', hours: 2, division: 'Quality' },
+    { id: 1, staffId: 1, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'assembly', date: '2026-01-08', hours: 6, division: 'Assembly' },
+    { id: 2, staffId: 1, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'assembly', date: '2026-01-09', hours: 6, division: 'Assembly' },
+    { id: 3, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'roughMill', date: '2026-01-02', hours: 8, division: 'Carpentry' },
+    { id: 4, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'roughMill', date: '2026-01-03', hours: 8, division: 'Carpentry' },
+    { id: 5, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'fineMill', date: '2026-01-05', hours: 5, division: 'Carpentry' },
+    { id: 6, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'fineMill', date: '2026-01-06', hours: 5, division: 'Carpentry' },
+    { id: 7, staffId: 5, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'assembly', date: '2026-01-08', hours: 4, division: 'Assembly' },
+    { id: 8, staffId: 6, operationId: 1, workOrderNumber: 'OP-2024-001', stage: 'qc', date: '2026-01-10', hours: 2, division: 'Quality' },
 
     // OP-2024-002 - Los Pinos Residential
-    { id: 9, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'roughMill', date: '2024-12-06', hours: 8, division: 'Carpentry' },
-    { id: 10, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'roughMill', date: '2024-12-07', hours: 8, division: 'Carpentry' },
-    { id: 11, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'fineMill', date: '2024-12-09', hours: 8, division: 'Carpentry' },
-    { id: 12, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'fineMill', date: '2024-12-10', hours: 7, division: 'Carpentry' },
-    { id: 13, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'metal', date: '2024-12-10', hours: 4, division: 'Metal' },
-    { id: 14, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'metal', date: '2024-12-11', hours: 4, division: 'Metal' },
-    { id: 15, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2024-12-12', hours: 8, division: 'Assembly' },
-    { id: 16, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2024-12-12', hours: 8, division: 'Assembly' },
-    { id: 17, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2024-12-13', hours: 8, division: 'Assembly' },
-    { id: 18, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2024-12-13', hours: 8, division: 'Assembly' },
-    { id: 19, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'painting', date: '2024-12-20', hours: 4, division: 'Painting' },
-    { id: 20, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'painting', date: '2024-12-20', hours: 4, division: 'Painting' },
-    { id: 21, staffId: 6, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'qc', date: '2024-12-18', hours: 3, division: 'Quality' },
+    { id: 9, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'roughMill', date: '2026-01-06', hours: 8, division: 'Carpentry' },
+    { id: 10, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'roughMill', date: '2026-01-07', hours: 8, division: 'Carpentry' },
+    { id: 11, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'fineMill', date: '2026-01-09', hours: 8, division: 'Carpentry' },
+    { id: 12, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'fineMill', date: '2026-01-10', hours: 7, division: 'Carpentry' },
+    { id: 13, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'metal', date: '2026-01-10', hours: 4, division: 'Metal' },
+    { id: 14, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'metal', date: '2026-01-11', hours: 4, division: 'Metal' },
+    { id: 15, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2026-01-12', hours: 8, division: 'Assembly' },
+    { id: 16, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2026-01-12', hours: 8, division: 'Assembly' },
+    { id: 17, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2026-01-13', hours: 8, division: 'Assembly' },
+    { id: 18, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'assembly', date: '2026-01-13', hours: 8, division: 'Assembly' },
+    { id: 19, staffId: 1, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'painting', date: '2026-01-20', hours: 4, division: 'Painting' },
+    { id: 20, staffId: 5, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'painting', date: '2026-01-20', hours: 4, division: 'Painting' },
+    { id: 21, staffId: 6, operationId: 2, workOrderNumber: 'OP-2024-002', stage: 'qc', date: '2026-01-18', hours: 3, division: 'Quality' },
 
     // OP-2024-004 - The Terrace Restaurant (Completed)
-    { id: 22, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'roughMill', date: '2024-10-02', hours: 8, division: 'Carpentry' },
-    { id: 23, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'roughMill', date: '2024-10-03', hours: 8, division: 'Carpentry' },
-    { id: 24, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'roughMill', date: '2024-10-04', hours: 10, division: 'Carpentry' },
-    { id: 25, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'metal', date: '2024-10-08', hours: 8, division: 'Metal' },
-    { id: 26, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'metal', date: '2024-10-09', hours: 8, division: 'Metal' },
-    { id: 27, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'assembly', date: '2024-10-13', hours: 8, division: 'Assembly' },
-    { id: 28, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'assembly', date: '2024-10-13', hours: 8, division: 'Assembly' },
-    { id: 29, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'painting', date: '2024-10-24', hours: 8, division: 'Painting' },
-    { id: 30, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'painting', date: '2024-10-24', hours: 8, division: 'Painting' },
-    { id: 31, staffId: 6, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'qc', date: '2024-10-31', hours: 6, division: 'Quality' },
-    { id: 32, staffId: 7, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'shipping', date: '2024-11-02', hours: 10, division: 'Warehouse' }
+    { id: 22, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'roughMill', date: '2025-11-02', hours: 8, division: 'Carpentry' },
+    { id: 23, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'roughMill', date: '2025-11-03', hours: 8, division: 'Carpentry' },
+    { id: 24, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'roughMill', date: '2025-11-04', hours: 10, division: 'Carpentry' },
+    { id: 25, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'metal', date: '2025-11-08', hours: 8, division: 'Metal' },
+    { id: 26, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'metal', date: '2025-11-09', hours: 8, division: 'Metal' },
+    { id: 27, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'assembly', date: '2025-11-13', hours: 8, division: 'Assembly' },
+    { id: 28, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'assembly', date: '2025-11-13', hours: 8, division: 'Assembly' },
+    { id: 29, staffId: 1, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'painting', date: '2025-11-24', hours: 8, division: 'Painting' },
+    { id: 30, staffId: 5, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'painting', date: '2025-11-24', hours: 8, division: 'Painting' },
+    { id: 31, staffId: 6, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'qc', date: '2025-11-31', hours: 6, division: 'Quality' },
+    { id: 32, staffId: 7, operationId: 4, workOrderNumber: 'OP-2024-004', stage: 'shipping', date: '2025-12-02', hours: 10, division: 'Warehouse' }
 ];
 
 // Staff productivity metrics (aggregated)
@@ -1242,8 +1242,8 @@ export const staffProductivityData = [
             lastMonthHours: 52
         },
         bonuses: [
-            { id: 1, type: 'Performance', amount: 2500, date: '2024-11-30', reason: 'Exceeded monthly targets' },
-            { id: 2, type: 'Project Completion', amount: 1500, date: '2024-11-02', reason: 'Restaurant project completed ahead of schedule' }
+            { id: 1, type: 'Performance', amount: 2500, date: '2025-12-30', reason: 'Exceeded monthly targets' },
+            { id: 2, type: 'Project Completion', amount: 1500, date: '2025-12-02', reason: 'Restaurant project completed ahead of schedule' }
         ],
         alerts: []
     },
@@ -1263,10 +1263,10 @@ export const staffProductivityData = [
             lastMonthHours: 40
         },
         bonuses: [
-            { id: 1, type: 'Quality', amount: 3000, date: '2024-12-15', reason: 'Zero design revisions for 3 months' }
+            { id: 1, type: 'Quality', amount: 3000, date: '2026-01-15', reason: 'Zero design revisions for 3 months' }
         ],
         alerts: [
-            { id: 1, type: 'Attendance', severity: 'Low', message: 'Sick leave taken on Dec 18', date: '2024-12-18' }
+            { id: 1, type: 'Attendance', severity: 'Low', message: 'Sick leave taken on Dec 18', date: '2026-01-18' }
         ]
     },
     {
@@ -1285,7 +1285,7 @@ export const staffProductivityData = [
             lastMonthHours: 62
         },
         bonuses: [
-            { id: 1, type: 'Overtime', amount: 1800, date: '2024-12-20', reason: 'Extra shifts during holiday rush' }
+            { id: 1, type: 'Overtime', amount: 1800, date: '2026-01-20', reason: 'Extra shifts during holiday rush' }
         ],
         alerts: []
     },
@@ -1305,7 +1305,7 @@ export const staffProductivityData = [
             lastMonthHours: 44
         },
         bonuses: [
-            { id: 1, type: 'Performance', amount: 2000, date: '2024-12-01', reason: 'Perfect inspection record' }
+            { id: 1, type: 'Performance', amount: 2000, date: '2026-01-01', reason: 'Perfect inspection record' }
         ],
         alerts: []
     },
@@ -1326,7 +1326,7 @@ export const staffProductivityData = [
         },
         bonuses: [],
         alerts: [
-            { id: 1, type: 'Attendance', severity: 'Medium', message: 'Late arrival on Dec 17', date: '2024-12-17' }
+            { id: 1, type: 'Attendance', severity: 'Medium', message: 'Late arrival on Dec 17', date: '2026-01-17' }
         ]
     }
 ];

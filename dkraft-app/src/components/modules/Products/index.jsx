@@ -832,7 +832,7 @@ const ProductsModule = () => {
                                     onChange={handleSelectAll}
                                 />
                             </span>
-                            <span className="col-status-qb">Status QB</span>
+                            <span className="col-status-qb" title="QuickBooks Status">QB</span>
                             <span className="col-name sortable" onClick={() => handleSort('name')}>
                                 Name
                                 <Icon name={sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
@@ -854,7 +854,7 @@ const ProductsModule = () => {
                                 Status
                                 <Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
                             </span>
-                            <span className="col-actions">Actions</span>
+                            <span className="col-actions"></span>
                         </div>
 
                         <div className="products-table-body">
@@ -971,15 +971,28 @@ const ProductsModule = () => {
                         </div>
                         <div className="form-group">
                             <label>Status</label>
-                            <select
-                                value={currentProduct.status}
-                                onChange={(e) => handleInputChange('status', e.target.value)}
-                                disabled={modalMode === 'view'}
-                            >
-                                {statusOptions.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                            </select>
+                            <div className="status-toggle">
+                                <button
+                                    type="button"
+                                    className={`status-toggle-btn status-active ${currentProduct.status === 'ACTIVE' ? 'active' : ''}`}
+                                    onClick={() => modalMode !== 'view' && handleInputChange('status', 'ACTIVE')}
+                                    disabled={modalMode === 'view'}
+                                >
+                                    <span className="status-indicator"></span>
+                                    <Icon name="check_circle" />
+                                    Active
+                                </button>
+                                <button
+                                    type="button"
+                                    className={`status-toggle-btn status-inactive ${currentProduct.status === 'INACTIVE' ? 'active' : ''}`}
+                                    onClick={() => modalMode !== 'view' && handleInputChange('status', 'INACTIVE')}
+                                    disabled={modalMode === 'view'}
+                                >
+                                    <span className="status-indicator"></span>
+                                    <Icon name="cancel" />
+                                    Inactive
+                                </button>
+                            </div>
                         </div>
                     </div>
 

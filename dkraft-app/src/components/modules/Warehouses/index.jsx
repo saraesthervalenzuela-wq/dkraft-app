@@ -4,23 +4,8 @@
  */
 
 import { useState, useEffect, useMemo } from 'react';
-import {
-    FaWarehouse,
-    FaPlus,
-    FaEdit,
-    FaTrash,
-    FaSearch,
-    FaTh,
-    FaList,
-    FaSpinner,
-    FaExclamationTriangle,
-    FaMapMarkerAlt,
-} from 'react-icons/fa';
-import Card from '../../common/Card';
-import Modal from '../../common/Modal';
-import { FactoryIcon } from '../../common';
+import { Icon, FactoryIcon, Modal } from '../../common';
 import { useDataService } from '../../../hooks/useService';
-import './styles.css';
 
 /**
  * Initial warehouses data (fallback when API is disabled)
@@ -188,9 +173,9 @@ const WarehousesModule = () => {
     // Render loading state
     if (loading && warehouses.length === 0) {
         return (
-            <div className="module-container warehouses-module">
+            <div className="module-page warehouses-module">
                 <div className="loading-state">
-                    <FaSpinner className="spinner" />
+                    <Icon name="progress_activity" />
                     <p>Loading warehouses...</p>
                 </div>
             </div>
@@ -200,11 +185,11 @@ const WarehousesModule = () => {
     // Render error state
     if (error && warehouses.length === 0) {
         return (
-            <div className="module-container warehouses-module">
+            <div className="module-page warehouses-module">
                 <div className="error-state">
-                    <FaExclamationTriangle />
+                    <Icon name="error" />
                     <p>Error loading warehouses: {error}</p>
-                    <button onClick={() => fetchAll()}>Retry</button>
+                    <button className="btn-primary-action" onClick={() => fetchAll()}>Retry</button>
                 </div>
             </div>
         );
@@ -346,60 +331,42 @@ const WarehousesModule = () => {
                     )}
                 </div>
             ) : (
-                <Card className="data-table-card">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Location</th>
-                                <th>Description</th>
-                                <th>Created</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredWarehouses.map((warehouse) => (
-                                <tr key={warehouse.id}>
-                                    <td>{warehouse.id}</td>
-                                    <td>
-                                        <strong>{warehouse.name}</strong>
-                                    </td>
-                                    <td>
-                                        <FaMapMarkerAlt className="cell-icon" />
-                                        {warehouse.location || '-'}
-                                    </td>
-                                    <td className="description-cell">
-                                        {warehouse.description || '-'}
-                                    </td>
-                                    <td>{formatDate(warehouse.createdAt)}</td>
-                                    <td className="actions-cell">
-                                        <button
-                                            className="btn-icon edit"
-                                            onClick={() => handleOpenModal(warehouse)}
-                                            title="Editar"
-                                        >
-                                            <FaEdit />
-                                        </button>
-                                        <button
-                                            className="btn-icon delete"
-                                            onClick={() => confirmDelete(warehouse)}
-                                            title="Eliminar"
-                                        >
-                                            <FaTrash />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                <div className="catalog-table">
+                    <div className="catalog-table-header">
+                        <span className="col-id">ID</span>
+                        <span className="col-name">Name</span>
+                        <span className="col-location">Location</span>
+                        <span className="col-description">Description</span>
+                        <span className="col-created">Created</span>
+                        <span className="col-actions">Actions</span>
+                    </div>
+                    {filteredWarehouses.map((warehouse) => (
+                        <div key={warehouse.id} className="catalog-table-row">
+                            <span className="col-id">{warehouse.id}</span>
+                            <span className="col-name"><strong>{warehouse.name}</strong></span>
+                            <span className="col-location">
+                                <Icon name="location_on" />
+                                {warehouse.location || '-'}
+                            </span>
+                            <span className="col-description">{warehouse.description || '-'}</span>
+                            <span className="col-created">{formatDate(warehouse.createdAt)}</span>
+                            <span className="col-actions">
+                                <button className="btn-action-edit" onClick={() => handleOpenModal(warehouse)} title="Edit">
+                                    <Icon name="edit" />
+                                </button>
+                                <button className="btn-action-delete" onClick={() => confirmDelete(warehouse)} title="Delete">
+                                    <Icon name="delete" />
+                                </button>
+                            </span>
+                        </div>
+                    ))}
                     {filteredWarehouses.length === 0 && (
-                        <div className="empty-state">
-                            <FaWarehouse />
-                            <p>No se encontraron almacenes</p>
+                        <div className="catalog-empty">
+                            <Icon name="warehouse" />
+                            <p>No warehouses found</p>
                         </div>
                     )}
-                </Card>
+                </div>
             )}
 
             {/* Create/Edit Modal - Using new Modal props */}

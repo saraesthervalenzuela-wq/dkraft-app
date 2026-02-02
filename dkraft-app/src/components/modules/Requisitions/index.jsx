@@ -5,35 +5,8 @@
  */
 
 import { useState, useEffect } from 'react';
-import {
-    FaClipboardList,
-    FaPlus,
-    FaEdit,
-    FaTrash,
-    FaEye,
-    FaCheck,
-    FaTimes,
-    FaSearch,
-    FaFilter,
-    FaTh,
-    FaList,
-    FaChevronDown,
-    FaChevronRight,
-    FaBoxOpen,
-    FaUserCheck,
-    FaWarehouse,
-    FaCalendarAlt,
-    FaSpinner,
-    FaExclamationTriangle,
-    FaCheckCircle,
-    FaClock,
-    FaShoppingCart,
-    FaTruck,
-} from 'react-icons/fa';
-import Card from '../../common/Card';
-import Modal from '../../common/Modal';
+import { Icon, SearchBox, Modal } from '../../common';
 import { isApiEnabled, clientsApi, warehousesApi, projectsApi } from '../../../services/api';
-import './styles.css';
 
 // LocalStorage keys
 const STORAGE_KEY = 'dkraft_sales_orders';
@@ -514,13 +487,19 @@ const Requisitions = () => {
     // Render status badge
     const renderStatusBadge = (status) => {
         const config = STATUS_CONFIG[status] || STATUS_CONFIG.DRAFT;
-        const Icon = config.icon;
+        const iconName = {
+            'DRAFT': 'edit',
+            'PENDING_APPROVAL': 'schedule',
+            'APPROVED': 'check_circle',
+            'REJECTED': 'cancel',
+            'ORDERED': 'shopping_cart',
+            'PARTIALLY_FULFILLED': 'local_shipping',
+            'FULFILLED': 'task_alt',
+            'CANCELLED': 'cancel'
+        }[status] || 'info';
         return (
-            <span
-                className="status-badge"
-                style={{ backgroundColor: config.color }}
-            >
-                <Icon size={12} />
+            <span className={`status-badge status-${status.toLowerCase().replace('_', '-')}`}>
+                <Icon name={iconName} />
                 {config.label}
             </span>
         );
@@ -542,10 +521,10 @@ const Requisitions = () => {
     // Render loading state
     if (loading && requisitions.length === 0) {
         return (
-            <div className="module-container requisitions-module">
+            <div className="module-page requisitions-page">
                 <div className="loading-state">
-                    <FaSpinner className="spinner" />
-                    <p>Loading requisitions...</p>
+                    <Icon name="progress_activity" />
+                    <p>Loading sales orders...</p>
                 </div>
             </div>
         );
@@ -554,11 +533,11 @@ const Requisitions = () => {
     // Render error state
     if (error) {
         return (
-            <div className="module-container requisitions-module">
+            <div className="module-page requisitions-page">
                 <div className="error-state">
-                    <FaExclamationTriangle />
-                    <p>Error loading requisitions: {error}</p>
-                    <button onClick={loadData}>Retry</button>
+                    <Icon name="error" />
+                    <p>Error loading sales orders: {error}</p>
+                    <button className="btn-primary-action" onClick={loadData}>Retry</button>
                 </div>
             </div>
         );
@@ -584,21 +563,18 @@ const Requisitions = () => {
             </div>
 
             {/* Filters and Search */}
-            <div className="module-filters">
-                <div className="search-box">
-                    <FaSearch />
-                    <input
-                        type="text"
-                        placeholder="Search by folio, requester, warehouse..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="filter-group">
-                    <FaFilter />
+            <div className="catalog-toolbar">
+                <SearchBox
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    placeholder="Search by folio, requester, warehouse..."
+                    className="catalog-search"
+                />
+                <div className="toolbar-filters">
                     <select
                         value={statusFilter}
                         onChange={(e) => setStatusFilter(e.target.value)}
+                        className="filter-select"
                     >
                         <option value="ALL">All Statuses</option>
                         {Object.entries(STATUS_CONFIG).map(([key, config]) => (
@@ -608,272 +584,226 @@ const Requisitions = () => {
                 </div>
                 <div className="view-toggle">
                     <button
-                        className={viewMode === 'table' ? 'active' : ''}
+                        className={`view-toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
                         onClick={() => setViewMode('table')}
+                        title="Table view"
                     >
-                        <FaList />
+                        <Icon name="view_list" />
                     </button>
                     <button
-                        className={viewMode === 'grid' ? 'active' : ''}
+                        className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
                         onClick={() => setViewMode('grid')}
+                        title="Grid view"
                     >
-                        <FaTh />
+                        <Icon name="grid_view" />
                     </button>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="stats-row">
-                <Card className="stat-card">
-                    <div className="stat-content">
-                        <FaClipboardList className="stat-icon" />
-                        <div>
-                            <span className="stat-value">{requisitions.length}</span>
-                            <span className="stat-label">Total</span>
-                        </div>
+            <div className="module-stats-row">
+                <div className="module-stat-card">
+                    <div className="stat-icon purple">
+                        <Icon name="shopping_cart" />
                     </div>
-                </Card>
-                <Card className="stat-card pending">
-                    <div className="stat-content">
-                        <FaClock className="stat-icon" />
-                        <div>
-                            <span className="stat-value">
-                                {requisitions.filter(r => r.status === 'PENDING_APPROVAL').length}
-                            </span>
-                            <span className="stat-label">Pending</span>
-                        </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{requisitions.length}</span>
+                        <span className="stat-label">Total Orders</span>
                     </div>
-                </Card>
-                <Card className="stat-card approved">
-                    <div className="stat-content">
-                        <FaCheckCircle className="stat-icon" />
-                        <div>
-                            <span className="stat-value">
-                                {requisitions.filter(r => r.status === 'APPROVED').length}
-                            </span>
-                            <span className="stat-label">Approved</span>
-                        </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon orange">
+                        <Icon name="schedule" />
                     </div>
-                </Card>
-                <Card className="stat-card fulfilled">
-                    <div className="stat-content">
-                        <FaCheck className="stat-icon" />
-                        <div>
-                            <span className="stat-value">
-                                {requisitions.filter(r => r.status === 'FULFILLED').length}
-                            </span>
-                            <span className="stat-label">Fulfilled</span>
-                        </div>
+                    <div className="stat-info">
+                        <span className="stat-value">
+                            {requisitions.filter(r => r.status === 'PENDING_APPROVAL').length}
+                        </span>
+                        <span className="stat-label">Pending</span>
                     </div>
-                </Card>
+                </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon green">
+                        <Icon name="check_circle" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">
+                            {requisitions.filter(r => r.status === 'APPROVED').length}
+                        </span>
+                        <span className="stat-label">Approved</span>
+                    </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon blue">
+                        <Icon name="task_alt" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">
+                            {requisitions.filter(r => r.status === 'FULFILLED').length}
+                        </span>
+                        <span className="stat-label">Fulfilled</span>
+                    </div>
+                </div>
             </div>
 
             {/* Content */}
             {viewMode === 'table' ? (
-                <Card className="data-table-card">
-                    <table className="data-table">
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Folio</th>
-                                <th>Requester</th>
-                                <th>Warehouse</th>
-                                <th>Project</th>
-                                <th>Items</th>
-                                <th>Required Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredRequisitions.map((requisition) => (
-                                <>
-                                    <tr key={requisition.id} className={expandedRows[requisition.id] ? 'expanded' : ''}>
-                                        <td>
-                                            <button
-                                                className="expand-btn"
-                                                onClick={() => toggleRowExpansion(requisition.id)}
-                                            >
-                                                {expandedRows[requisition.id] ? <FaChevronDown /> : <FaChevronRight />}
+                <div className="catalog-table">
+                    <div className="catalog-table-header">
+                        <span className="col-expand"></span>
+                        <span className="col-folio">Folio</span>
+                        <span className="col-requester">Requester</span>
+                        <span className="col-warehouse">Warehouse</span>
+                        <span className="col-project">Project</span>
+                        <span className="col-items">Items</span>
+                        <span className="col-date">Required Date</span>
+                        <span className="col-status">Status</span>
+                        <span className="col-actions">Actions</span>
+                    </div>
+                    {filteredRequisitions.map((requisition) => (
+                        <div key={requisition.id}>
+                            <div className={`catalog-table-row ${expandedRows[requisition.id] ? 'expanded' : ''}`}>
+                                <span className="col-expand">
+                                    <button className="btn-expand" onClick={() => toggleRowExpansion(requisition.id)}>
+                                        <Icon name={expandedRows[requisition.id] ? 'expand_more' : 'chevron_right'} />
+                                    </button>
+                                </span>
+                                <span className="col-folio"><strong>{requisition.folio}</strong></span>
+                                <span className="col-requester">{requisition.requesterName}</span>
+                                <span className="col-warehouse">
+                                    <Icon name="warehouse" />
+                                    {requisition.warehouseName}
+                                </span>
+                                <span className="col-project">{requisition.projectName || '-'}</span>
+                                <span className="col-items">
+                                    <Icon name="inventory_2" />
+                                    {calculateItemsTotal(requisition.items)}
+                                </span>
+                                <span className="col-date">
+                                    <Icon name="event" />
+                                    {formatDate(requisition.requiredAt)}
+                                </span>
+                                <span className="col-status">{renderStatusBadge(requisition.status)}</span>
+                                <span className="col-actions">
+                                    <button className="btn-action-view" onClick={() => handleViewRequisition(requisition)} title="View">
+                                        <Icon name="visibility" />
+                                    </button>
+                                    {requisition.status === 'DRAFT' && (
+                                        <>
+                                            <button className="btn-action-edit" onClick={() => handleOpenModal(requisition)} title="Edit">
+                                                <Icon name="edit" />
                                             </button>
-                                        </td>
-                                        <td className="folio-cell">
-                                            <strong>{requisition.folio}</strong>
-                                        </td>
-                                        <td>{requisition.requesterName}</td>
-                                        <td>
-                                            <FaWarehouse className="cell-icon" />
-                                            {requisition.warehouseName}
-                                        </td>
-                                        <td>{requisition.projectName || '-'}</td>
-                                        <td>
-                                            <span className="items-count">
-                                                <FaBoxOpen />
-                                                {calculateItemsTotal(requisition.items)}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <FaCalendarAlt className="cell-icon" />
-                                            {formatDate(requisition.requiredAt)}
-                                        </td>
-                                        <td>{renderStatusBadge(requisition.status)}</td>
-                                        <td className="actions-cell">
-                                            <button
-                                                className="btn-icon view"
-                                                onClick={() => handleViewRequisition(requisition)}
-                                                title="View details"
-                                            >
-                                                <FaEye />
+                                            <button className="btn-action-approve" onClick={() => handleSubmitForApproval(requisition)} title="Submit">
+                                                <Icon name="send" />
                                             </button>
-                                            {requisition.status === 'DRAFT' && (
-                                                <>
-                                                    <button
-                                                        className="btn-icon edit"
-                                                        onClick={() => handleOpenModal(requisition)}
-                                                        title="Edit"
-                                                    >
-                                                        <FaEdit />
-                                                    </button>
-                                                    <button
-                                                        className="btn-icon approve"
-                                                        onClick={() => handleSubmitForApproval(requisition)}
-                                                        title="Enviar a aprobación"
-                                                    >
-                                                        <FaUserCheck />
-                                                    </button>
-                                                </>
-                                            )}
-                                            {requisition.status === 'PENDING_APPROVAL' && (
-                                                <button
-                                                    className="btn-icon approve"
-                                                    onClick={() => handleOpenApprovalModal(requisition)}
-                                                    title="Approve/Reject"
-                                                >
-                                                    <FaUserCheck />
-                                                </button>
-                                            )}
-                                            {['DRAFT', 'REJECTED'].includes(requisition.status) && (
-                                                <button
-                                                    className="btn-icon delete"
-                                                    onClick={() => {
-                                                        setRequisitionToDelete(requisition);
-                                                        setIsDeleteModalOpen(true);
-                                                    }}
-                                                    title="Delete"
-                                                >
-                                                    <FaTrash />
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                    {expandedRows[requisition.id] && (
-                                        <tr className="expanded-row">
-                                            <td colSpan="9">
-                                                <div className="expanded-content">
-                                                    <h4>Requisition Items</h4>
-                                                    <table className="items-table">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Material</th>
-                                                                <th>Quantity</th>
-                                                                <th>Unit</th>
-                                                                <th>Suggested Supplier</th>
-                                                                <th>Needed By</th>
-                                                                <th>Status</th>
-                                                                <th>Received</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {requisition.items.map((item, idx) => (
-                                                                <tr key={item.id || idx}>
-                                                                    <td>{item.materialName}</td>
-                                                                    <td>{item.quantity}</td>
-                                                                    <td>{item.unit}</td>
-                                                                    <td>{item.suggestedSupplierName || '-'}</td>
-                                                                    <td>{formatDate(item.neededBy)}</td>
-                                                                    <td>{renderItemStatusBadge(item.status)}</td>
-                                                                    <td>
-                                                                        {item.receivedQty} / {item.quantity}
-                                                                    </td>
-                                                                </tr>
-                                                            ))}
-                                                        </tbody>
-                                                    </table>
-                                                    {requisition.comments && (
-                                                        <div className="requisition-comments">
-                                                            <strong>Comments:</strong> {requisition.comments}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
+                                        </>
                                     )}
-                                </>
-                            ))}
-                        </tbody>
-                    </table>
+                                    {requisition.status === 'PENDING_APPROVAL' && (
+                                        <button className="btn-action-approve" onClick={() => handleOpenApprovalModal(requisition)} title="Review">
+                                            <Icon name="how_to_reg" />
+                                        </button>
+                                    )}
+                                    {['DRAFT', 'REJECTED'].includes(requisition.status) && (
+                                        <button className="btn-action-delete" onClick={() => {
+                                            setRequisitionToDelete(requisition);
+                                            setIsDeleteModalOpen(true);
+                                        }} title="Delete">
+                                            <Icon name="delete" />
+                                        </button>
+                                    )}
+                                </span>
+                            </div>
+                            {expandedRows[requisition.id] && (
+                                <div className="catalog-expanded-row">
+                                    <h4>Order Items</h4>
+                                    <div className="expanded-items-table">
+                                        <div className="expanded-items-header">
+                                            <span>Material</span>
+                                            <span>Qty</span>
+                                            <span>Unit</span>
+                                            <span>Supplier</span>
+                                            <span>Needed By</span>
+                                            <span>Status</span>
+                                            <span>Received</span>
+                                        </div>
+                                        {requisition.items.map((item, idx) => (
+                                            <div key={item.id || idx} className="expanded-items-row">
+                                                <span>{item.materialName}</span>
+                                                <span>{item.quantity}</span>
+                                                <span>{item.unit}</span>
+                                                <span>{item.suggestedSupplierName || '-'}</span>
+                                                <span>{formatDate(item.neededBy)}</span>
+                                                <span>{renderItemStatusBadge(item.status)}</span>
+                                                <span>{item.receivedQty} / {item.quantity}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {requisition.comments && (
+                                        <p className="expanded-comments"><strong>Comments:</strong> {requisition.comments}</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))}
                     {filteredRequisitions.length === 0 && (
-                        <div className="empty-state">
-                            <FaClipboardList />
-                            <p>No se encontraron requisiciones</p>
+                        <div className="catalog-empty">
+                            <Icon name="shopping_cart" />
+                            <p>No sales orders found</p>
                         </div>
                     )}
-                </Card>
+                </div>
             ) : (
-                <div className="requisitions-grid">
+                <div className="sales-orders-grid">
                     {filteredRequisitions.map((requisition) => (
-                        <Card key={requisition.id} className="requisition-card">
-                            <div className="card-header">
-                                <span className="folio">{requisition.folio}</span>
+                        <div key={requisition.id} className="order-card">
+                            <div className="order-card-header">
+                                <span className="order-folio">{requisition.folio}</span>
                                 {renderStatusBadge(requisition.status)}
                             </div>
-                            <div className="card-body">
-                                <div className="info-row">
-                                    <FaUserCheck className="info-icon" />
+                            <div className="order-card-body">
+                                <div className="order-info-row">
+                                    <Icon name="person" />
                                     <span>{requisition.requesterName}</span>
                                 </div>
-                                <div className="info-row">
-                                    <FaWarehouse className="info-icon" />
+                                <div className="order-info-row">
+                                    <Icon name="warehouse" />
                                     <span>{requisition.warehouseName}</span>
                                 </div>
                                 {requisition.projectName && (
-                                    <div className="info-row">
-                                        <FaClipboardList className="info-icon" />
+                                    <div className="order-info-row">
+                                        <Icon name="assignment" />
                                         <span>{requisition.projectName}</span>
                                     </div>
                                 )}
-                                <div className="info-row">
-                                    <FaCalendarAlt className="info-icon" />
-                                    <span>Requerido: {formatDate(requisition.requiredAt)}</span>
+                                <div className="order-info-row">
+                                    <Icon name="event" />
+                                    <span>Required: {formatDate(requisition.requiredAt)}</span>
                                 </div>
-                                <div className="items-summary">
-                                    <FaBoxOpen />
+                                <div className="order-items-summary">
+                                    <Icon name="inventory_2" />
                                     <span>{calculateItemsTotal(requisition.items)} items</span>
                                     <div className="progress-bar">
-                                        <div
-                                            className="progress-fill"
-                                            style={{ width: `${calculateFulfilledPercentage(requisition.items)}%` }}
-                                        />
+                                        <div className="progress-bar-fill" style={{ width: `${calculateFulfilledPercentage(requisition.items)}%` }} />
                                     </div>
                                     <span>{calculateFulfilledPercentage(requisition.items)}%</span>
                                 </div>
                             </div>
-                            <div className="card-actions">
-                                <button onClick={() => handleViewRequisition(requisition)}>
-                                    <FaEye /> View
+                            <div className="order-card-footer">
+                                <button className="btn-action-view" onClick={() => handleViewRequisition(requisition)}>
+                                    <Icon name="visibility" /> View
                                 </button>
                                 {requisition.status === 'DRAFT' && (
-                                    <button onClick={() => handleOpenModal(requisition)}>
-                                        <FaEdit /> Edit
+                                    <button className="btn-action-edit" onClick={() => handleOpenModal(requisition)}>
+                                        <Icon name="edit" /> Edit
                                     </button>
                                 )}
                             </div>
-                        </Card>
+                        </div>
                     ))}
                     {filteredRequisitions.length === 0 && (
-                        <div className="empty-state full-width">
-                            <FaClipboardList />
-                            <p>No se encontraron requisiciones</p>
+                        <div className="catalog-empty">
+                            <Icon name="shopping_cart" />
+                            <p>No sales orders found</p>
                         </div>
                     )}
                 </div>
@@ -1124,17 +1054,11 @@ const Requisitions = () => {
                                             <td>{formatCurrency(item.subtotal)}</td>
                                             {!currentRequisition.quotationId && (
                                                 <td className="actions-cell">
-                                                    <button
-                                                        className="btn-icon edit"
-                                                        onClick={() => handleEditItem(index)}
-                                                    >
-                                                        <FaEdit />
+                                                    <button className="btn-action-edit" onClick={() => handleEditItem(index)}>
+                                                        <Icon name="edit" />
                                                     </button>
-                                                    <button
-                                                        className="btn-icon delete"
-                                                        onClick={() => handleRemoveItem(index)}
-                                                    >
-                                                        <FaTrash />
+                                                    <button className="btn-action-delete" onClick={() => handleRemoveItem(index)}>
+                                                        <Icon name="delete" />
                                                     </button>
                                                 </td>
                                             )}
@@ -1265,88 +1189,92 @@ const Requisitions = () => {
             </Modal>
 
             {/* Approval Modal */}
-            <Modal
-                isOpen={isApprovalModalOpen}
-                onClose={() => setIsApprovalModalOpen(false)}
-                title="Approve Requisition"
-                size="medium"
-            >
-                <div className="approval-form">
-                    <p>
-                        Do you want to approve or reject requisition <strong>{currentRequisition.folio}</strong>?
-                    </p>
-                    <div className="approval-summary">
-                        <div>
-                            <strong>Requester:</strong> {currentRequisition.requesterName}
+            {isApprovalModalOpen && (
+                <div className="modal-overlay" onClick={() => setIsApprovalModalOpen(false)}>
+                    <div className="modal-content modal-approval" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-header-icon">
+                                <Icon name="how_to_reg" />
+                            </div>
+                            <div className="modal-header-text">
+                                <h3>Review Order</h3>
+                                <p>Approve or reject {currentRequisition.folio}</p>
+                            </div>
+                            <button className="modal-close" onClick={() => setIsApprovalModalOpen(false)}>
+                                <Icon name="close" />
+                            </button>
                         </div>
-                        <div>
-                            <strong>Items:</strong> {currentRequisition.items?.length || 0}
+                        <div className="modal-body">
+                            <div className="approval-summary">
+                                <div className="summary-item">
+                                    <Icon name="person" />
+                                    <span><strong>Requester:</strong> {currentRequisition.requesterName}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <Icon name="inventory_2" />
+                                    <span><strong>Items:</strong> {currentRequisition.items?.length || 0}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <Icon name="warehouse" />
+                                    <span><strong>Warehouse:</strong> {currentRequisition.warehouseName}</span>
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Approval Comments</label>
+                                <textarea id="approvalComments" rows="3" placeholder="Add optional comments..." />
+                            </div>
                         </div>
-                        <div>
-                            <strong>Warehouse:</strong> {currentRequisition.warehouseName}
-                        </div>
-                    </div>
-                    <div className="form-group">
-                        <label>Approval Comments</label>
-                        <textarea
-                            id="approvalComments"
-                            rows="3"
-                            placeholder="Add optional comments..."
-                        />
-                    </div>
-                    <div className="approval-actions">
-                        <button
-                            className="btn-danger"
-                            onClick={() => {
+                        <div className="modal-footer">
+                            <button className="btn-modal-reject" onClick={() => {
                                 const comments = document.getElementById('approvalComments').value;
                                 handleApprove('REJECTED', comments);
-                            }}
-                        >
-                            <FaTimes /> Reject
-                        </button>
-                        <button
-                            className="btn-success"
-                            onClick={() => {
+                            }}>
+                                <Icon name="cancel" />
+                                Reject
+                            </button>
+                            <button className="btn-modal-approve" onClick={() => {
                                 const comments = document.getElementById('approvalComments').value;
                                 handleApprove('APPROVED', comments);
-                            }}
-                        >
-                            <FaCheck /> Approve
-                        </button>
+                            }}>
+                                <Icon name="check_circle" />
+                                Approve
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </Modal>
+            )}
 
             {/* Delete Confirmation Modal */}
-            <Modal
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                title="Confirm Deletion"
-                size="small"
-            >
-                <div className="delete-confirmation">
-                    <FaExclamationTriangle className="warning-icon" />
-                    <p>
-                        Are you sure you want to delete requisition{' '}
-                        <strong>{requisitionToDelete?.folio}</strong>?
-                    </p>
-                    <p className="warning-text">Esta acción no se puede deshacer.</p>
-                    <div className="confirmation-actions">
-                        <button
-                            className="btn-secondary"
-                            onClick={() => setIsDeleteModalOpen(false)}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            className="btn-danger"
-                            onClick={handleDelete}
-                        >
-                            Delete
-                        </button>
+            {isDeleteModalOpen && requisitionToDelete && (
+                <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
+                    <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-header-icon warning">
+                                <Icon name="warning" />
+                            </div>
+                            <div className="modal-header-text">
+                                <h3>Confirm Delete</h3>
+                                <p>This action cannot be undone</p>
+                            </div>
+                            <button className="modal-close" onClick={() => setIsDeleteModalOpen(false)}>
+                                <Icon name="close" />
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <p>Are you sure you want to delete order <strong>{requisitionToDelete.folio}</strong>?</p>
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn-modal-cancel" onClick={() => setIsDeleteModalOpen(false)}>
+                                Cancel
+                            </button>
+                            <button className="btn-modal-delete" onClick={handleDelete}>
+                                <Icon name="delete" />
+                                Delete
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </Modal>
+            )}
         </div>
     );
 };

@@ -693,13 +693,13 @@ const QuotationsModule = () => {
                         <Icon name="request_quote" />
                     </div>
                     <div className="header-text">
-                        <h1>Quotations</h1>
-                        <p>Manage quotations and estimates for clients</p>
+                        <h1>Quotes</h1>
+                        <p>Manage quotes and estimates for clients</p>
                     </div>
                 </div>
                 <button className="btn-primary-action" onClick={() => handleOpenModal('add')}>
                     <Icon name="add" />
-                    New Quotation
+                    New Quote
                 </button>
             </div>
 

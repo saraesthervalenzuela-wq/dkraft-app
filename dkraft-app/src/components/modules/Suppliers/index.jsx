@@ -717,16 +717,28 @@ const SuppliersModule = () => {
                             </div>
                             <div className="form-group">
                                 <label>Status *</label>
-                                <select
-                                    value={currentSupplier.status}
-                                    onChange={(e) => handleInputChange('status', e.target.value)}
-                                    disabled={modalMode === 'view'}
-                                    required
-                                >
-                                    {statusOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                    ))}
-                                </select>
+                                <div className="status-toggle">
+                                    <button
+                                        type="button"
+                                        className={`status-toggle-btn status-active ${currentSupplier.status === 'ACTIVE' ? 'active' : ''}`}
+                                        onClick={() => modalMode !== 'view' && handleInputChange('status', 'ACTIVE')}
+                                        disabled={modalMode === 'view'}
+                                    >
+                                        <span className="status-indicator"></span>
+                                        <Icon name="check_circle" />
+                                        Active
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className={`status-toggle-btn status-inactive ${currentSupplier.status === 'INACTIVE' ? 'active' : ''}`}
+                                        onClick={() => modalMode !== 'view' && handleInputChange('status', 'INACTIVE')}
+                                        disabled={modalMode === 'view'}
+                                    >
+                                        <span className="status-indicator"></span>
+                                        <Icon name="cancel" />
+                                        Inactive
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div className="form-row">
