@@ -30,7 +30,23 @@
       "Bash(git show:*)",
       "Bash(git push:*)",
       "Bash(find:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(SUPABASE_URL=\"https://qalqscfrcxzzvrcvqqbp.supabase.co\" API_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhbHFzY2ZyY3h6enZyY3ZxcWJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4ODUxMjQsImV4cCI6MjA4NTQ2MTEyNH0.nngJeNqoq9yuBiiQYqzw_GOKCNMiPxjFsQusch0rQxo\" __NEW_LINE_23f7b0187525aace__ echo \"=== TESTING SUPABASE TABLES ===\" echo \"\" __NEW_LINE_23f7b0187525aace__ echo \"1. Clients:\" curl -s -H \"apikey: $API_KEY\" \"$SUPABASE_URL/rest/v1/clients?select=count\")",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '2. Suppliers:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/suppliers?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '3. Materials:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/materials?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '4. Products:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/products?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '5. Warehouses:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/warehouses?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '6. Staff:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/staff?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '7. Projects:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/projects?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '8. BOM:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/bom?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '9. Categories:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/categories?select=count)",
+      "Bash(echo FAILED __NEW_LINE_23f7b0187525aace__ echo '10. Units:' curl -s -H 'apikey: $API_KEY' $SUPABASE_URL/rest/v1/units?select=count)",
+      "Bash(API_KEY=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhbHFzY2ZyY3h6enZyY3ZxcWJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4ODUxMjQsImV4cCI6MjA4NTQ2MTEyNH0.nngJeNqoq9yuBiiQYqzw_GOKCNMiPxjFsQusch0rQxo\":*)",
+      "Bash(BASE=\"https://qalqscfrcxzzvrcvqqbp.supabase.co/rest/v1\")",
+      "Bash(__NEW_LINE_525e837f4c1049b5__ echo \"=== SAMPLE DATA CHECK ===\")",
+      "Bash(__NEW_LINE_f3a2636c670e1dff__ echo \"=== ACTUAL SCHEMA CHECK ===\")",
+      "Bash(wc:*)",
+      "Bash(git restore:*)"
     ]
   }
 }
