@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon, SearchBox, Modal, SkeletonStatsRow, SkeletonCard, Skeleton, EmptyState } from '../../common';
+import { Icon, SearchBox, Modal, SkeletonStatsRow, SkeletonCard, Skeleton, EmptyState, Toast } from '../../common';
 import { clientsService } from '../../../firebase';
 import { isApiEnabled, clientsApi } from '../../../services/api';
 
@@ -115,6 +115,7 @@ const ClientsModule = () => {
     const [currentClient, setCurrentClient] = useState(emptyClient);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [clientToDelete, setClientToDelete] = useState(null);
+    const [toast, setToast] = useState(null);
 
     // QB Sync polling ref
     const pollIntervalRef = useRef(null);
@@ -499,11 +500,12 @@ const ClientsModule = () => {
             console.log('[Clients] Save successful!');
             setShowModal(false);
             setCurrentClient(emptyClient);
+            setToast({ message: modalMode === 'add' ? 'Client created successfully!' : 'Client updated successfully!', type: 'success' });
             // Reload data to get fresh data from server
             await loadData();
         } catch (error) {
             console.error('[Clients] Error saving client:', error);
-            alert('Error saving client: ' + error.message);
+            setToast({ message: 'Error saving client: ' + error.message, type: 'error' });
         }
     };
 
@@ -1034,6 +1036,15 @@ const ClientsModule = () => {
                     <p className="text-muted">This action cannot be undone.</p>
                 </div>
             </Modal>
+
+            {/* Toast Notification */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };

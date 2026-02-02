@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, KanbanBoard } from '../../common';
+import { Icon, SearchBox, KanbanBoard, Toast } from '../../common';
 import { isApiEnabled, operationsApi, projectsApi, materialsApi } from '../../../services/api';
 import { operationsService, projectsService } from '../../../lib/supabase';
 import {
@@ -19,6 +19,7 @@ const OperationsModule = () => {
     const [_projects, setProjects] = useState(projectsData);
     const [_materials, setMaterials] = useState(materialsData);
     const [isLoading, setIsLoading] = useState(false);
+    const [toast, setToast] = useState(null);
 
     // Load from API
     useEffect(() => {
@@ -209,10 +210,11 @@ const OperationsModule = () => {
                 progress: 0
             };
             setOperations([...operations, operation]);
+            setToast({ message: 'Operation created successfully!', type: 'success' });
             resetForm();
         } catch (error) {
             console.error('[Operations] Error creating:', error);
-            alert('Error creating operation: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -253,10 +255,11 @@ const OperationsModule = () => {
                     currentStage: currentStageKey
                 } : op
             ));
+            setToast({ message: 'Operation updated successfully!', type: 'success' });
             resetForm();
         } catch (error) {
             console.error('[Operations] Error updating:', error);
-            alert('Error updating operation: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -1119,6 +1122,14 @@ const OperationsModule = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
             )}
         </div>
     );

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, Toast } from '../../common';
 import { isApiEnabled, unitsApi } from '../../../services/api';
 import { unitsService } from '../../../lib/supabase';
 
@@ -17,6 +17,7 @@ const initialUnits = [
 const UnitsModule = () => {
     const [units, setUnits] = useState(initialUnits);
     const [searchTerm, setSearchTerm] = useState('');
+    const [toast, setToast] = useState(null);
 
     // Load from API
     useEffect(() => {
@@ -86,10 +87,11 @@ const UnitsModule = () => {
 
             setUnits([...units, saved]);
             console.log('[Units] Created:', saved.id);
+            setToast({ message: 'Unit created successfully!', type: 'success' });
             resetForm();
         } catch (error) {
             console.error('[Units] Error creating:', error);
-            alert('Error creating unit: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -108,10 +110,11 @@ const UnitsModule = () => {
                 u.id === editingUnit.id ? { ...u, ...unitData } : u
             ));
             console.log('[Units] Updated:', editingUnit.id);
+            setToast({ message: 'Unit updated successfully!', type: 'success' });
             resetForm();
         } catch (error) {
             console.error('[Units] Error updating:', error);
-            alert('Error updating unit: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -332,6 +335,14 @@ const UnitsModule = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
             )}
         </div>
     );

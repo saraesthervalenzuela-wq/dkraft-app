@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { isApiEnabled, categoriesApi } from '../../../services/api';
 import { categoriesService } from '../../../lib/supabase';
 
@@ -15,6 +15,7 @@ const CategoriesModule = () => {
     const [categories, setCategories] = useState(initialCategories);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [toast, setToast] = useState(null);
 
     // Load from API
     useEffect(() => {
@@ -109,10 +110,11 @@ const CategoriesModule = () => {
 
             setCategories([...categories, saved]);
             console.log('[Categories] Created:', saved.id);
+            setToast({ message: 'Category created successfully!', type: 'success' });
             resetForm();
         } catch (error) {
             console.error('[Categories] Error creating:', error);
-            alert('Error creating category: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -131,10 +133,11 @@ const CategoriesModule = () => {
                 c.id === editingCategory.id ? { ...c, ...categoryData } : c
             ));
             console.log('[Categories] Updated:', editingCategory.id);
+            setToast({ message: 'Category updated successfully!', type: 'success' });
             resetForm();
         } catch (error) {
             console.error('[Categories] Error updating:', error);
-            alert('Error updating category: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -350,6 +353,14 @@ const CategoriesModule = () => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
             )}
         </div>
     );

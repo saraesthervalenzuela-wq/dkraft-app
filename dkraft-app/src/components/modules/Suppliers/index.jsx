@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { suppliersService } from '../../../firebase';
 import { isApiEnabled, suppliersApi } from '../../../services/api';
 
@@ -69,6 +69,7 @@ const statusOptions = [
 const SuppliersModule = () => {
     // Data state
     const [suppliers, setSuppliers] = useState([]);
+    const [toast, setToast] = useState(null);
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
@@ -356,13 +357,14 @@ const SuppliersModule = () => {
             }
 
             console.log('[Suppliers] Save successful!');
+            setToast({ message: modalMode === 'add' ? 'Supplier created successfully!' : 'Supplier updated successfully!', type: 'success' });
             setShowModal(false);
             setCurrentSupplier(emptySupplier);
             // Reload data to get fresh data from server
             await loadData();
         } catch (error) {
             console.error('[Suppliers] Error saving supplier:', error);
-            alert('Error saving supplier: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -853,6 +855,14 @@ const SuppliersModule = () => {
                     <p className="text-muted">This action cannot be undone.</p>
                 </div>
             </Modal>
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };

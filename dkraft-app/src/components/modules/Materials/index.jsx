@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon, SearchBox, Modal, SkeletonStatsRow, Skeleton } from '../../common';
+import { Icon, SearchBox, Modal, SkeletonStatsRow, Skeleton, Toast } from '../../common';
 import { materialsService, suppliersService, categoriesService, unitsService } from '../../../firebase';
 import { isApiEnabled, materialsApi, suppliersApi, categoriesApi, unitsApi } from '../../../services/api';
 
@@ -86,6 +86,7 @@ const MaterialsModule = () => {
     const [suppliers, setSuppliers] = useState([]);
     const [categories, setCategories] = useState([]);
     const [units, setUnits] = useState([]);
+    const [toast, setToast] = useState(null);
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
@@ -527,13 +528,14 @@ const MaterialsModule = () => {
             }
 
             console.log('[Materials] Save successful!');
+            setToast({ message: modalMode === 'add' ? 'Material created successfully!' : 'Material updated successfully!', type: 'success' });
             setShowModal(false);
             setCurrentMaterial(emptyMaterial);
             // Reload data to get fresh data from server
             await loadData();
         } catch (error) {
             console.error('[Materials] Error saving material:', error);
-            alert('Error saving material: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -1087,6 +1089,14 @@ const MaterialsModule = () => {
                     <p className="text-muted">This action cannot be undone.</p>
                 </div>
             </Modal>
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };

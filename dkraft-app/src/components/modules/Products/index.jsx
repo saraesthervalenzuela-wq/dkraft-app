@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon, SearchBox, Modal } from '../../common';
+import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { isApiEnabled, productsApi, categoriesApi } from '../../../services/api';
 import { productsService, categoriesService } from '../../../lib/supabase';
 
@@ -150,6 +150,7 @@ const ProductsModule = () => {
     // Data state
     const [products, setProducts] = useState(initialProductsData);
     const [categories, setCategories] = useState(defaultCategories);
+    const [toast, setToast] = useState(null);
 
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
@@ -611,11 +612,12 @@ const ProductsModule = () => {
             setProducts(updatedProducts);
             saveToStorage(updatedProducts);
 
+            setToast({ message: modalMode === 'add' ? 'Product created successfully!' : 'Product updated successfully!', type: 'success' });
             setShowModal(false);
             setCurrentProduct(emptyProduct);
         } catch (error) {
             console.error('[Products] Error saving:', error);
-            alert('Error al guardar el producto: ' + error.message);
+            setToast({ message: 'Error: ' + error.message, type: 'error' });
         }
     };
 
@@ -1119,6 +1121,14 @@ const ProductsModule = () => {
                     <p className="text-muted">This action cannot be undone.</p>
                 </div>
             </Modal>
+
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };
