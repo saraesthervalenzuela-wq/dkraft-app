@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
 import { isApiEnabled, clientsApi, productsApi, quotationsApi } from '../../../services/api';
 import { clientsData as initialClientsData, productsData as initialProductsData } from '../../../data/initialData';
+import { exportQuotationToPDF } from '../../../utils/pdfExport';
 import './styles.css';
 
 // Billing entities
@@ -825,6 +826,22 @@ const QuotationsModule = () => {
                                                 title="View"
                                             >
                                                 <Icon name="visibility" />
+                                            </button>
+                                            <button
+                                                className="btn-action pdf"
+                                                onClick={() => {
+                                                    const client = clients.find(c => c.id === quotation.clientId);
+                                                    exportQuotationToPDF({
+                                                        ...quotation,
+                                                        clientName: client?.name || client?.companyName || 'Client',
+                                                        clientEmail: client?.email || '',
+                                                        clientPhone: client?.phone || '',
+                                                        clientAddress: `${client?.address || ''} ${client?.city || ''} ${client?.state || ''}`.trim()
+                                                    }, quotation.items || []);
+                                                }}
+                                                title="Export PDF"
+                                            >
+                                                <Icon name="picture_as_pdf" />
                                             </button>
                                             {quotation.status === 'DRAFT' && (
                                                 <>

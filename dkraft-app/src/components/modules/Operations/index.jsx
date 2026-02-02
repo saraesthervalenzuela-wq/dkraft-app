@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Icon, SearchBox } from '../../common';
+import { Icon, SearchBox, KanbanBoard } from '../../common';
 import { isApiEnabled, operationsApi, projectsApi, materialsApi } from '../../../services/api';
 import {
     operationsData,
@@ -213,6 +213,45 @@ const OperationsModule = () => {
         setOperations(operations.filter(op => !selectedOperations.includes(op.id)));
         setSelectedOperations([]);
     };
+
+    // Handle status change from Kanban drag & drop
+    const handleKanbanStatusChange = async (item, newStatus) => {
+        // Map kanban column IDs to operation status values
+        const statusMap = {
+            'pending': 'Pending',
+            'scheduled': 'Scheduled',
+            'in_progress': 'In Progress',
+            'quality_check': 'Quality Check',
+            'completed': 'Completed'
+        };
+        const mappedStatus = statusMap[newStatus] || newStatus;
+
+        // Update locally
+        setOperations(operations.map(op =>
+            op.id === item.id ? { ...op, status: mappedStatus } : op
+        ));
+
+        // Update in API if enabled
+        if (isApiEnabled()) {
+            try {
+                await operationsApi.update(item.id, { status: mappedStatus });
+            } catch (error) {
+                console.error('Error updating operation status:', error);
+            }
+        }
+    };
+
+    // Transform operations for Kanban board
+    const kanbanItems = sortedOperations.map(op => ({
+        ...op,
+        folio: op.workOrderNumber,
+        name: op.projectName,
+        productName: op.projectName,
+        priority: op.priority?.toLowerCase(),
+        quantity: 1,
+        progress: op.progress,
+        status: (op.status || 'Pending').toLowerCase().replace(/\s+/g, '_')
+    }));
 
     const resetForm = () => {
         setShowModal(false);
@@ -471,6 +510,13 @@ const OperationsModule = () => {
                     >
                         <Icon name="view_list" />
                     </button>
+                    <button
+                        className={`view-toggle-btn ${viewMode === 'kanban' ? 'active' : ''}`}
+                        onClick={() => setViewMode('kanban')}
+                        title="Kanban view"
+                    >
+                        <Icon name="view_kanban" />
+                    </button>
                 </div>
                 {selectedOperations.length > 0 && (
                     <button className="btn-delete-selected" onClick={handleDeleteSelected}>
@@ -480,7 +526,14 @@ const OperationsModule = () => {
                 )}
             </div>
 
-            {viewMode === 'grid' ? (
+            {viewMode === 'kanban' ? (
+                <KanbanBoard
+                    items={kanbanItems}
+                    statusField="status"
+                    onStatusChange={handleKanbanStatusChange}
+                    onCardClick={(item) => handleEditOperation(operations.find(op => op.id === item.id))}
+                />
+            ) : viewMode === 'grid' ? (
                 <div className="operations-cards-grid">
                     {sortedOperations.map((operation) => (
                         <div key={operation.id} className="operation-card">

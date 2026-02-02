@@ -29,3 +29,6 @@ export { default as GlobalSearch } from './GlobalSearch';
 
 // Empty states
 export { default as EmptyState } from './EmptyState';
+
+// Kanban board
+export { default as KanbanBoard } from './KanbanBoard';

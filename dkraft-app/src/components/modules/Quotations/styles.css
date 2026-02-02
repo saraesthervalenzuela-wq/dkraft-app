@@ -163,6 +163,11 @@
     color: #dc3545;
 }
 
+.btn-action.pdf:hover {
+    background: rgba(211, 84, 0, 0.2);
+    color: #d35400;
+}
+
 /* Cards Grid */
 .quotations-cards-grid {
     display: grid;

@@ -1,0 +1,304 @@
+/**
+ * Kanban Board Styles
+ * Drag & drop board with glassmorphism
+ */
+
+.kanban-board {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    overflow-x: auto;
+    min-height: 500px;
+}
+
+/* Columns */
+.kanban-column {
+    flex: 1;
+    min-width: 280px;
+    max-width: 320px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.2s ease;
+}
+
+.kanban-column.drag-over {
+    border-color: rgba(211, 84, 0, 0.4);
+    background: rgba(211, 84, 0, 0.05);
+    box-shadow: 0 0 20px rgba(211, 84, 0, 0.1);
+}
+
+.kanban-column-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    border-bottom: 2px solid var(--column-color, #666);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px 12px 0 0;
+}
+
+.column-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #e2e8f0;
+}
+
+.column-title .material-symbols-rounded {
+    font-size: 20px;
+    color: var(--column-color, #888);
+}
+
+.column-count {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.25rem 0.625rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+}
+
+.kanban-column-body {
+    flex: 1;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+/* Cards */
+.kanban-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 0.875rem;
+    cursor: grab;
+    transition: all 0.2s ease;
+    animation: cardSlideIn 0.3s ease-out;
+}
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.kanban-card:hover {
+    border-color: rgba(211, 84, 0, 0.3);
+    background: rgba(255, 255, 255, 0.06);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.kanban-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+    transform: scale(1.02) rotate(2deg);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.kanban-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.kanban-card-folio {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #d35400;
+    font-family: 'Coda', monospace;
+}
+
+.kanban-card-priority {
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 0.125rem 0.5rem;
+    border-radius: 4px;
+}
+
+.kanban-card-priority.high {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.kanban-card-priority.medium {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+}
+
+.kanban-card-priority.low {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.kanban-card-title {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.kanban-card-project {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.625rem;
+}
+
+.kanban-card-project .material-symbols-rounded {
+    font-size: 14px;
+}
+
+.kanban-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+}
+
+.kanban-card-quantity {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.kanban-card-quantity .material-symbols-rounded {
+    font-size: 14px;
+}
+
+.kanban-card-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.6875rem;
+    color: #94a3b8;
+}
+
+.progress-bar {
+    width: 50px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #d35400 0%, #e67e22 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.kanban-card-due {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.6875rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.kanban-card-due .material-symbols-rounded {
+    font-size: 12px;
+}
+
+/* Empty state */
+.kanban-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #475569;
+    gap: 0.5rem;
+}
+
+.kanban-empty .material-symbols-rounded {
+    font-size: 32px;
+    opacity: 0.5;
+}
+
+.kanban-empty span:last-child {
+    font-size: 0.8125rem;
+}
+
+/* Scrollbar */
+.kanban-column-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.kanban-column-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.kanban-column-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+/* Light theme */
+[data-theme="light"] .kanban-column {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .kanban-column-header {
+    background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .column-title {
+    color: #1e293b;
+}
+
+[data-theme="light"] .kanban-card {
+    background: white;
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .kanban-card:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .kanban-card-title {
+    color: #1e293b;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .kanban-board {
+        padding-bottom: 1rem;
+    }
+
+    .kanban-column {
+        min-width: 260px;
+    }
+}
+
+@media (max-width: 640px) {
+    .kanban-column {
+        min-width: 85vw;
+    }
+}

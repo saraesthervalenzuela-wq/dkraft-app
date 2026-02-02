@@ -50,6 +50,289 @@
 }
 
 /* ============================================
+   THEME SYSTEM - Dark & Light Modes
+   ============================================ */
+
+:root {
+    /* Default: Dark Theme */
+    --bg-primary: #0a1628;
+    --bg-secondary: #0f2350;
+    --bg-tertiary: #142e6e;
+    --bg-card: rgba(15, 40, 90, 0.65);
+    --bg-surface: rgba(255, 255, 255, 0.03);
+    --bg-hover: rgba(255, 255, 255, 0.08);
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #64748b;
+    --text-muted: #475569;
+
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-hover: rgba(255, 255, 255, 0.15);
+    --border-accent: rgba(211, 84, 0, 0.3);
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 30px rgba(211, 84, 0, 0.15);
+
+    --sidebar-bg: linear-gradient(180deg, #0a1628 0%, #071020 100%);
+    --sidebar-border: rgba(255, 255, 255, 0.06);
+
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --input-focus: rgba(211, 84, 0, 0.3);
+
+    --modal-bg: rgba(15, 35, 80, 0.98);
+    --modal-overlay: rgba(0, 0, 0, 0.7);
+
+    --table-header-bg: rgba(255, 255, 255, 0.03);
+    --table-row-hover: rgba(211, 84, 0, 0.08);
+    --table-border: rgba(255, 255, 255, 0.05);
+
+    --scrollbar-track: rgba(255, 255, 255, 0.02);
+    --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+}
+
+/* Light Theme */
+[data-theme="light"] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-tertiary: #e2e8f0;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --bg-surface: rgba(0, 0, 0, 0.02);
+    --bg-hover: rgba(0, 0, 0, 0.05);
+
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #64748b;
+    --text-muted: #94a3b8;
+
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-hover: rgba(0, 0, 0, 0.15);
+    --border-accent: rgba(211, 84, 0, 0.4);
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 30px rgba(211, 84, 0, 0.1);
+
+    --sidebar-bg: linear-gradient(180deg, #0a1628 0%, #071020 100%);
+    --sidebar-border: rgba(255, 255, 255, 0.06);
+
+    --input-bg: rgba(0, 0, 0, 0.03);
+    --input-border: rgba(0, 0, 0, 0.1);
+    --input-focus: rgba(211, 84, 0, 0.2);
+
+    --modal-bg: rgba(255, 255, 255, 0.98);
+    --modal-overlay: rgba(0, 0, 0, 0.4);
+
+    --table-header-bg: rgba(0, 0, 0, 0.02);
+    --table-row-hover: rgba(211, 84, 0, 0.06);
+    --table-border: rgba(0, 0, 0, 0.06);
+
+    --scrollbar-track: rgba(0, 0, 0, 0.02);
+    --scrollbar-thumb: rgba(0, 0, 0, 0.15);
+}
+
+/* Apply theme variables to key elements */
+body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Main content area */
+.main-content {
+    background: var(--bg-primary);
+}
+
+/* Cards */
+[data-theme="light"] .card,
+[data-theme="light"] .client-card,
+[data-theme="light"] .material-card,
+[data-theme="light"] .supplier-card,
+[data-theme="light"] .product-card,
+[data-theme="light"] .stat-card,
+[data-theme="light"] .module-stat-card {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Tables */
+[data-theme="light"] .clients-table,
+[data-theme="light"] .materials-table,
+[data-theme="light"] .suppliers-table {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+[data-theme="light"] .clients-table-header,
+[data-theme="light"] .materials-table-header {
+    background: var(--table-header-bg);
+    border-color: var(--table-border);
+}
+
+[data-theme="light"] .clients-table-row,
+[data-theme="light"] .materials-table-row {
+    border-color: var(--table-border);
+}
+
+[data-theme="light"] .clients-table-row:hover,
+[data-theme="light"] .materials-table-row:hover {
+    background: var(--table-row-hover);
+}
+
+/* Form inputs */
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] input:focus,
+[data-theme="light"] select:focus,
+[data-theme="light"] textarea:focus {
+    border-color: var(--border-accent);
+    box-shadow: 0 0 0 3px var(--input-focus);
+}
+
+/* Modals - Keep dark for consistency */
+[data-theme="light"] .modal-container,
+[data-theme="light"] .shortcuts-modal,
+[data-theme="light"] .global-search-modal {
+    background: var(--modal-bg);
+    color: var(--text-primary);
+}
+
+/* Page headers */
+[data-theme="light"] .page-header {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .page-header h1 {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .page-header p {
+    color: var(--text-secondary);
+}
+
+/* Search box */
+[data-theme="light"] .search-box input {
+    background: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+/* Toolbars */
+[data-theme="light"] .clients-toolbar,
+[data-theme="light"] .materials-toolbar {
+    background: transparent;
+}
+
+/* Status badges - keep consistent */
+[data-theme="light"] .status-badge {
+    background: var(--bg-surface);
+}
+
+/* Buttons */
+[data-theme="light"] .btn-icon {
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .btn-icon:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* View toggle */
+[data-theme="light"] .view-toggle-btn {
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+}
+
+[data-theme="light"] .view-toggle-btn.active {
+    background: #d35400;
+    color: white;
+}
+
+/* Skeleton loaders */
+[data-theme="light"] .skeleton {
+    background: linear-gradient(
+        90deg,
+        rgba(0, 0, 0, 0.04) 0%,
+        rgba(0, 0, 0, 0.08) 20%,
+        rgba(0, 0, 0, 0.12) 40%,
+        rgba(0, 0, 0, 0.08) 60%,
+        rgba(0, 0, 0, 0.04) 100%
+    );
+}
+
+[data-theme="light"] .skeleton-card,
+[data-theme="light"] .skeleton-stat,
+[data-theme="light"] .skeleton-table {
+    background: var(--bg-card);
+    border-color: var(--border-color);
+}
+
+/* Empty states */
+[data-theme="light"] .empty-state-icon {
+    background: linear-gradient(
+        135deg,
+        rgba(211, 84, 0, 0.1) 0%,
+        rgba(211, 84, 0, 0.05) 100%
+    );
+}
+
+[data-theme="light"] .empty-state-title {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .empty-state-description {
+    color: var(--text-secondary);
+}
+
+/* Charts */
+[data-theme="light"] .chart-container {
+    background: var(--bg-card);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--border-hover);
+}
+
+/* Smooth theme transition */
+.main-content,
+.card,
+.client-card,
+.material-card,
+input,
+select,
+textarea,
+.modal-container {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* ============================================
    ADVANCED VISUAL EFFECTS - Glows, Animations
    ============================================ */
 
