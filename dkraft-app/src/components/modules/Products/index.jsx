@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Icon, SearchBox, Modal } from '../../common';
 import { isApiEnabled, productsApi, categoriesApi } from '../../../services/api';
+import { productsService, categoriesService } from '../../../lib/supabase';
 
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
@@ -543,21 +544,17 @@ const ProductsModule = () => {
     const confirmDelete = async () => {
         if (productToDelete) {
             try {
-                // Try API first
-                if (isApiEnabled()) {
-                    try {
-                        await productsApi.delete(productToDelete.id);
-                    } catch (apiError) {
-                        console.warn('[Products] API delete failed, using localStorage:', apiError.message);
-                    }
-                }
+                // Delete from Supabase
+                await productsService.delete(productToDelete.id);
+                console.log('[Products] Deleted from Supabase:', productToDelete.id);
+
                 // Update local state and storage
                 const updatedProducts = products.filter(p => p.id !== productToDelete.id);
                 setProducts(updatedProducts);
                 saveToStorage(updatedProducts);
             } catch (error) {
                 console.error('[Products] Error deleting:', error);
-                alert('Error al eliminar el producto');
+                alert('Error al eliminar el producto: ' + error.message);
             }
         }
         setShowDeleteConfirm(false);
@@ -566,46 +563,51 @@ const ProductsModule = () => {
 
     const handleSave = async () => {
         try {
-            const productToSave = {
-                ...currentProduct,
-                qbSyncStatus: currentProduct.qbSyncStatus || 'pending',
-                updatedAt: new Date().toISOString(),
+            // Map to Supabase snake_case columns
+            const productData = {
+                name: currentProduct.name,
+                description: currentProduct.description || '',
+                category_id: currentProduct.categoryId || null,
+                status: currentProduct.status || 'ACTIVE',
+                cost_price: parseFloat(currentProduct.costPrice) || 0,
+                base_price: parseFloat(currentProduct.price) || 0,
             };
 
+            let savedProduct;
             let updatedProducts;
 
             if (modalMode === 'add') {
-                // Generate local ID
-                productToSave.id = `local-${Date.now()}`;
-                productToSave.createdAt = new Date().toISOString();
+                // Save to Supabase
+                savedProduct = await productsService.create(productData);
 
-                // Try API first
-                if (isApiEnabled()) {
-                    try {
-                        const newProduct = await productsApi.create(productToSave);
-                        productToSave.id = newProduct.id || productToSave.id;
-                    } catch (apiError) {
-                        console.warn('[Products] API create failed, saving locally:', apiError.message);
-                    }
+                if (!savedProduct || !savedProduct.id) {
+                    throw new Error('Failed to create product in database');
                 }
 
-                updatedProducts = [...products, productToSave];
+                // Normalize for local state
+                const normalizedProduct = {
+                    ...currentProduct,
+                    id: savedProduct.id,
+                    createdAt: savedProduct.created_at,
+                };
+
+                updatedProducts = [...products, normalizedProduct];
+                console.log('[Products] Created in Supabase:', savedProduct.id);
             } else if (modalMode === 'edit') {
-                // Try API first
-                if (isApiEnabled()) {
-                    try {
-                        await productsApi.update(currentProduct.id, productToSave);
-                    } catch (apiError) {
-                        console.warn('[Products] API update failed, saving locally:', apiError.message);
-                    }
+                // Update in Supabase
+                savedProduct = await productsService.update(currentProduct.id, productData);
+
+                if (!savedProduct) {
+                    throw new Error('Failed to update product in database');
                 }
 
                 updatedProducts = products.map(p =>
-                    p.id === currentProduct.id ? { ...productToSave, id: currentProduct.id } : p
+                    p.id === currentProduct.id ? { ...currentProduct, ...productData } : p
                 );
+                console.log('[Products] Updated in Supabase:', currentProduct.id);
             }
 
-            // Update state and localStorage
+            // Update local state and localStorage (as backup cache)
             setProducts(updatedProducts);
             saveToStorage(updatedProducts);
 
@@ -613,7 +615,7 @@ const ProductsModule = () => {
             setCurrentProduct(emptyProduct);
         } catch (error) {
             console.error('[Products] Error saving:', error);
-            alert('Error al guardar el producto');
+            alert('Error al guardar el producto: ' + error.message);
         }
     };
 

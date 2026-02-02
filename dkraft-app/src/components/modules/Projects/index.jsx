@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
 import { isApiEnabled, projectsApi } from '../../../services/api';
+import { projectsService } from '../../../lib/supabase';
 
 const initialProjectsData = [
     { id: 1, name: 'ABC Corporate Office', description: 'Corporate office furniture project', status: 'Active', client: 'ABC Corporation', poNumber: 'PO-2024-001', workOrder: 'WO-001', estimateNumber: 'EST-001', terms: 'Net 30', nameAddress: 'ABC Corporation, 123 Main Ave', shipTo: 'North Industrial Zone', contact: 'John Smith - 664 123 4567', salesRep: 'Carlos Mendoza', csr: 'Ana Garcia', subtotal: 45000, tax: 7200, total: 52200 },
@@ -89,29 +90,83 @@ const ProjectsModule = () => {
         return (parseFloat(subtotal) || 0) + (parseFloat(tax) || 0);
     };
 
-    const handleCreateProject = () => {
+    const handleCreateProject = async () => {
         if (!newProject.name) return;
-        const project = {
-            id: projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1,
-            ...newProject,
-            subtotal: parseFloat(newProject.subtotal) || 0,
-            tax: parseFloat(newProject.tax) || 0,
-            total: calculateTotal(newProject.subtotal, newProject.tax)
-        };
-        setProjects([...projects, project]);
-        resetForm();
+
+        try {
+            // Map to Supabase snake_case columns
+            const projectData = {
+                name: newProject.name,
+                description: newProject.description || '',
+                status: newProject.status || 'Active',
+                po_number: newProject.poNumber || null,
+                subtotal: parseFloat(newProject.subtotal) || 0,
+                tax: parseFloat(newProject.tax) || 0,
+                total: calculateTotal(newProject.subtotal, newProject.tax),
+            };
+
+            // Save to Supabase
+            const savedProject = await projectsService.create(projectData);
+
+            if (!savedProject || !savedProject.id) {
+                throw new Error('Failed to create project in database');
+            }
+
+            // Add to local state with all fields
+            const normalizedProject = {
+                id: savedProject.id,
+                ...newProject,
+                subtotal: projectData.subtotal,
+                tax: projectData.tax,
+                total: projectData.total,
+            };
+
+            setProjects([...projects, normalizedProject]);
+            console.log('[Projects] Created in Supabase:', savedProject.id);
+            resetForm();
+        } catch (error) {
+            console.error('[Projects] Error creating:', error);
+            alert('Error al crear el proyecto: ' + error.message);
+        }
     };
 
-    const handleUpdateProject = () => {
+    const handleUpdateProject = async () => {
         if (!newProject.name) return;
-        setProjects(projects.map(p => p.id === editingProject.id ? {
-            ...p,
-            ...newProject,
-            subtotal: parseFloat(newProject.subtotal) || 0,
-            tax: parseFloat(newProject.tax) || 0,
-            total: calculateTotal(newProject.subtotal, newProject.tax)
-        } : p));
-        resetForm();
+
+        try {
+            // Map to Supabase snake_case columns
+            const projectData = {
+                name: newProject.name,
+                description: newProject.description || '',
+                status: newProject.status || 'Active',
+                po_number: newProject.poNumber || null,
+                subtotal: parseFloat(newProject.subtotal) || 0,
+                tax: parseFloat(newProject.tax) || 0,
+                total: calculateTotal(newProject.subtotal, newProject.tax),
+            };
+
+            // Update in Supabase
+            const savedProject = await projectsService.update(editingProject.id, projectData);
+
+            if (!savedProject) {
+                throw new Error('Failed to update project in database');
+            }
+
+            // Update local state
+            setProjects(projects.map(p => p.id === editingProject.id ? {
+                ...p,
+                ...newProject,
+                subtotal: projectData.subtotal,
+                tax: projectData.tax,
+                total: projectData.total,
+            } : p));
+
+            console.log('[Projects] Updated in Supabase:', editingProject.id);
+            resetForm();
+        } catch (error) {
+            console.error('[Projects] Error updating:', error);
+            alert('Error al actualizar el proyecto: ' + error.message);
+        }
     };
 
     const handleDeleteSelected = () => {
@@ -129,9 +184,19 @@ const ProjectsModule = () => {
         setShowDeleteConfirm(true);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (projectToDelete) {
-            setProjects(projects.filter(p => p.id !== projectToDelete.id));
+            try {
+                // Delete from Supabase
+                await projectsService.delete(projectToDelete.id);
+                console.log('[Projects] Deleted from Supabase:', projectToDelete.id);
+
+                // Update local state
+                setProjects(projects.filter(p => p.id !== projectToDelete.id));
+            } catch (error) {
+                console.error('[Projects] Error deleting:', error);
+                alert('Error al eliminar el proyecto: ' + error.message);
+            }
             setShowDeleteConfirm(false);
             setProjectToDelete(null);
         }
