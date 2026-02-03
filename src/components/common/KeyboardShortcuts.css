@@ -1,0 +1,318 @@
+/**
+ * Keyboard Shortcuts Modal Styles
+ * Sexy glassmorphism design
+ */
+
+/* Modal overlay */
+.shortcuts-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.2s ease-out;
+}
+
+/* Modal container */
+.shortcuts-modal {
+    background: linear-gradient(
+        135deg,
+        rgba(15, 35, 80, 0.95) 0%,
+        rgba(10, 22, 40, 0.98) 100%
+    );
+    border: 1px solid rgba(211, 84, 0, 0.3);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.5),
+        0 0 60px rgba(211, 84, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Header */
+.shortcuts-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.shortcuts-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.shortcuts-title .material-symbols-rounded {
+    color: #d35400;
+    font-size: 28px;
+}
+
+.shortcuts-close {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shortcuts-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+    transform: scale(1.05);
+}
+
+/* Content */
+.shortcuts-content {
+    padding: 1.5rem;
+    overflow-y: auto;
+    max-height: calc(80vh - 140px);
+}
+
+/* Sections */
+.shortcuts-section {
+    margin-bottom: 1.5rem;
+}
+
+.shortcuts-section:last-child {
+    margin-bottom: 0;
+}
+
+.shortcuts-category {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #d35400;
+    margin-bottom: 0.75rem;
+    padding-left: 0.25rem;
+}
+
+/* Shortcut list */
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.shortcut-item:hover {
+    background: rgba(211, 84, 0, 0.08);
+    border-color: rgba(211, 84, 0, 0.2);
+}
+
+.shortcut-description {
+    color: #e2e8f0;
+    font-size: 0.9375rem;
+}
+
+.shortcut-keys {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.key-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Key badges */
+.key-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.12) 0%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #f1f5f9;
+    text-transform: capitalize;
+    box-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.key-cmd,
+.key-shift,
+.key-alt {
+    font-size: 1rem;
+}
+
+.key-plus {
+    color: #64748b;
+    margin: 0 2px;
+    font-size: 0.75rem;
+}
+
+.key-or {
+    color: #64748b;
+    font-size: 0.75rem;
+    margin: 0 0.5rem;
+    font-style: italic;
+}
+
+/* Footer */
+.shortcuts-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.shortcuts-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+/* Floating indicator button */
+.shortcuts-indicator {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(
+        135deg,
+        rgba(15, 35, 80, 0.9) 0%,
+        rgba(10, 22, 40, 0.95) 100%
+    );
+    border: 1px solid rgba(211, 84, 0, 0.3);
+    border-radius: 12px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow:
+        0 4px 20px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(211, 84, 0, 0.1);
+}
+
+.shortcuts-indicator:hover {
+    color: #d35400;
+    border-color: rgba(211, 84, 0, 0.6);
+    transform: translateY(-3px);
+    box-shadow:
+        0 8px 30px rgba(0, 0, 0, 0.4),
+        0 0 30px rgba(211, 84, 0, 0.2);
+}
+
+.shortcuts-indicator .material-symbols-rounded {
+    font-size: 22px;
+}
+
+/* Scrollbar */
+.shortcuts-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.shortcuts-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 3px;
+}
+
+.shortcuts-content::-webkit-scrollbar-thumb {
+    background: rgba(211, 84, 0, 0.3);
+    border-radius: 3px;
+}
+
+.shortcuts-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(211, 84, 0, 0.5);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .shortcuts-modal {
+        width: 95%;
+        max-height: 85vh;
+        border-radius: 16px;
+    }
+
+    .shortcuts-header {
+        padding: 1rem;
+    }
+
+    .shortcuts-content {
+        padding: 1rem;
+    }
+
+    .shortcut-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .shortcut-keys {
+        align-self: flex-end;
+    }
+
+    .shortcuts-indicator {
+        bottom: 1rem;
+        right: 1rem;
+        width: 40px;
+        height: 40px;
+    }
+}

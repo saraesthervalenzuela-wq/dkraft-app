@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Gradiente principal azul -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a4fd6"/>
+      <stop offset="50%" style="stop-color:#0033b3"/>
+      <stop offset="100%" style="stop-color:#002080"/>
+    </linearGradient>
+    <!-- Gradiente naranja/dorado -->
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff9500"/>
+      <stop offset="50%" style="stop-color:#e67e22"/>
+      <stop offset="100%" style="stop-color:#d35400"/>
+    </linearGradient>
+    <!-- Gradiente para el fondo -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a1628"/>
+      <stop offset="100%" style="stop-color:#1a2744"/>
+    </linearGradient>
+    <!-- Sombra suave -->
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+    <!-- Brillo -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fondo con bordes redondeados -->
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="url(#bgGrad)"/>
+
+  <!-- Engranaje grande de fondo (decorativo) -->
+  <g opacity="0.15" transform="translate(256, 256)">
+    <circle r="180" fill="none" stroke="#fff" stroke-width="24"/>
+    <!-- Dientes del engranaje -->
+    <rect x="-15" y="-205" width="30" height="50" rx="6" fill="#fff"/>
+    <rect x="-15" y="155" width="30" height="50" rx="6" fill="#fff"/>
+    <rect x="-205" y="-15" width="50" height="30" rx="6" fill="#fff"/>
+    <rect x="155" y="-15" width="50" height="30" rx="6" fill="#fff"/>
+    <rect x="115" y="-145" width="30" height="45" rx="6" fill="#fff" transform="rotate(45)"/>
+    <rect x="-145" y="115" width="30" height="45" rx="6" fill="#fff" transform="rotate(45)"/>
+    <rect x="115" y="115" width="30" height="45" rx="6" fill="#fff" transform="rotate(-45)"/>
+    <rect x="-145" y="-145" width="30" height="45" rx="6" fill="#fff" transform="rotate(-45)"/>
+  </g>
+
+  <!-- Letra D estilizada -->
+  <g filter="url(#shadow)">
+    <!-- Cuerpo principal de la D -->
+    <path d="M140 120
+             L140 392
+             L240 392
+             C340 392 400 320 400 256
+             C400 192 340 120 240 120
+             Z
+             M200 180
+             L240 180
+             C300 180 340 210 340 256
+             C340 302 300 332 240 332
+             L200 332
+             Z"
+          fill="url(#blueGrad)"/>
+
+    <!-- Acento naranja/dorado (barra diagonal en la D) -->
+    <rect x="175" y="230" width="140" height="52" rx="8" fill="url(#orangeGrad)" filter="url(#glow)"/>
+  </g>
+
+  <!-- Punto/destello decorativo -->
+  <circle cx="400" cy="112" r="24" fill="url(#orangeGrad)" filter="url(#glow)"/>
+
+  <!-- Linea de acento inferior -->
+  <rect x="140" y="408" width="232" height="8" rx="4" fill="url(#orangeGrad)" opacity="0.8"/>
+</svg>
