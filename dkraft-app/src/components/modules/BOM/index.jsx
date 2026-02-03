@@ -223,14 +223,31 @@ const BOMModule = () => {
     const handleSave = async () => {
         try {
             const costs = calculateCosts(currentBOM.components, currentBOM.laborCost, currentBOM.margin);
-            const bomToSave = { ...currentBOM, ...costs };
+
+            // Map camelCase to snake_case for Supabase
+            const bomToSave = {
+                code: currentBOM.code || '',
+                name: currentBOM.name || '',
+                product_id: currentBOM.productId || currentBOM.product_id || null,
+                product_name: currentBOM.productName || currentBOM.product_name || '',
+                description: currentBOM.description || '',
+                version: currentBOM.version || '1.0',
+                status: currentBOM.status || 'Draft',
+                components: currentBOM.components || [],
+                total_material_cost: costs.totalMaterialCost || 0,
+                labor_cost: parseFloat(currentBOM.laborCost) || 0,
+                overhead_cost: costs.overheadCost || 0,
+                total_cost: costs.totalCost || 0,
+                margin: parseFloat(currentBOM.margin) || 30,
+                suggested_price: costs.suggestedPrice || 0
+            };
 
             if (modalMode === 'add') {
                 const newBOM = await bomService.create(bomToSave);
-                setBoms(prev => [...prev, { ...bomToSave, id: newBOM.id }]);
+                setBoms(prev => [...prev, { ...currentBOM, ...costs, id: newBOM.id }]);
             } else if (modalMode === 'edit') {
                 await bomService.update(currentBOM.id, bomToSave);
-                setBoms(prev => prev.map(b => b.id === currentBOM.id ? bomToSave : b));
+                setBoms(prev => prev.map(b => b.id === currentBOM.id ? { ...currentBOM, ...costs } : b));
             }
             setShowModal(false);
             setCurrentBOM(emptyBOM);
