@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import { NavigationGuardProvider, useNavigationGuard } from './context/NavigationGuardContext';
 import { AuthLayout } from './components/auth';
 import { Sidebar } from './components/layout';
-import { KeyboardShortcuts, GlobalSearch } from './components/common';
+import { KeyboardShortcuts, GlobalSearch, NavigationConfirmDialog } from './components/common';
 import {
     Dashboard,
     StaffModule,
@@ -46,12 +47,18 @@ const LoadingScreen = () => (
 // Main app content (when authenticated)
 const AppContent = () => {
     const { logout, user } = useAuth();
-    const [activeNav, setActiveNav] = useState('dashboard');
+    const { tryNavigate } = useNavigationGuard();
+    const [activeNav, setActiveNavInternal] = useState('dashboard');
     const [showGlobalSearch, setShowGlobalSearch] = useState(false);
     const [theme, setTheme] = useState(() => {
         const savedTheme = localStorage.getItem('dkraft-theme');
         return savedTheme || 'dark';
     });
+
+    // Guarded navigation - checks for unsaved changes before navigating
+    const setActiveNav = useCallback((nav) => {
+        tryNavigate(() => setActiveNavInternal(nav));
+    }, [tryNavigate]);
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
@@ -131,6 +138,9 @@ const AppContent = () => {
                 onClose={() => setShowGlobalSearch(false)}
                 setActiveNav={setActiveNav}
             />
+
+            {/* Navigation confirmation dialog */}
+            <NavigationConfirmDialog />
         </div>
     );
 };
@@ -155,7 +165,9 @@ function App() {
     return (
         <ToastProvider position="top-right">
             <AuthProvider>
-                <AuthWrapper />
+                <NavigationGuardProvider>
+                    <AuthWrapper />
+                </NavigationGuardProvider>
             </AuthProvider>
         </ToastProvider>
     );

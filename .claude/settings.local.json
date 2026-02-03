@@ -51,7 +51,8 @@
       "Bash(node tests/run-migration.js:*)",
       "Bash(node tests/execute-sql.js:*)",
       "WebFetch(domain:dkraft.com.mx)",
-      "Bash(timeout 10 npm run dev)"
+      "Bash(timeout 10 npm run dev)",
+      "Bash(echo:*)"
     ]
   }
 }

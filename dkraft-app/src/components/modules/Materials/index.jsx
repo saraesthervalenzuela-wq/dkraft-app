@@ -493,16 +493,24 @@ const MaterialsModule = () => {
                 finalStatus = 'LOW_STOCK';
             }
 
+            // Map camelCase to snake_case for Supabase
             const materialToSave = {
-                ...currentMaterial,
+                code_qb: currentMaterial.code_qb || currentMaterial.codeQb || '',
+                name: currentMaterial.name || '',
+                description: currentMaterial.description || '',
+                category_id: currentMaterial.categoryId || currentMaterial.category_id || null,
+                unit_id: currentMaterial.unitId || currentMaterial.unit_id || null,
+                supplier_id: currentMaterial.supplierId || currentMaterial.supplier_id || null,
+                stock: parseFloat(currentMaterial.stock) || 0,
+                min_stock: parseFloat(currentMaterial.minStock || currentMaterial.min_stock) || 0,
+                price: parseFloat(currentMaterial.price) || 0,
                 status: finalStatus,
-                qbSyncStatus: 'pending',
-                skipQBSync: true  // Skip QuickBooks sync for now
+                sync_status: 'pending'
             };
 
-            // Remove id for new materials
-            if (modalMode === 'add') {
-                delete materialToSave.id;
+            // Include id for edit mode
+            if (modalMode === 'edit' && currentMaterial.id) {
+                materialToSave.id = currentMaterial.id;
             }
 
             console.log('[Materials] Final data:', materialToSave);

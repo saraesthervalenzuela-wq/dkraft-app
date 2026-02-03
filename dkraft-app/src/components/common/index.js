@@ -33,3 +33,6 @@ export { default as EmptyState } from './EmptyState';
 
 // Kanban board
 export { default as KanbanBoard } from './KanbanBoard';
+
+// Navigation guard
+export { default as NavigationConfirmDialog } from './NavigationConfirmDialog';
