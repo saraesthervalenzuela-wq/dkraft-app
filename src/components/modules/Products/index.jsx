@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { productsService } from '../../../lib/supabase';
 import { supabase } from '../../../lib/supabase';
+import { qbwcApi } from '../../../services/quickbooksConnector';
 
 /**
  * Empty product template matching MySQL schema
@@ -16,10 +17,18 @@ const emptyProduct = {
     qbSyncStatus: 'pending',
     qbListId: null,
     qbEditSequence: null,
-    account: '',
     currency: '1',
-    deleted: false
+    deleted: false,
+    billingEntity: ''
 };
+
+/**
+ * Billing entity options
+ */
+const billingEntityOptions = [
+    { value: 'DOVECREEK', label: 'Dovecreek' },
+    { value: 'INNOVATIVE', label: 'Innovative' },
+];
 
 /**
  * Status options matching MySQL ENUM
@@ -37,25 +46,19 @@ const currencyOptions = [
     { id: '2', code: 'USD', name: 'US Dollar' },
 ];
 
-/**
- * Account options (for QuickBooks)
- */
-const accountOptions = [
-    { id: '1', name: 'Inventory Asset' },
-    { id: '2', name: 'Cost of Goods Sold' },
-    { id: '3', name: 'Supplies Expense' },
-];
-
 const ProductsModule = () => {
     // Data state - start empty, load from Supabase
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [materials, setMaterials] = useState([]);
     const [units, setUnits] = useState([]);
+    const [operations, setOperations] = useState([]); // Available operations from DB
+    const [departments, setDepartments] = useState([]); // Departments for reference
     const [toast, setToast] = useState(null);
 
     // BOM state for current product
     const [bomComponents, setBomComponents] = useState([]);
+    const [bomOperations, setBomOperations] = useState([]); // Operations for current product BOM
     const [currentBomId, setCurrentBomId] = useState(null);
 
     // UI state
@@ -75,6 +78,7 @@ const ProductsModule = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [productToDelete, setProductToDelete] = useState(null);
     const [modalTab, setModalTab] = useState('info'); // 'info' or 'bom'
+    const [billingEntityFilter, setBillingEntityFilter] = useState('ALL'); // ALL, DOVECREEK, INNOVATIVE
 
     // QB Sync polling ref
     const pollIntervalRef = useRef(null);
@@ -109,17 +113,22 @@ const ProductsModule = () => {
         console.log('[Products] Loading data from Supabase...');
         try {
             // Load all data in parallel
-            const [categoriesRes, materialsRes, unitsRes, productsRes] = await Promise.all([
-                supabase.from('categories').select('*').order('name'),
+            // Note: Products use product_categories table (separate from material categories)
+            const [categoriesRes, materialsRes, unitsRes, productsRes, operationsRes, departmentsRes] = await Promise.all([
+                supabase.from('product_categories').select('*').order('name'),
                 supabase.from('materials').select('*').order('name'),
                 supabase.from('units').select('*').order('name'),
-                supabase.from('products').select('*').order('created_at', { ascending: false })
+                supabase.from('products').select('*').order('created_at', { ascending: false }),
+                supabase.from('operations').select('*, departments(name)').eq('status', 'ACTIVE').order('name'),
+                supabase.from('departments').select('*').eq('status', 'ACTIVE').order('name')
             ]);
 
             console.log('[Products] Categories loaded:', categoriesRes.data?.length || 0);
             console.log('[Products] Materials loaded:', materialsRes.data?.length || 0);
             console.log('[Products] Units loaded:', unitsRes.data?.length || 0);
             console.log('[Products] Products loaded:', productsRes.data?.length || 0);
+            console.log('[Products] Operations loaded:', operationsRes.data?.length || 0);
+            console.log('[Products] Departments loaded:', departmentsRes.data?.length || 0);
 
             // Set categories
             if (categoriesRes.data?.length > 0) {
@@ -134,6 +143,16 @@ const ProductsModule = () => {
             // Set units
             if (unitsRes.data?.length > 0) {
                 setUnits(unitsRes.data);
+            }
+
+            // Set operations for BOM selection
+            if (operationsRes.data?.length > 0) {
+                setOperations(operationsRes.data);
+            }
+
+            // Set departments
+            if (departmentsRes.data?.length > 0) {
+                setDepartments(departmentsRes.data);
             }
 
             // Set products
@@ -180,10 +199,10 @@ const ProductsModule = () => {
             qbSyncStatus: qbSyncStatus,
             qbListId: qbListId,
             qbEditSequence: p.qb_edit_sequence || p.qbEditSequence || null,
-            account: p.account || p.accountId || '',
             currency: currencyValue,
             deleted: p.deleted || false,
-            createdAt: p.created_at || p.createdAt || null
+            createdAt: p.created_at || p.createdAt || null,
+            billingEntity: p.billing_entity || p.billingEntity || ''
         };
     };
 
@@ -198,11 +217,6 @@ const ProductsModule = () => {
     const getCategoryName = (categoryId) => {
         const cat = categories.find(c => c.id === categoryId);
         return cat?.name || '-';
-    };
-
-    const getAccountName = (accountId) => {
-        const acc = accountOptions.find(a => a.id === accountId);
-        return acc?.name || '-';
     };
 
     const getCurrencyCode = (currencyValue) => {
@@ -232,8 +246,13 @@ const ProductsModule = () => {
         return statusOpt || { value: status, label: status, color: 'gray' };
     };
 
-    // Filter products
-    const filteredProducts = products.filter(p =>
+    // Filter products by billing entity first
+    const entityFilteredProducts = billingEntityFilter === 'ALL'
+        ? products
+        : products.filter(p => p.billingEntity === billingEntityFilter);
+
+    // Then filter by search term
+    const filteredProducts = entityFilteredProducts.filter(p =>
         p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getCategoryName(p.categoryId)?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -290,12 +309,62 @@ const ProductsModule = () => {
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            // Reload data from Supabase
+            // Get products that need to be synced (no qb_list_id)
+            const pendingProducts = products.filter(p => !p.qbListId && p.status === 'active');
+
+            if (pendingProducts.length === 0) {
+                setToast({ message: 'All products are already synced!', type: 'info' });
+                await loadData();
+                return;
+            }
+
+            let syncedCount = 0;
+            let errorCount = 0;
+
+            for (const product of pendingProducts) {
+                try {
+                    // Send to QBWC connector
+                    const result = await qbwcApi.items.add({
+                        name: product.name,
+                        price: product.unitPrice || 0,
+                        description: product.description || '',
+                        accountFullName: 'Finished Goods',
+                        productId: product.id,
+                    });
+
+                    // If QB returns a listId, update the product in Supabase
+                    if (result?.listId) {
+                        await supabase
+                            .from('products')
+                            .update({
+                                qb_list_id: result.listId,
+                                qb_edit_sequence: result.editSequence || null,
+                                sync_status: 'synced'
+                            })
+                            .eq('id', product.id);
+                        syncedCount++;
+                    }
+                } catch (err) {
+                    console.error(`[Products] Error syncing product ${product.name}:`, err);
+                    await supabase
+                        .from('products')
+                        .update({ sync_status: 'error' })
+                        .eq('id', product.id);
+                    errorCount++;
+                }
+            }
+
             await loadData();
-            setToast({ message: 'Data refreshed successfully!', type: 'success' });
+
+            if (syncedCount > 0) {
+                setToast({ message: `${syncedCount} product(s) synced to QuickBooks!`, type: 'success' });
+            }
+            if (errorCount > 0) {
+                setToast({ message: `${errorCount} product(s) failed to sync.`, type: 'error' });
+            }
         } catch (error) {
-            console.error('[Products] Error syncing:', error);
-            setToast({ message: 'Error refreshing data: ' + error.message, type: 'error' });
+            console.error('[Products] Error syncing with QB:', error);
+            setToast({ message: 'Error connecting to QuickBooks: ' + error.message, type: 'error' });
         } finally {
             setIsSyncing(false);
         }
@@ -344,10 +413,25 @@ const ProductsModule = () => {
 
                 console.log('[Products] BOM components loaded:', componentsData?.length || 0);
                 setBomComponents(componentsData || []);
+
+                // Also load BOM operations
+                const { data: operationsData, error: opsError } = await supabase
+                    .from('bom_operations')
+                    .select('*')
+                    .eq('bom_id', bomData.id)
+                    .order('sort_order');
+
+                if (opsError) {
+                    console.warn('[Products] Error loading BOM operations:', opsError);
+                } else {
+                    console.log('[Products] BOM operations loaded:', operationsData?.length || 0);
+                    setBomOperations(operationsData || []);
+                }
             } else {
                 console.log('[Products] No BOM found for product');
                 setCurrentBomId(null);
                 setBomComponents([]);
+                setBomOperations([]);
             }
         } catch (error) {
             console.error('[Products] Error loading BOM:', error);
@@ -409,6 +493,96 @@ const ProductsModule = () => {
     };
 
     /**
+     * Add an operation to BOM
+     */
+    const handleAddOperation = () => {
+        setBomOperations(prev => [...prev, {
+            id: `temp-${Date.now()}`,
+            operation_id: '',
+            time_minutes: 0,
+            quantity: 1,
+            labor_cost: 0,
+            notes: '',
+            sort_order: prev.length
+        }]);
+    };
+
+    /**
+     * Update a BOM operation
+     */
+    const handleUpdateBomOperation = (index, field, value) => {
+        setBomOperations(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [field]: value };
+
+            // If operation changed, calculate labor_cost from operation's cost_per_hour
+            if (field === 'operation_id' && value) {
+                const operation = operations.find(o => o.id === value);
+                if (operation) {
+                    const timeMinutes = parseFloat(updated[index].time_minutes) || 0;
+                    const costPerHour = parseFloat(operation.cost_per_hour) || 0;
+                    updated[index].labor_cost = (timeMinutes / 60) * costPerHour * (updated[index].quantity || 1);
+                }
+            }
+
+            // Recalculate labor_cost when time or quantity changes
+            if (field === 'time_minutes' || field === 'quantity') {
+                const operation = operations.find(o => o.id === updated[index].operation_id);
+                if (operation) {
+                    const timeMinutes = parseFloat(updated[index].time_minutes) || 0;
+                    const costPerHour = parseFloat(operation.cost_per_hour) || 0;
+                    const qty = parseFloat(updated[index].quantity) || 1;
+                    updated[index].labor_cost = (timeMinutes / 60) * costPerHour * qty;
+                }
+            }
+
+            return updated;
+        });
+    };
+
+    /**
+     * Remove a BOM operation
+     */
+    const handleRemoveBomOperation = (index) => {
+        setBomOperations(prev => prev.filter((_, i) => i !== index));
+    };
+
+    /**
+     * Get operation name by ID
+     */
+    const getOperationName = (operationId) => {
+        const operation = operations.find(o => o.id === operationId);
+        return operation?.name || '-';
+    };
+
+    /**
+     * Get operation department by ID
+     */
+    const getOperationDepartment = (operationId) => {
+        const operation = operations.find(o => o.id === operationId);
+        return operation?.departments?.name || '-';
+    };
+
+    /**
+     * Get operation cost per hour by ID
+     */
+    const getOperationCostPerHour = (operationId) => {
+        const operation = operations.find(o => o.id === operationId);
+        return parseFloat(operation?.cost_per_hour) || 0;
+    };
+
+    /**
+     * Format minutes to hours and minutes
+     */
+    const formatTime = (minutes) => {
+        if (!minutes) return '0 min';
+        if (minutes < 60) return `${minutes} min`;
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+    };
+
+    /**
      * Get material name by ID
      */
     const getMaterialName = (materialId) => {
@@ -428,6 +602,7 @@ const ProductsModule = () => {
     const handleAdd = () => {
         setCurrentProduct({ ...emptyProduct });
         setBomComponents([]);
+        setBomOperations([]);
         setCurrentBomId(null);
         setModalMode('add');
         setModalTab('info'); // Reset to info tab
@@ -437,6 +612,7 @@ const ProductsModule = () => {
     const handleEdit = async (product) => {
         setCurrentProduct({ ...product });
         setBomComponents([]);
+        setBomOperations([]);
         setCurrentBomId(null);
         setModalMode('edit');
         setModalTab('info'); // Reset to info tab
@@ -448,6 +624,7 @@ const ProductsModule = () => {
     const handleView = async (product) => {
         setCurrentProduct({ ...product });
         setBomComponents([]);
+        setBomOperations([]);
         setCurrentBomId(null);
         setModalMode('view');
         setModalTab('info'); // Reset to info tab
@@ -540,6 +717,7 @@ const ProductsModule = () => {
                 status: currentProduct.status || 'ACTIVE',
                 cost_price: parseFloat(currentProduct.costPrice) || 0,
                 base_price: parseFloat(currentProduct.price) || 0,
+                billing_entity: currentProduct.billingEntity || null,
             };
 
             let savedProduct;
@@ -583,20 +761,23 @@ const ProductsModule = () => {
 
             // Capture current BOM state before saving
             const componentsToSave = [...bomComponents];
+            const operationsToSave = [...bomOperations];
             const bomIdToUse = currentBomId;
 
-            console.log('[Products] BOM save check - components:', componentsToSave.length, 'productId:', productId, 'currentBomId:', bomIdToUse);
+            console.log('[Products] BOM save check - components:', componentsToSave.length, 'operations:', operationsToSave.length, 'productId:', productId, 'currentBomId:', bomIdToUse);
 
-            // Save BOM if there are components (with valid material selections)
+            // Save BOM if there are components or operations
             const validComponents = componentsToSave.filter(comp => comp.material_id);
+            const validOperations = operationsToSave.filter(op => op.operation_id);
 
-            if (validComponents.length > 0 && productId) {
-                console.log('[Products] Saving BOM with', validComponents.length, 'valid components');
-                await saveBom(productId, componentsToSave, bomIdToUse);
-            } else if (componentsToSave.length === 0 && bomIdToUse) {
-                // If all components were removed, delete the BOM
+            if ((validComponents.length > 0 || validOperations.length > 0) && productId) {
+                console.log('[Products] Saving BOM with', validComponents.length, 'components and', validOperations.length, 'operations');
+                await saveBom(productId, componentsToSave, operationsToSave, bomIdToUse);
+            } else if (componentsToSave.length === 0 && operationsToSave.length === 0 && bomIdToUse) {
+                // If all components and operations were removed, delete the BOM
                 console.log('[Products] Removing empty BOM:', bomIdToUse);
                 await supabase.from('bom_components').delete().eq('bom_id', bomIdToUse);
+                await supabase.from('bom_operations').delete().eq('bom_id', bomIdToUse);
                 await supabase.from('bom').delete().eq('id', bomIdToUse);
             } else if (componentsToSave.length > 0 && validComponents.length === 0) {
                 console.warn('[Products] BOM has components but none have materials selected');
@@ -609,6 +790,7 @@ const ProductsModule = () => {
             setShowModal(false);
             setCurrentProduct(emptyProduct);
             setBomComponents([]);
+            setBomOperations([]);
             setCurrentBomId(null);
         } catch (error) {
             console.error('[Products] Error saving:', error);
@@ -617,20 +799,22 @@ const ProductsModule = () => {
     };
 
     /**
-     * Save BOM and components
+     * Save BOM, components, and operations
      * @param {string} productId - The product ID to save BOM for
      * @param {Array} components - The BOM components to save (passed to avoid state timing issues)
+     * @param {Array} bomOps - The BOM operations to save (passed to avoid state timing issues)
      * @param {string|null} existingBomId - The existing BOM ID if updating (passed to avoid state timing issues)
      */
-    const saveBom = async (productId, components = bomComponents, existingBomId = currentBomId) => {
+    const saveBom = async (productId, components = bomComponents, bomOps = bomOperations, existingBomId = currentBomId) => {
         try {
             console.log('[Products] Saving BOM for product:', productId, 'existingBomId:', existingBomId);
 
             // Filter valid components (those with material selected)
             const validComponents = components.filter(comp => comp.material_id);
+            const validOperations = bomOps.filter(op => op.operation_id);
 
-            if (validComponents.length === 0) {
-                console.log('[Products] No valid components to save');
+            if (validComponents.length === 0 && validOperations.length === 0) {
+                console.log('[Products] No valid components or operations to save');
                 return;
             }
 
@@ -694,33 +878,65 @@ const ProductsModule = () => {
             }
 
             // Insert BOM components
-            const componentsToInsert = validComponents.map((comp, index) => ({
-                bom_id: bomId,
-                material_id: comp.material_id,
-                component_type: comp.component_type || 'material',
-                quantity: parseFloat(comp.quantity) || 0,
-                unit_id: comp.unit_id || null,
-                unit_cost: parseFloat(comp.unit_cost) || 0,
-                total_cost: parseFloat(comp.total_cost) || 0,
-                waste_percentage: parseFloat(comp.waste_percentage) || 0,
-                is_optional: comp.is_optional || false,
-                notes: comp.notes || '',
-                sort_order: index
-            }));
+            if (validComponents.length > 0) {
+                const componentsToInsert = validComponents.map((comp, index) => ({
+                    bom_id: bomId,
+                    material_id: comp.material_id,
+                    component_type: comp.component_type || 'material',
+                    quantity: parseFloat(comp.quantity) || 0,
+                    unit_id: comp.unit_id || null,
+                    unit_cost: parseFloat(comp.unit_cost) || 0,
+                    total_cost: parseFloat(comp.total_cost) || 0,
+                    waste_percentage: parseFloat(comp.waste_percentage) || 0,
+                    is_optional: comp.is_optional || false,
+                    notes: comp.notes || '',
+                    sort_order: index
+                }));
 
-            console.log('[Products] Inserting components:', componentsToInsert);
+                console.log('[Products] Inserting components:', componentsToInsert);
 
-            const { data: insertedComponents, error: compError } = await supabase
-                .from('bom_components')
-                .insert(componentsToInsert)
-                .select();
+                const { data: insertedComponents, error: compError } = await supabase
+                    .from('bom_components')
+                    .insert(componentsToInsert)
+                    .select();
 
-            if (compError) {
-                console.error('[Products] Error inserting components:', compError);
-                throw compError;
+                if (compError) {
+                    console.error('[Products] Error inserting components:', compError);
+                    throw compError;
+                }
+
+                console.log('[Products] Successfully saved', insertedComponents?.length || componentsToInsert.length, 'BOM components');
             }
 
-            console.log('[Products] Successfully saved', insertedComponents?.length || componentsToInsert.length, 'BOM components');
+            // Insert BOM operations
+            if (validOperations.length > 0) {
+                // First delete existing operations for this BOM
+                await supabase.from('bom_operations').delete().eq('bom_id', bomId);
+
+                const operationsToInsert = validOperations.map((op, index) => ({
+                    bom_id: bomId,
+                    operation_id: op.operation_id,
+                    time_minutes: parseInt(op.time_minutes) || 0,
+                    quantity: parseInt(op.quantity) || 1,
+                    labor_cost: parseFloat(op.labor_cost) || 0,
+                    notes: op.notes || '',
+                    sort_order: index
+                }));
+
+                console.log('[Products] Inserting operations:', operationsToInsert);
+
+                const { data: insertedOps, error: opsError } = await supabase
+                    .from('bom_operations')
+                    .insert(operationsToInsert)
+                    .select();
+
+                if (opsError) {
+                    console.error('[Products] Error inserting operations:', opsError);
+                    throw opsError;
+                }
+
+                console.log('[Products] Successfully saved', insertedOps?.length || operationsToInsert.length, 'BOM operations');
+            }
         } catch (error) {
             console.error('[Products] Error saving BOM:', error);
             throw error;
@@ -741,6 +957,8 @@ const ProductsModule = () => {
         }
         return sum;
     }, 0) / (totalProducts || 1);
+    const dovecreekProducts = products.filter(p => p.billingEntity === 'DOVECREEK').length;
+    const innovativeProducts = products.filter(p => p.billingEntity === 'INNOVATIVE').length;
 
     return (
         <div className="module-page products-page">
@@ -811,6 +1029,34 @@ const ProductsModule = () => {
                         <span className="stat-label">Avg. Margin</span>
                     </div>
                 </div>
+            </div>
+
+            {/* Billing Entity Filter Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${billingEntityFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('ALL')}
+                >
+                    <Icon name="category" />
+                    All Products
+                    <span className="tab-count">{products.length}</span>
+                </button>
+                <button
+                    className={`entity-tab dovecreek ${billingEntityFilter === 'DOVECREEK' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('DOVECREEK')}
+                >
+                    <Icon name="business" />
+                    Dovecreek
+                    <span className="tab-count">{dovecreekProducts}</span>
+                </button>
+                <button
+                    className={`entity-tab innovative ${billingEntityFilter === 'INNOVATIVE' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('INNOVATIVE')}
+                >
+                    <Icon name="lightbulb" />
+                    Innovative
+                    <span className="tab-count">{innovativeProducts}</span>
+                </button>
             </div>
 
             {/* Toolbar */}
@@ -904,10 +1150,6 @@ const ProductsModule = () => {
                                     )}
                                 </div>
                                 <div className="material-card-footer">
-                                    <div className="material-stock">
-                                        <span className="stock-label">Account</span>
-                                        <span className="stock-value">{getAccountName(product.account)}</span>
-                                    </div>
                                     <div className="material-actions">
                                         <button className="btn-icon" onClick={() => handleView(product)} title="View">
                                             <Icon name="visibility" />
@@ -1087,6 +1329,17 @@ const ProductsModule = () => {
                             <span className="tab-badge">{bomComponents.length}</span>
                         )}
                     </button>
+                    <button
+                        type="button"
+                        className={`modal-tab ${modalTab === 'operations' ? 'active' : ''}`}
+                        onClick={() => setModalTab('operations')}
+                    >
+                        <Icon name="precision_manufacturing" />
+                        Operations
+                        {bomOperations.length > 0 && (
+                            <span className="tab-badge">{bomOperations.length}</span>
+                        )}
+                    </button>
                 </div>
 
                 {/* Tab Content */}
@@ -1195,19 +1448,6 @@ const ProductsModule = () => {
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Account</label>
-                                    <select
-                                        value={currentProduct.account}
-                                        onChange={(e) => handleInputChange('account', e.target.value)}
-                                        disabled={modalMode === 'view'}
-                                    >
-                                        <option value="">Select account</option>
-                                        {accountOptions.map(acc => (
-                                            <option key={acc.id} value={acc.id}>{acc.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-group">
                                     <label>Currency</label>
                                     <select
                                         value={currentProduct.currency}
@@ -1216,6 +1456,20 @@ const ProductsModule = () => {
                                     >
                                         {currencyOptions.map(curr => (
                                             <option key={curr.id} value={curr.id}>{curr.code} - {curr.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Billing Entity</label>
+                                    <select
+                                        value={currentProduct.billingEntity}
+                                        onChange={(e) => handleInputChange('billingEntity', e.target.value)}
+                                        disabled={modalMode === 'view'}
+                                        className="form-select"
+                                    >
+                                        <option value="">-- Select Entity --</option>
+                                        {billingEntityOptions.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -1336,6 +1590,133 @@ const ProductsModule = () => {
                                     <p>No materials added yet</p>
                                     {modalMode !== 'view' && (
                                         <span className="hint">Click "Add Material" to build your BOM</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Operations Tab */}
+                    {modalTab === 'operations' && (
+                        <div className="bom-tab-content">
+                            <div className="bom-tab-header">
+                                <div className="bom-tab-title">
+                                    <h4>Operations for: {currentProduct.name || 'New Product'}</h4>
+                                    <p>Add the manufacturing operations required for this product</p>
+                                </div>
+                                {modalMode !== 'view' && (
+                                    <button
+                                        type="button"
+                                        className="btn-add-material"
+                                        onClick={handleAddOperation}
+                                    >
+                                        <Icon name="add" />
+                                        Add Operation
+                                    </button>
+                                )}
+                            </div>
+
+                            {bomOperations.length > 0 ? (
+                                <div className="bom-table">
+                                    <div className="bom-table-header">
+                                        <span className="col-material">Operation</span>
+                                        <span className="col-unit">Department</span>
+                                        <span className="col-cost">Cost/Hr</span>
+                                        <span className="col-qty">Time (min)</span>
+                                        <span className="col-qty">Qty</span>
+                                        <span className="col-total">Labor Cost</span>
+                                        {modalMode !== 'view' && <span className="col-actions">Actions</span>}
+                                    </div>
+                                    <div className="bom-table-body">
+                                        {bomOperations.map((op, index) => (
+                                            <div key={op.id || index} className="bom-table-row">
+                                                <span className="col-material">
+                                                    {modalMode === 'view' ? (
+                                                        getOperationName(op.operation_id)
+                                                    ) : (
+                                                        <select
+                                                            value={op.operation_id}
+                                                            onChange={(e) => handleUpdateBomOperation(index, 'operation_id', e.target.value)}
+                                                        >
+                                                            <option value="">Select operation</option>
+                                                            {operations.map(operation => (
+                                                                <option key={operation.id} value={operation.id}>
+                                                                    {operation.name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                    )}
+                                                </span>
+                                                <span className="col-unit">
+                                                    {getOperationDepartment(op.operation_id)}
+                                                </span>
+                                                <span className="col-cost">
+                                                    ${getOperationCostPerHour(op.operation_id).toFixed(2)}/hr
+                                                </span>
+                                                <span className="col-qty">
+                                                    {modalMode === 'view' ? (
+                                                        formatTime(op.time_minutes)
+                                                    ) : (
+                                                        <input
+                                                            type="number"
+                                                            value={op.time_minutes}
+                                                            onChange={(e) => handleUpdateBomOperation(index, 'time_minutes', parseInt(e.target.value) || 0)}
+                                                            min="0"
+                                                            placeholder="0"
+                                                        />
+                                                    )}
+                                                </span>
+                                                <span className="col-qty">
+                                                    {modalMode === 'view' ? (
+                                                        op.quantity || 1
+                                                    ) : (
+                                                        <input
+                                                            type="number"
+                                                            value={op.quantity || 1}
+                                                            onChange={(e) => handleUpdateBomOperation(index, 'quantity', parseInt(e.target.value) || 1)}
+                                                            min="1"
+                                                        />
+                                                    )}
+                                                </span>
+                                                <span className="col-total">
+                                                    ${(parseFloat(op.labor_cost) || 0).toFixed(2)}
+                                                </span>
+                                                {modalMode !== 'view' && (
+                                                    <span className="col-actions">
+                                                        <button
+                                                            type="button"
+                                                            className="btn-icon danger"
+                                                            onClick={() => handleRemoveBomOperation(index)}
+                                                            title="Remove"
+                                                        >
+                                                            <Icon name="delete" />
+                                                        </button>
+                                                    </span>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="bom-table-footer">
+                                        <div className="bom-footer-row">
+                                            <span className="bom-total-label">Total Time:</span>
+                                            <span className="bom-total-value">
+                                                {formatTime(bomOperations.reduce((sum, op) => sum + (parseInt(op.time_minutes) || 0) * (parseInt(op.quantity) || 1), 0))}
+                                            </span>
+                                        </div>
+                                        <div className="bom-footer-row">
+                                            <span className="bom-total-label">Total Labor Cost:</span>
+                                            <span className="bom-total-value">
+                                                ${bomOperations.reduce((sum, op) => sum + (parseFloat(op.labor_cost) || 0), 0).toFixed(2)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bom-empty">
+                                    <Icon name="precision_manufacturing" />
+                                    <p>No operations added yet</p>
+                                    {modalMode !== 'view' && (
+                                        <span className="hint">Click "Add Operation" to assign manufacturing steps</span>
                                     )}
                                 </div>
                             )}

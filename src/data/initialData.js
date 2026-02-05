@@ -66,6 +66,7 @@ export const navSections = [
         items: [
             { id: 'categories', label: 'Categories', icon: 'label' },
             { id: 'units', label: 'Units', icon: 'straighten' },
+            { id: 'workcenters', label: 'Work Centers', icon: 'precision_manufacturing' },
             { id: 'qb-health', label: 'QB Health', icon: 'favorite' },
         ]
     }

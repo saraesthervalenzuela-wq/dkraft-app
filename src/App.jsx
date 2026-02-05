@@ -26,7 +26,8 @@ import {
     ProjectAnalysis,
     ActivityLogModule,
     CategoriesModule,
-    UnitsModule
+    UnitsModule,
+    WorkCentersModule
 } from './components/modules';
 
 import './styles/main.css';
@@ -106,6 +107,8 @@ const AppContent = () => {
                 return <CategoriesModule />;
             case 'units':
                 return <UnitsModule />;
+            case 'workcenters':
+                return <WorkCentersModule />;
             case 'dashboard':
             default:
                 return <Dashboard setActiveNav={setActiveNav} />;

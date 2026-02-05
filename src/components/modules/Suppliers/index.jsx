@@ -54,8 +54,17 @@ const emptySupplier = {
     website: '',
     status: 'ACTIVE',
     qbSyncStatus: 'pending',
-    notes: ''
+    notes: '',
+    billingEntity: ''
 };
+
+/**
+ * Billing entity options
+ */
+const billingEntityOptions = [
+    { value: 'DOVECREEK', label: 'Dovecreek' },
+    { value: 'INNOVATIVE', label: 'Innovative' },
+];
 
 /**
  * Status options matching MySQL ENUM
@@ -77,6 +86,7 @@ const SuppliersModule = () => {
     const [viewMode, setViewMode] = useState('grid');
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [billingEntityFilter, setBillingEntityFilter] = useState('ALL'); // ALL, DOVECREEK, INNOVATIVE
 
     // Modal states
     const [showModal, setShowModal] = useState(false);
@@ -140,6 +150,7 @@ const SuppliersModule = () => {
             qbSyncStatus: s.qbSyncStatus || 'pending',
             qbListId: s.qbListId || null,
             notes: s.notes || '',
+            billingEntity: s.billing_entity || '',
             created_at: s.created_at,
         };
     };
@@ -176,8 +187,13 @@ const SuppliersModule = () => {
         }
     };
 
-    // Filter suppliers
-    const filteredSuppliers = suppliers.filter(s =>
+    // Filter suppliers by billing entity first
+    const entityFilteredSuppliers = billingEntityFilter === 'ALL'
+        ? suppliers
+        : suppliers.filter(s => s.billingEntity === billingEntityFilter);
+
+    // Then filter by search term
+    const filteredSuppliers = entityFilteredSuppliers.filter(s =>
         s.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -329,6 +345,7 @@ const SuppliersModule = () => {
             if (currentSupplier.contactName?.trim()) supplierToSave.contact_name = currentSupplier.contactName;
             if (currentSupplier.notes?.trim()) supplierToSave.notes = currentSupplier.notes;
             if (currentSupplier.website?.trim()) supplierToSave.website = currentSupplier.website;
+            if (currentSupplier.billingEntity) supplierToSave.billing_entity = currentSupplier.billingEntity;
 
             console.log('[Suppliers] Final data:', supplierToSave);
 
@@ -374,6 +391,8 @@ const SuppliersModule = () => {
     const totalSuppliers = suppliers.length;
     const activeSuppliers = suppliers.filter(s => s.status === 'ACTIVE').length;
     const inactiveSuppliers = suppliers.filter(s => s.status === 'INACTIVE').length;
+    const dovecreekSuppliers = suppliers.filter(s => s.billingEntity === 'DOVECREEK').length;
+    const innovativeSuppliers = suppliers.filter(s => s.billingEntity === 'INNOVATIVE').length;
 
     return (
         <div className="module-page suppliers-module">
@@ -429,6 +448,52 @@ const SuppliersModule = () => {
                         <span className="stat-label">Inactive</span>
                     </div>
                 </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon teal">
+                        <Icon name="apartment" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{dovecreekSuppliers}</span>
+                        <span className="stat-label">Dovecreek</span>
+                    </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon amber">
+                        <Icon name="lightbulb" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{innovativeSuppliers}</span>
+                        <span className="stat-label">Innovative</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Billing Entity Filter Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${billingEntityFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('ALL')}
+                >
+                    <Icon name="groups" />
+                    All Suppliers
+                    <span className="tab-count">{suppliers.length}</span>
+                </button>
+                <button
+                    className={`entity-tab dovecreek ${billingEntityFilter === 'DOVECREEK' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('DOVECREEK')}
+                >
+                    <Icon name="business" />
+                    Dovecreek
+                    <span className="tab-count">{dovecreekSuppliers}</span>
+                </button>
+                <button
+                    className={`entity-tab innovative ${billingEntityFilter === 'INNOVATIVE' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('INNOVATIVE')}
+                >
+                    <Icon name="lightbulb" />
+                    Innovative
+                    <span className="tab-count">{innovativeSuppliers}</span>
+                </button>
             </div>
 
             {/* Toolbar */}
@@ -724,6 +789,25 @@ const SuppliersModule = () => {
                                     placeholder="https://..."
                                     disabled={modalMode === 'view'}
                                 />
+                            </div>
+                        </div>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Billing Entity</label>
+                                <select
+                                    value={currentSupplier.billingEntity}
+                                    onChange={(e) => handleInputChange('billingEntity', e.target.value)}
+                                    disabled={modalMode === 'view'}
+                                    className="form-select"
+                                >
+                                    <option value="">-- Select Entity --</option>
+                                    {billingEntityOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                {/* Empty for layout balance */}
                             </div>
                         </div>
                     </div>

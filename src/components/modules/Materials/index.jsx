@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal, SkeletonStatsRow, Skeleton, Toast } from '../../common';
 import { supabase } from '../../../lib/supabase';
+import { qbwcApi } from '../../../services/quickbooksConnector';
 
 // No local data - all data comes from Supabase
 
@@ -19,8 +20,17 @@ const emptyMaterial = {
     status: 'ACTIVE',
     stock: 0,
     minStock: 0,
-    price: 0
+    price: 0,
+    currency: 'USD'
 };
+
+/**
+ * Currency options
+ */
+const currencyOptions = [
+    { value: 'USD', label: 'USD ($)', symbol: '$' },
+    { value: 'MXN', label: 'MXN ($)', symbol: '$' },
+];
 
 /**
  * Status options matching MySQL ENUM
@@ -77,7 +87,7 @@ const MaterialsSkeleton = () => (
     </div>
 );
 
-const MaterialsModule = ({ setActiveNav }) => {
+const MaterialsModule = () => {
     // Data state
     const [materials, setMaterials] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
@@ -92,13 +102,12 @@ const MaterialsModule = ({ setActiveNav }) => {
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMaterials, setSelectedMaterials] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [rowsPerPage, setRowsPerPage] = useState(8);
     const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' }); // Newest first
-    const [activeTab, setActiveTab] = useState('materials');
     const [isSyncing, setIsSyncing] = useState(false);
     const [viewMode, setViewMode] = useState('table');
     const [isLoading, setIsLoading] = useState(true);
+    const [warehouseFilter, setWarehouseFilter] = useState('ALL'); // ALL or warehouse ID
+    const [allMaterialStocks, setAllMaterialStocks] = useState([]); // All material_stock records
 
     // Modal states
     const [showModal, setShowModal] = useState(false);
@@ -132,12 +141,13 @@ const MaterialsModule = ({ setActiveNav }) => {
             console.log('[Materials] Loading from Supabase...');
 
             // Load all data in parallel
-            const [materialsRes, suppliersRes, categoriesRes, unitsRes, warehousesRes] = await Promise.all([
+            const [materialsRes, suppliersRes, categoriesRes, unitsRes, warehousesRes, materialStocksRes] = await Promise.all([
                 supabase.from('materials').select('*').order('created_at', { ascending: false }),
                 supabase.from('suppliers').select('*').order('name'),
                 supabase.from('categories').select('*').order('name'),
                 supabase.from('units').select('*').order('name'),
                 supabase.from('warehouses').select('*').order('name'),
+                supabase.from('material_stock').select('*'),
             ]);
 
             if (materialsRes.error) throw materialsRes.error;
@@ -148,19 +158,20 @@ const MaterialsModule = ({ setActiveNav }) => {
             if (warehousesRes.error) {
                 console.warn('[Materials] Could not load warehouses:', warehousesRes.error);
             }
+            if (materialStocksRes.error) {
+                console.warn('[Materials] Could not load material stocks:', materialStocksRes.error);
+            }
 
             console.log('[Materials] Loaded:', materialsRes.data?.length, 'materials');
             console.log('[Materials] Loaded:', warehousesRes.data?.length, 'warehouses');
-            console.log('[Materials] Raw materials data:', materialsRes.data);
-            console.log('[Materials] Categories loaded:', categoriesRes.data);
-            console.log('[Materials] Suppliers loaded:', suppliersRes.data);
-            console.log('[Materials] Units loaded:', unitsRes.data);
+            console.log('[Materials] Loaded:', materialStocksRes.data?.length, 'material stocks');
 
             // IMPORTANT: Set related data FIRST so lookup functions work
             setSuppliers(suppliersRes.data || []);
             setCategories(categoriesRes.data || []);
             setUnits(unitsRes.data || []);
             setWarehouses(warehousesRes.data || []);
+            setAllMaterialStocks(materialStocksRes.data || []);
 
             // Then set materials
             if (materialsRes.data?.length > 0) {
@@ -216,6 +227,7 @@ const MaterialsModule = ({ setActiveNav }) => {
             stock: m.stock || 0,
             minStock: m.min_stock || m.minStock || 0,
             price: m.unit_cost || m.price || 0,
+            currency: m.currency || 'USD',
             qbListId: m.qb_item_id || m.qbListId || null,
             created_at: m.created_at,
         };
@@ -290,6 +302,22 @@ const MaterialsModule = ({ setActiveNav }) => {
         if (!warehouseId) return '-';
         const wh = warehouses.find(w => w.id === warehouseId);
         return wh?.name || '-';
+    };
+
+    /**
+     * Get currency symbol
+     */
+    const getCurrencySymbol = (currency) => {
+        const curr = currencyOptions.find(c => c.value === currency);
+        return curr?.symbol || '$';
+    };
+
+    /**
+     * Format price with currency
+     */
+    const formatPrice = (price, currency) => {
+        const symbol = getCurrencySymbol(currency);
+        return `${symbol}${price?.toFixed(2)} ${currency || 'USD'}`;
     };
 
     /**
@@ -390,8 +418,22 @@ const MaterialsModule = ({ setActiveNav }) => {
         return statusOpt || { value: status, label: status, color: 'gray' };
     };
 
-    // Filter materials
-    const filteredMaterials = materials.filter(m =>
+    // Helper: Get material IDs that have stock in a specific warehouse
+    const getMaterialIdsInWarehouse = (warehouseId) => {
+        return new Set(
+            allMaterialStocks
+                .filter(stock => stock.warehouse_id === warehouseId && stock.quantity > 0)
+                .map(stock => stock.material_id)
+        );
+    };
+
+    // Filter materials by warehouse first
+    const warehouseFilteredMaterials = warehouseFilter === 'ALL'
+        ? materials
+        : materials.filter(m => getMaterialIdsInWarehouse(warehouseFilter).has(m.id));
+
+    // Then filter by search term
+    const filteredMaterials = warehouseFilteredMaterials.filter(m =>
         m.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getCategoryName(m.categoryId)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getSupplierName(m.supplierId)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -437,10 +479,6 @@ const MaterialsModule = ({ setActiveNav }) => {
         return 0;
     });
 
-    // Pagination
-    const totalPages = Math.ceil(sortedMaterials.length / rowsPerPage);
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const paginatedMaterials = sortedMaterials.slice(startIndex, startIndex + rowsPerPage);
 
     const handleSort = (key) => {
         setSortConfig(prev => ({
@@ -451,7 +489,7 @@ const MaterialsModule = ({ setActiveNav }) => {
 
     const handleSelectAll = (e) => {
         if (e.target.checked) {
-            setSelectedMaterials(paginatedMaterials.map(m => m.id));
+            setSelectedMaterials(sortedMaterials.map(m => m.id));
         } else {
             setSelectedMaterials([]);
         }
@@ -469,11 +507,61 @@ const MaterialsModule = ({ setActiveNav }) => {
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            // QB sync will be implemented when backend is ready
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Get materials that need to be synced (no qbListId)
+            const pendingMaterials = materials.filter(m => !m.qbListId && m.qbSyncStatus !== 'error');
+
+            if (pendingMaterials.length === 0) {
+                setToast({ message: 'All materials are already synced!', type: 'info' });
+                return;
+            }
+
+            let syncedCount = 0;
+            let errorCount = 0;
+
+            for (const material of pendingMaterials) {
+                try {
+                    // Send to QBWC connector
+                    const result = await qbwcApi.items.add({
+                        name: material.name,
+                        price: material.unitCost || 0,
+                        description: material.description || '',
+                        accountFullName: 'Materials for Production',
+                        materialId: material.id,
+                    });
+
+                    // If QB returns a listId, update the material in Supabase
+                    if (result?.listId) {
+                        await supabase
+                            .from('materials')
+                            .update({
+                                qb_list_id: result.listId,
+                                qb_edit_sequence: result.editSequence || null,
+                                sync_status: 'synced'
+                            })
+                            .eq('id', material.id);
+                        syncedCount++;
+                    }
+                } catch (err) {
+                    console.error(`[Materials] Error syncing material ${material.name}:`, err);
+                    await supabase
+                        .from('materials')
+                        .update({ sync_status: 'error' })
+                        .eq('id', material.id);
+                    errorCount++;
+                }
+            }
+
             await loadData();
+
+            if (syncedCount > 0) {
+                setToast({ message: `${syncedCount} material(s) synced to QuickBooks!`, type: 'success' });
+            }
+            if (errorCount > 0) {
+                setToast({ message: `${errorCount} material(s) failed to sync.`, type: 'error' });
+            }
         } catch (error) {
-            console.error('Error syncing with QB:', error);
+            console.error('[Materials] Error syncing with QB:', error);
+            setToast({ message: 'Error connecting to QuickBooks: ' + error.message, type: 'error' });
         } finally {
             setIsSyncing(false);
         }
@@ -547,6 +635,7 @@ const MaterialsModule = ({ setActiveNav }) => {
                 unit_id: currentMaterial.unitId && currentMaterial.unitId !== '' ? currentMaterial.unitId : null,
                 supplier_id: currentMaterial.supplierId && currentMaterial.supplierId !== '' ? currentMaterial.supplierId : null,
                 unit_cost: parseFloat(currentMaterial.price) || 0,
+                currency: currentMaterial.currency || 'USD',
                 status: (currentMaterial.status || 'ACTIVE').toLowerCase(),
             };
 
@@ -617,6 +706,16 @@ const MaterialsModule = ({ setActiveNav }) => {
     const totalStock = materials.reduce((sum, m) => sum + (m.stock || 0), 0);
     const lowStockCount = materials.filter(m => m.status === 'LOW_STOCK').length;
     const totalValue = materials.reduce((sum, m) => sum + ((m.stock || 0) * (m.price || 0)), 0);
+
+    // Find Dovecreek and Innovative warehouses by name
+    const dovecreekWarehouse = warehouses.find(w => w.name?.toLowerCase().includes('dovecreek'));
+    const innovativeWarehouse = warehouses.find(w => w.name?.toLowerCase().includes('innovative'));
+
+    // Count materials with stock in each warehouse
+    const dovecreekMaterialIds = dovecreekWarehouse ? getMaterialIdsInWarehouse(dovecreekWarehouse.id) : new Set();
+    const innovativeMaterialIds = innovativeWarehouse ? getMaterialIdsInWarehouse(innovativeWarehouse.id) : new Set();
+    const dovecreekMaterialsCount = dovecreekMaterialIds.size;
+    const innovativeMaterialsCount = innovativeMaterialIds.size;
 
     // Show skeleton while loading
     if (isLoading) {
@@ -692,34 +791,56 @@ const MaterialsModule = ({ setActiveNav }) => {
                         <span className="stat-label">Total Value</span>
                     </div>
                 </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon teal">
+                        <Icon name="warehouse" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{dovecreekMaterialsCount}</span>
+                        <span className="stat-label">In Dovecreek</span>
+                    </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon amber">
+                        <Icon name="warehouse" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{innovativeMaterialsCount}</span>
+                        <span className="stat-label">In Innovative</span>
+                    </div>
+                </div>
             </div>
 
-            {/* Tabs */}
-            <div className="materials-tabs-grid">
-                {[
-                    { key: 'materials', label: 'Materials', icon: 'inventory_2', desc: 'Inventory items', color: 'purple', stat: `${totalMaterials} Items`, navTo: null },
-                    { key: 'requisitions', label: 'Requisitions', icon: 'request_quote', desc: 'Purchase requests', color: 'blue', stat: '0 Pending', navTo: 'requisitions' }
-                ].map(tab => (
+            {/* Warehouse Filter Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${warehouseFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setWarehouseFilter('ALL')}
+                >
+                    <Icon name="inventory_2" />
+                    All Materials
+                    <span className="tab-count">{materials.length}</span>
+                </button>
+                {dovecreekWarehouse && (
                     <button
-                        key={tab.key}
-                        className={`materials-tab-card ${activeTab === tab.key ? 'active' : ''} ${tab.color}`}
-                        onClick={() => tab.navTo && setActiveNav ? setActiveNav(tab.navTo) : setActiveTab(tab.key)}
+                        className={`entity-tab dovecreek ${warehouseFilter === dovecreekWarehouse.id ? 'active' : ''}`}
+                        onClick={() => setWarehouseFilter(dovecreekWarehouse.id)}
                     >
-                        <div className="materials-tab-top">
-                            <div className={`materials-tab-icon ${tab.color}`}>
-                                <Icon name={tab.icon} />
-                            </div>
-                            <div className={`materials-tab-arrow ${tab.color}`}>
-                                <Icon name="arrow_forward" />
-                            </div>
-                        </div>
-                        <div className="materials-tab-content">
-                            <span className="materials-tab-label">{tab.label}</span>
-                            <span className="materials-tab-desc">{tab.desc}</span>
-                        </div>
-                        <div className="materials-tab-stat">{tab.stat}</div>
+                        <Icon name="warehouse" />
+                        Dovecreek
+                        <span className="tab-count">{dovecreekMaterialsCount}</span>
                     </button>
-                ))}
+                )}
+                {innovativeWarehouse && (
+                    <button
+                        className={`entity-tab innovative ${warehouseFilter === innovativeWarehouse.id ? 'active' : ''}`}
+                        onClick={() => setWarehouseFilter(innovativeWarehouse.id)}
+                    >
+                        <Icon name="warehouse" />
+                        Innovative
+                        <span className="tab-count">{innovativeMaterialsCount}</span>
+                    </button>
+                )}
             </div>
 
             {/* Toolbar */}
@@ -751,7 +872,7 @@ const MaterialsModule = ({ setActiveNav }) => {
             {viewMode === 'grid' ? (
                 /* Cards View */
                 <div className="materials-cards-grid">
-                    {paginatedMaterials.map((material) => {
+                    {sortedMaterials.map((material) => {
                         const qbStatus = getQBStatusIcon(material.qbSyncStatus);
                         const statusStyle = getStatusStyle(material.status);
                         return (
@@ -788,7 +909,7 @@ const MaterialsModule = ({ setActiveNav }) => {
                                         </div>
                                         <div className="material-detail">
                                             <Icon name="attach_money" />
-                                            <span>${material.price?.toFixed(2)}</span>
+                                            <span>{formatPrice(material.price, material.currency)}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -817,7 +938,7 @@ const MaterialsModule = ({ setActiveNav }) => {
                             </div>
                         );
                     })}
-                    {paginatedMaterials.length === 0 && (
+                    {sortedMaterials.length === 0 && (
                         <div className="materials-empty">
                             <Icon name="inventory_2" />
                             <p>No materials found</p>
@@ -831,7 +952,7 @@ const MaterialsModule = ({ setActiveNav }) => {
                         <span className="col-checkbox">
                             <input
                                 type="checkbox"
-                                checked={paginatedMaterials.length > 0 && selectedMaterials.length === paginatedMaterials.length}
+                                checked={sortedMaterials.length > 0 && selectedMaterials.length === sortedMaterials.length}
                                 onChange={handleSelectAll}
                             />
                         </span>
@@ -869,7 +990,7 @@ const MaterialsModule = ({ setActiveNav }) => {
                         <span className="col-actions">Actions</span>
                     </div>
 
-                    {paginatedMaterials.map((material) => {
+                    {sortedMaterials.map((material) => {
                         const qbStatus = getQBStatusIcon(material.qbSyncStatus);
                         const statusStyle = getStatusStyle(material.status);
                         const isLowStock = material.stock <= material.minStock && material.stock > 0;
@@ -907,7 +1028,7 @@ const MaterialsModule = ({ setActiveNav }) => {
                                     {isLowStock && <Icon name="warning" style={{ color: '#f59e0b', marginLeft: '4px', fontSize: '14px' }} />}
                                 </span>
                                 <span className="col-min-stock">{material.minStock}</span>
-                                <span className="col-price">${material.price?.toFixed(2)}</span>
+                                <span className="col-price">{formatPrice(material.price, material.currency)}</span>
                                 <span className="col-actions">
                                     <button className="btn-icon" onClick={() => handleView(material)} title="View">
                                         <Icon name="visibility" />
@@ -923,7 +1044,7 @@ const MaterialsModule = ({ setActiveNav }) => {
                         );
                     })}
 
-                    {paginatedMaterials.length === 0 && (
+                    {sortedMaterials.length === 0 && (
                         <div className="materials-empty">
                             <Icon name="inventory_2" />
                             <p>No materials found</p>
@@ -932,39 +1053,9 @@ const MaterialsModule = ({ setActiveNav }) => {
                 </div>
             )}
 
-            {/* Pagination */}
-            <div className="materials-footer">
-                <div className="materials-count">
-                    Showing {sortedMaterials.length > 0 ? startIndex + 1 : 0} - {Math.min(startIndex + rowsPerPage, sortedMaterials.length)} of {sortedMaterials.length} results
-                </div>
-                <div className="materials-pagination">
-                    <div className="rows-per-page">
-                        <span>Rows per page</span>
-                        <select value={rowsPerPage} onChange={(e) => { setRowsPerPage(Number(e.target.value)); setCurrentPage(1); }}>
-                            <option value={5}>5</option>
-                            <option value={8}>8</option>
-                            <option value={10}>10</option>
-                            <option value={20}>20</option>
-                        </select>
-                    </div>
-                    <div className="page-info">
-                        Page {currentPage} of {totalPages || 1}
-                    </div>
-                    <div className="page-controls">
-                        <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1}>
-                            <Icon name="first_page" />
-                        </button>
-                        <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1}>
-                            <Icon name="chevron_left" />
-                        </button>
-                        <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage >= totalPages}>
-                            <Icon name="chevron_right" />
-                        </button>
-                        <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage >= totalPages}>
-                            <Icon name="last_page" />
-                        </button>
-                    </div>
-                </div>
+            {/* Footer */}
+            <div className="table-footer-simple">
+                <span>{sortedMaterials.length} material{sortedMaterials.length !== 1 ? 's' : ''}</span>
             </div>
 
             {/* Add/Edit Modal */}
@@ -1236,17 +1327,32 @@ const MaterialsModule = ({ setActiveNav }) => {
                         </div>
                     )}
 
-                    <div className="form-group">
-                        <label>Unit Price ($)</label>
-                        <input
-                            type="number"
-                            value={currentMaterial.price}
-                            onChange={(e) => handleInputChange('price', Number(e.target.value))}
-                            placeholder="0.00"
-                            min="0"
-                            step="0.01"
-                            disabled={modalMode === 'view'}
-                        />
+                    <div className="form-row">
+                        <div className="form-group">
+                            <label>Unit Price</label>
+                            <input
+                                type="number"
+                                value={currentMaterial.price}
+                                onChange={(e) => handleInputChange('price', Number(e.target.value))}
+                                placeholder="0.00"
+                                min="0"
+                                step="0.01"
+                                disabled={modalMode === 'view'}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Currency</label>
+                            <select
+                                value={currentMaterial.currency}
+                                onChange={(e) => handleInputChange('currency', e.target.value)}
+                                disabled={modalMode === 'view'}
+                                className="form-select"
+                            >
+                                {currencyOptions.map(opt => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
 
                     {modalMode === 'view' && currentMaterial.qbSyncStatus && (

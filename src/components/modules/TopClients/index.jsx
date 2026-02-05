@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox } from '../../common';
-import { isApiEnabled, clientsApi } from '../../../services/api';
+import { supabase } from '../../../lib/supabase';
 
 // Avatar color palette - vibrant and varied
 const AVATAR_COLORS = [
@@ -21,63 +21,87 @@ const AVATAR_COLORS = [
 // Get avatar color by index
 const getAvatarColor = (index) => AVATAR_COLORS[index % AVATAR_COLORS.length];
 
-// Dummy data for demonstration
-const dummyTopClients = [
-    { id: 1, name: 'Grupo Industrial Monterrey', totalRevenue: 485000, totalOrders: 47, lastOrder: '2026-01-28', trend: 'up' },
-    { id: 2, name: 'Constructora del Norte SA', totalRevenue: 372500, totalOrders: 38, lastOrder: '2026-01-30', trend: 'up' },
-    { id: 3, name: 'Aceros y Metales MX', totalRevenue: 298000, totalOrders: 31, lastOrder: '2026-01-25', trend: 'stable' },
-    { id: 4, name: 'Manufactura Avanzada', totalRevenue: 245000, totalOrders: 28, lastOrder: '2026-01-29', trend: 'up' },
-    { id: 5, name: 'Industrias Sánchez', totalRevenue: 198500, totalOrders: 24, lastOrder: '2026-01-22', trend: 'down' },
-    { id: 6, name: 'Corporativo Azteca', totalRevenue: 176000, totalOrders: 21, lastOrder: '2026-01-27', trend: 'stable' },
-    { id: 7, name: 'Maquinados Precisión', totalRevenue: 154000, totalOrders: 19, lastOrder: '2026-01-20', trend: 'up' },
-    { id: 8, name: 'Ferretería Industrial Plus', totalRevenue: 132500, totalOrders: 16, lastOrder: '2026-01-18', trend: 'down' },
-    { id: 9, name: 'Soldaduras Especiales', totalRevenue: 118000, totalOrders: 14, lastOrder: '2026-01-26', trend: 'stable' },
-    { id: 10, name: 'Estructuras Metálicas JR', totalRevenue: 95000, totalOrders: 12, lastOrder: '2026-01-15', trend: 'up' },
-    { id: 11, name: 'Taller Mecánico Industrial', totalRevenue: 82000, totalOrders: 10, lastOrder: '2026-01-24', trend: 'stable' },
-    { id: 12, name: 'Equipos Hidráulicos SA', totalRevenue: 67500, totalOrders: 8, lastOrder: '2026-01-21', trend: 'down' },
-];
-
 const TopClientsModule = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('revenue');
     const [viewMode, setViewMode] = useState('grid');
-    const [clients, setClients] = useState(dummyTopClients);
-    const [isLoading, setIsLoading] = useState(false);
+    const [clients, setClients] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    // Load clients from API on mount
+    // Load clients from Supabase on mount
     useEffect(() => {
         loadClients();
     }, []);
 
     const loadClients = async () => {
-        if (!isApiEnabled()) {
-            // Use dummy data if API is not enabled
-            setClients(dummyTopClients);
-            return;
-        }
-
         setIsLoading(true);
         try {
-            const data = await clientsApi.getAll();
-            if (data && data.length > 0) {
-                // Transform to top clients format with mock revenue/orders for now
-                const topClientsData = data.map((client, index) => ({
-                    id: client.id,
-                    name: client.name || client.companyName,
-                    totalRevenue: client.totalRevenue || Math.floor(Math.random() * 50000) + 10000,
-                    totalOrders: client.totalOrders || Math.floor(Math.random() * 50) + 5,
-                    lastOrder: client.lastOrder || new Date().toISOString().split('T')[0],
-                    trend: ['up', 'down', 'stable'][index % 3]
-                }));
-                setClients(topClientsData);
-            } else {
-                // Fallback to dummy data
-                setClients(dummyTopClients);
-            }
+            console.log('[TopClients] Loading from Supabase...');
+
+            // Load all clients
+            const { data: clientsData, error: clientsError } = await supabase
+                .from('clients')
+                .select('id, name, company_name, billing_entity')
+                .eq('status', 'ACTIVE');
+
+            if (clientsError) throw clientsError;
+
+            // Load all quotations with their totals
+            const { data: quotationsData, error: quotationsError } = await supabase
+                .from('quotations')
+                .select('client_id, total, created_at, status')
+                .in('status', ['DRAFT', 'SENT', 'APPROVED', 'CONVERTED']); // Only count valid quotations
+
+            if (quotationsError) throw quotationsError;
+
+            console.log('[TopClients] Loaded', clientsData?.length, 'clients and', quotationsData?.length, 'quotations');
+
+            // Calculate revenue and orders per client
+            const clientStats = {};
+
+            (quotationsData || []).forEach(q => {
+                if (!q.client_id) return;
+
+                if (!clientStats[q.client_id]) {
+                    clientStats[q.client_id] = {
+                        totalRevenue: 0,
+                        totalOrders: 0,
+                        lastOrder: null,
+                    };
+                }
+
+                clientStats[q.client_id].totalRevenue += parseFloat(q.total) || 0;
+                clientStats[q.client_id].totalOrders += 1;
+
+                const orderDate = new Date(q.created_at);
+                if (!clientStats[q.client_id].lastOrder || orderDate > new Date(clientStats[q.client_id].lastOrder)) {
+                    clientStats[q.client_id].lastOrder = q.created_at;
+                }
+            });
+
+            // Combine client data with stats
+            const topClientsData = (clientsData || [])
+                .map(client => {
+                    const stats = clientStats[client.id] || { totalRevenue: 0, totalOrders: 0, lastOrder: null };
+                    return {
+                        id: client.id,
+                        name: client.company_name || client.name,
+                        billingEntity: client.billing_entity,
+                        totalRevenue: stats.totalRevenue,
+                        totalOrders: stats.totalOrders,
+                        lastOrder: stats.lastOrder ? stats.lastOrder.split('T')[0] : '-',
+                        trend: stats.totalOrders > 5 ? 'up' : stats.totalOrders > 2 ? 'stable' : 'down',
+                    };
+                })
+                .filter(c => c.totalOrders > 0) // Only show clients with orders
+                .sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+            console.log('[TopClients] Processed', topClientsData.length, 'clients with orders');
+            setClients(topClientsData);
+
         } catch (error) {
-            console.error('Error loading clients:', error);
-            // Fallback to dummy data on error
-            setClients(dummyTopClients);
+            console.error('[TopClients] Error loading:', error);
+            setClients([]);
         } finally {
             setIsLoading(false);
         }
@@ -95,6 +119,7 @@ const TopClientsModule = () => {
 
     const totalRevenue = clients.reduce((sum, c) => sum + (c.totalRevenue || 0), 0);
     const totalOrders = clients.reduce((sum, c) => sum + (c.totalOrders || 0), 0);
+    const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
     if (isLoading) {
         return (
@@ -146,7 +171,7 @@ const TopClientsModule = () => {
                         <Icon name="calculate" />
                     </div>
                     <div className="clients-stat-info">
-                        <div className="clients-stat-value">${Math.round(totalRevenue / totalOrders).toLocaleString()}</div>
+                        <div className="clients-stat-value">${avgOrderValue.toLocaleString()}</div>
                         <div className="clients-stat-label">Avg. Order Value</div>
                     </div>
                 </div>
@@ -207,10 +232,15 @@ const TopClientsModule = () => {
                                 </div>
                             </div>
                             <div className="top-client-card-body">
-                                <div className="top-client-avatar">
-                                    {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                <div className="top-client-avatar" style={{ background: getAvatarColor(index) }}>
+                                    {client.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                                 </div>
                                 <h3 className="top-client-name">{client.name}</h3>
+                                {client.billingEntity && (
+                                    <span className={`entity-badge ${client.billingEntity.toLowerCase()}`}>
+                                        {client.billingEntity}
+                                    </span>
+                                )}
                                 <div className="top-client-stats">
                                     <div className="top-client-stat">
                                         <Icon name="payments" />
@@ -235,7 +265,8 @@ const TopClientsModule = () => {
                     {sortedClients.length === 0 && (
                         <div className="top-clients-empty-grid">
                             <Icon name="star" />
-                            <p>No top clients found</p>
+                            <p>No clients with orders found</p>
+                            <span className="empty-subtitle">Create quotations to see top clients here</span>
                         </div>
                     )}
                 </div>
@@ -245,6 +276,7 @@ const TopClientsModule = () => {
                         <div className="top-clients-table-header">
                             <span className="col-rank">Rank</span>
                             <span className="col-name">Client Name</span>
+                            <span className="col-entity">Entity</span>
                             <span className="col-orders">Total Orders</span>
                             <span className="col-revenue">Total Revenue</span>
                             <span className="col-last">Last Order</span>
@@ -259,10 +291,17 @@ const TopClientsModule = () => {
                                         </div>
                                     </span>
                                     <span className="col-name">
-                                        <div className="client-avatar">
-                                            {client.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                                        <div className="client-avatar" style={{ background: getAvatarColor(index) }}>
+                                            {client.name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
                                         </div>
                                         <span>{client.name}</span>
+                                    </span>
+                                    <span className="col-entity">
+                                        {client.billingEntity && (
+                                            <span className={`entity-badge small ${client.billingEntity.toLowerCase()}`}>
+                                                {client.billingEntity}
+                                            </span>
+                                        )}
                                     </span>
                                     <span className="col-orders">{client.totalOrders}</span>
                                     <span className="col-revenue">${client.totalRevenue.toLocaleString()}</span>
@@ -277,11 +316,18 @@ const TopClientsModule = () => {
                             ))}
                         </div>
                     </div>
+                    {sortedClients.length === 0 && (
+                        <div className="top-clients-empty">
+                            <Icon name="star" />
+                            <p>No clients with orders found</p>
+                            <span>Create quotations to see top clients here</span>
+                        </div>
+                    )}
                 </div>
             )}
 
             <div className="table-footer-simple">
-                <span>{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</span>
+                <span>{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''} with orders</span>
             </div>
         </div>
     );

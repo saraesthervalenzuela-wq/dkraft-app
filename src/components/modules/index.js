@@ -19,3 +19,4 @@ export { default as ProjectAnalysis } from './ProjectAnalysis';
 export { default as ActivityLogModule } from './ActivityLog';
 export { default as CategoriesModule } from './Categories';
 export { default as UnitsModule } from './Units';
+export { default as WorkCentersModule } from './WorkCenters';

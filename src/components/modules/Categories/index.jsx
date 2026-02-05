@@ -3,7 +3,14 @@ import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { supabase } from '../../../lib/supabase';
 
 const CategoriesModule = () => {
-    const [categories, setCategories] = useState([]);
+    // Tab state: 'materials' or 'products'
+    const [activeTab, setActiveTab] = useState('materials');
+
+    // Material categories
+    const [materialCategories, setMaterialCategories] = useState([]);
+    // Product categories
+    const [productCategories, setProductCategories] = useState([]);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
     const [toast, setToast] = useState(null);
@@ -17,21 +24,38 @@ const CategoriesModule = () => {
         setIsLoading(true);
         try {
             console.log('[Categories] Loading from Supabase...');
-            const { data, error } = await supabase
-                .from('categories')
-                .select('*')
-                .order('name');
 
-            if (error) throw error;
-            console.log('[Categories] Loaded:', data?.length, 'categories');
-            setCategories(data || []);
+            // Load both category types in parallel
+            const [materialRes, productRes] = await Promise.all([
+                supabase.from('categories').select('*').order('name'),
+                supabase.from('product_categories').select('*').order('name'),
+            ]);
+
+            if (materialRes.error) throw materialRes.error;
+            console.log('[Categories] Loaded:', materialRes.data?.length, 'material categories');
+            setMaterialCategories(materialRes.data || []);
+
+            // Product categories table might not exist yet
+            if (productRes.error) {
+                console.warn('[Categories] Product categories table might not exist:', productRes.error.message);
+                setProductCategories([]);
+            } else {
+                console.log('[Categories] Loaded:', productRes.data?.length, 'product categories');
+                setProductCategories(productRes.data || []);
+            }
         } catch (error) {
             console.error('[Categories] Error loading:', error);
-            setCategories([]);
+            setMaterialCategories([]);
+            setProductCategories([]);
         } finally {
             setIsLoading(false);
         }
     };
+
+    // Get current categories based on active tab
+    const categories = activeTab === 'materials' ? materialCategories : productCategories;
+    const setCategories = activeTab === 'materials' ? setMaterialCategories : setProductCategories;
+    const tableName = activeTab === 'materials' ? 'categories' : 'product_categories';
 
     const [selectedCategories, setSelectedCategories] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -100,16 +124,21 @@ const CategoriesModule = () => {
                 description: newCategory.description || '',
             };
 
-            console.log('[Categories] Creating in Supabase...');
+            console.log('[Categories] Creating in Supabase table:', tableName);
             const { data: saved, error } = await supabase
-                .from('categories')
+                .from(tableName)
                 .insert(categoryData)
                 .select()
                 .single();
 
             if (error) throw error;
 
-            setCategories([...categories, saved]);
+            // Update the correct state based on active tab
+            if (activeTab === 'materials') {
+                setMaterialCategories(prev => [...prev, saved]);
+            } else {
+                setProductCategories(prev => [...prev, saved]);
+            }
             console.log('[Categories] Created:', saved.id);
             setToast({ message: 'Category created successfully!', type: 'success' });
             resetForm();
@@ -128,17 +157,24 @@ const CategoriesModule = () => {
                 description: newCategory.description || '',
             };
 
-            console.log('[Categories] Updating in Supabase...');
+            console.log('[Categories] Updating in Supabase table:', tableName);
             const { error } = await supabase
-                .from('categories')
+                .from(tableName)
                 .update({ ...categoryData, updated_at: new Date().toISOString() })
                 .eq('id', editingCategory.id);
 
             if (error) throw error;
 
-            setCategories(categories.map(c =>
-                c.id === editingCategory.id ? { ...c, ...categoryData } : c
-            ));
+            // Update the correct state based on active tab
+            if (activeTab === 'materials') {
+                setMaterialCategories(prev => prev.map(c =>
+                    c.id === editingCategory.id ? { ...c, ...categoryData } : c
+                ));
+            } else {
+                setProductCategories(prev => prev.map(c =>
+                    c.id === editingCategory.id ? { ...c, ...categoryData } : c
+                ));
+            }
             console.log('[Categories] Updated:', editingCategory.id);
             setToast({ message: 'Category updated successfully!', type: 'success' });
             resetForm();
@@ -153,13 +189,18 @@ const CategoriesModule = () => {
 
         try {
             const { error } = await supabase
-                .from('categories')
+                .from(tableName)
                 .delete()
                 .in('id', selectedCategories);
 
             if (error) throw error;
 
-            setCategories(categories.filter(c => !selectedCategories.includes(c.id)));
+            // Update the correct state based on active tab
+            if (activeTab === 'materials') {
+                setMaterialCategories(prev => prev.filter(c => !selectedCategories.includes(c.id)));
+            } else {
+                setProductCategories(prev => prev.filter(c => !selectedCategories.includes(c.id)));
+            }
             setSelectedCategories([]);
             console.log('[Categories] Deleted:', selectedCategories.length);
             setToast({ message: `${selectedCategories.length} category(ies) deleted!`, type: 'success' });
@@ -190,12 +231,40 @@ const CategoriesModule = () => {
                     </div>
                     <div className="header-text">
                         <h1>Categories</h1>
-                        <p>Organize your materials into categories</p>
+                        <p>{activeTab === 'materials' ? 'Organize your materials into categories' : 'Organize your products into categories'}</p>
                     </div>
                 </div>
                 <button className="btn-primary-action" onClick={() => setShowModal(true)}>
                     <span className="material-symbols-rounded">add</span>
                     Add new category
+                </button>
+            </div>
+
+            {/* Category Type Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${activeTab === 'materials' ? 'active' : ''}`}
+                    onClick={() => {
+                        setActiveTab('materials');
+                        setSelectedCategories([]);
+                        setSearchTerm('');
+                    }}
+                >
+                    <Icon name="inventory_2" />
+                    Material Categories
+                    <span className="tab-count">{materialCategories.length}</span>
+                </button>
+                <button
+                    className={`entity-tab ${activeTab === 'products' ? 'active' : ''}`}
+                    onClick={() => {
+                        setActiveTab('products');
+                        setSelectedCategories([]);
+                        setSearchTerm('');
+                    }}
+                >
+                    <Icon name="category" />
+                    Product Categories
+                    <span className="tab-count">{productCategories.length}</span>
                 </button>
             </div>
 
@@ -306,13 +375,18 @@ const CategoriesModule = () => {
                             <button className="btn-modal-delete" onClick={async () => {
                                 try {
                                     const { error } = await supabase
-                                        .from('categories')
+                                        .from(tableName)
                                         .delete()
                                         .eq('id', categoryToDelete.id);
 
                                     if (error) throw error;
 
-                                    setCategories(categories.filter(c => c.id !== categoryToDelete.id));
+                                    // Update the correct state based on active tab
+                                    if (activeTab === 'materials') {
+                                        setMaterialCategories(prev => prev.filter(c => c.id !== categoryToDelete.id));
+                                    } else {
+                                        setProductCategories(prev => prev.filter(c => c.id !== categoryToDelete.id));
+                                    }
                                     console.log('[Categories] Deleted:', categoryToDelete.id);
                                     setToast({ message: 'Category deleted successfully!', type: 'success' });
                                 } catch (error) {
@@ -338,8 +412,8 @@ const CategoriesModule = () => {
                                 <Icon name="label" />
                             </div>
                             <div className="modal-header-text">
-                                <h3>{editingCategory ? 'Edit Category' : 'New Category'}</h3>
-                                <p>{editingCategory ? 'Update category details' : 'Add a new category to organize your materials'}</p>
+                                <h3>{editingCategory ? 'Edit Category' : `New ${activeTab === 'materials' ? 'Material' : 'Product'} Category`}</h3>
+                                <p>{editingCategory ? 'Update category details' : `Add a new category to organize your ${activeTab}`}</p>
                             </div>
                             <button className="modal-close" onClick={resetForm}>
                                 <Icon name="close" />

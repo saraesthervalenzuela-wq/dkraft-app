@@ -26,6 +26,15 @@ const STATUS_CONFIG = {
     CANCELLED: { label: 'Cancelled', color: '#6c757d', icon: 'block' },
 };
 
+// Deposit percentage options
+const DEPOSIT_OPTIONS = [
+    { value: 50, label: '50%' },
+    { value: 40, label: '40%' },
+    { value: 30, label: '30%' },
+    { value: 20, label: '20%' },
+    { value: 10, label: '10%' },
+];
+
 // Empty quotation template
 const emptyQuotation = {
     id: null,
@@ -36,6 +45,7 @@ const emptyQuotation = {
     createdAt: new Date().toISOString(),
     approvalDate: '',
     eta: '',
+    depositRequired: 50,
     deposit: 0,
     depositPaid: false,
     subtotal: 0,
@@ -68,6 +78,7 @@ const QuotationsModule = () => {
     // UI state
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [billingEntityFilter, setBillingEntityFilter] = useState('ALL');
     const [viewMode, setViewMode] = useState('table');
 
     // Modal state
@@ -133,6 +144,7 @@ const QuotationsModule = () => {
                 createdAt: q.created_at,
                 approvalDate: q.approval_date || '',
                 eta: q.eta || '',
+                depositRequired: q.deposit_required || 50,
                 deposit: parseFloat(q.deposit) || 0,
                 depositPaid: q.deposit_paid || false,
                 subtotal: parseFloat(q.subtotal) || 0,
@@ -211,14 +223,23 @@ const QuotationsModule = () => {
         return `COT-${year}${month}-${random}`;
     };
 
-    // Filter quotations
-    const filteredQuotations = quotations.filter(q => {
+    // Filter by billing entity first
+    const entityFilteredQuotations = billingEntityFilter === 'ALL'
+        ? quotations
+        : quotations.filter(q => q.billingEntity === billingEntityFilter);
+
+    // Then filter by search and status
+    const filteredQuotations = entityFilteredQuotations.filter(q => {
         const matchesSearch =
             q.folio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
             q.clientName?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = statusFilter === 'ALL' || q.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+
+    // Entity counts for tabs
+    const dovecreekQuotations = quotations.filter(q => q.billingEntity === 'DOVECREEK').length;
+    const innovativeQuotations = quotations.filter(q => q.billingEntity === 'INNOVATIVE').length;
 
     // Calculate item subtotal
     const calculateItemSubtotal = (item) => {
@@ -229,9 +250,11 @@ const QuotationsModule = () => {
     };
 
     // Calculate quotation totals
-    const calculateTotals = (items) => {
+    // IVA only applies to Innovative, not Dovecreek
+    const calculateTotals = (items, billingEntity = 'DOVECREEK') => {
         const subtotal = items.reduce((sum, item) => sum + calculateItemSubtotal(item), 0);
-        const tax = subtotal * 0.16; // 16% IVA
+        // Only apply 16% IVA for Innovative
+        const tax = billingEntity === 'INNOVATIVE' ? subtotal * 0.16 : 0;
         const total = subtotal + tax;
         return { subtotal, tax, total };
     };
@@ -266,6 +289,26 @@ const QuotationsModule = () => {
                 clientId: value,
                 clientName: client ? (client.companyName || client.name) : ''
             }));
+        } else if (field === 'depositRequired') {
+            // Auto-calculate deposit when percentage changes
+            const percentage = parseInt(value) || 50;
+            setCurrentQuotation(prev => ({
+                ...prev,
+                depositRequired: percentage,
+                deposit: prev.total * (percentage / 100)
+            }));
+        } else if (field === 'billingEntity') {
+            // Recalculate totals when billing entity changes (IVA only for Innovative)
+            setCurrentQuotation(prev => {
+                const totals = calculateTotals(prev.items, value);
+                const depositPercent = prev.depositRequired || 50;
+                return {
+                    ...prev,
+                    billingEntity: value,
+                    ...totals,
+                    deposit: totals.total * (depositPercent / 100)
+                };
+            });
         } else {
             setCurrentQuotation(prev => ({ ...prev, [field]: value }));
         }
@@ -302,11 +345,13 @@ const QuotationsModule = () => {
             updatedItems = [...currentQuotation.items, newItem];
         }
 
-        const totals = calculateTotals(updatedItems);
+        const totals = calculateTotals(updatedItems, currentQuotation.billingEntity);
+        const depositPercent = currentQuotation.depositRequired || 50;
         setCurrentQuotation(prev => ({
             ...prev,
             items: updatedItems,
             ...totals,
+            deposit: totals.total * (depositPercent / 100),
         }));
         setCurrentItem(emptyItem);
     };
@@ -318,11 +363,13 @@ const QuotationsModule = () => {
 
     const handleRemoveItem = (index) => {
         const updatedItems = currentQuotation.items.filter((_, i) => i !== index);
-        const totals = calculateTotals(updatedItems);
+        const totals = calculateTotals(updatedItems, currentQuotation.billingEntity);
+        const depositPercent = currentQuotation.depositRequired || 50;
         setCurrentQuotation(prev => ({
             ...prev,
             items: updatedItems,
             ...totals,
+            deposit: totals.total * (depositPercent / 100),
         }));
     };
 
@@ -352,8 +399,8 @@ const QuotationsModule = () => {
                 return;
             }
 
-            // Recalculate totals with all items
-            const totals = calculateTotals(itemsToSave);
+            // Recalculate totals with all items (IVA only for Innovative)
+            const totals = calculateTotals(itemsToSave, currentQuotation.billingEntity);
 
             const client = clients.find(c => c.id === currentQuotation.clientId);
 
@@ -368,6 +415,7 @@ const QuotationsModule = () => {
                 status: currentQuotation.status || 'DRAFT',
                 approval_date: currentQuotation.approvalDate || null,
                 eta: currentQuotation.eta || null,
+                deposit_required: currentQuotation.depositRequired || 50,
                 deposit: parseFloat(currentQuotation.deposit) || 0,
                 deposit_paid: currentQuotation.depositPaid || false,
                 subtotal: totals.subtotal,
@@ -441,6 +489,7 @@ const QuotationsModule = () => {
                 createdAt: currentQuotation.createdAt || new Date().toISOString(),
                 approvalDate: quotationData.approval_date,
                 eta: quotationData.eta,
+                depositRequired: quotationData.deposit_required,
                 deposit: quotationData.deposit,
                 depositPaid: quotationData.deposit_paid,
                 subtotal: totals.subtotal,
@@ -957,6 +1006,34 @@ const QuotationsModule = () => {
                 </div>
             </div>
 
+            {/* Billing Entity Filter Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${billingEntityFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('ALL')}
+                >
+                    <Icon name="request_quote" />
+                    All Quotes
+                    <span className="tab-count">{quotations.length}</span>
+                </button>
+                <button
+                    className={`entity-tab dovecreek ${billingEntityFilter === 'DOVECREEK' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('DOVECREEK')}
+                >
+                    <Icon name="business" />
+                    Dovecreek
+                    <span className="tab-count">{dovecreekQuotations}</span>
+                </button>
+                <button
+                    className={`entity-tab innovative ${billingEntityFilter === 'INNOVATIVE' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('INNOVATIVE')}
+                >
+                    <Icon name="lightbulb" />
+                    Innovative
+                    <span className="tab-count">{innovativeQuotations}</span>
+                </button>
+            </div>
+
             {/* Toolbar */}
             <div className="module-toolbar">
                 <SearchBox
@@ -1384,7 +1461,19 @@ const QuotationsModule = () => {
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Deposit</label>
+                                    <label>Deposit Required</label>
+                                    <select
+                                        value={currentQuotation.depositRequired || 50}
+                                        onChange={(e) => handleInputChange('depositRequired', parseInt(e.target.value))}
+                                        disabled={modalMode === 'view'}
+                                    >
+                                        {DEPOSIT_OPTIONS.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Deposit Amount</label>
                                     <input
                                         type="number"
                                         value={currentQuotation.deposit}
@@ -1565,10 +1654,13 @@ const QuotationsModule = () => {
                                     <span>Subtotal:</span>
                                     <span>{formatCurrency(currentQuotation.subtotal)}</span>
                                 </div>
-                                <div className="total-row">
-                                    <span>IVA (16%):</span>
-                                    <span>{formatCurrency(currentQuotation.tax)}</span>
-                                </div>
+                                {/* IVA only applies to Innovative */}
+                                {currentQuotation.billingEntity === 'INNOVATIVE' && (
+                                    <div className="total-row">
+                                        <span>IVA (16%):</span>
+                                        <span>{formatCurrency(currentQuotation.tax)}</span>
+                                    </div>
+                                )}
                                 <div className="total-row grand-total">
                                     <span>Total:</span>
                                     <span>{formatCurrency(currentQuotation.total)}</span>

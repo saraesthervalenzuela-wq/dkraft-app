@@ -124,6 +124,7 @@ const Requisitions = () => {
     const [filteredRequisitions, setFilteredRequisitions] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const [billingEntityFilter, setBillingEntityFilter] = useState('ALL');
     const [viewMode, setViewMode] = useState('table');
     const [expandedRows, setExpandedRows] = useState({});
     const [loading, setLoading] = useState(true);
@@ -306,6 +307,11 @@ const Requisitions = () => {
     useEffect(() => {
         let filtered = [...requisitions];
 
+        // Filter by billing entity first
+        if (billingEntityFilter !== 'ALL') {
+            filtered = filtered.filter(req => req.billingEntity === billingEntityFilter);
+        }
+
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
             filtered = filtered.filter(req =>
@@ -321,7 +327,11 @@ const Requisitions = () => {
         }
 
         setFilteredRequisitions(filtered);
-    }, [requisitions, searchTerm, statusFilter]);
+    }, [requisitions, searchTerm, statusFilter, billingEntityFilter]);
+
+    // Entity counts for tabs
+    const dovecreekOrders = requisitions.filter(r => r.billingEntity === 'DOVECREEK').length;
+    const innovativeOrders = requisitions.filter(r => r.billingEntity === 'INNOVATIVE').length;
 
     // Toggle row expansion
     const toggleRowExpansion = (id) => {
@@ -919,6 +929,34 @@ const Requisitions = () => {
                         <Icon name="grid_view" />
                     </button>
                 </div>
+            </div>
+
+            {/* Billing Entity Filter Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${billingEntityFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('ALL')}
+                >
+                    <Icon name="shopping_cart" />
+                    All Orders
+                    <span className="tab-count">{requisitions.length}</span>
+                </button>
+                <button
+                    className={`entity-tab dovecreek ${billingEntityFilter === 'DOVECREEK' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('DOVECREEK')}
+                >
+                    <Icon name="business" />
+                    Dovecreek
+                    <span className="tab-count">{dovecreekOrders}</span>
+                </button>
+                <button
+                    className={`entity-tab innovative ${billingEntityFilter === 'INNOVATIVE' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('INNOVATIVE')}
+                >
+                    <Icon name="lightbulb" />
+                    Innovative
+                    <span className="tab-count">{innovativeOrders}</span>
+                </button>
             </div>
 
             {/* Stats Cards */}

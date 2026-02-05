@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal, SkeletonStatsRow, SkeletonCard, Skeleton, EmptyState, Toast } from '../../common';
 import { supabase } from '../../../lib/supabase';
+import { qbwcApi } from '../../../services/quickbooksConnector';
 
 // No local data - all data comes from Supabase
 
@@ -24,8 +25,17 @@ const emptyClient = {
     status: 'ACTIVE',
     qbSyncStatus: 'pending',
     listId: null,
-    notes: ''
+    notes: '',
+    billingEntity: ''
 };
+
+/**
+ * Billing entity options
+ */
+const billingEntityOptions = [
+    { value: 'DOVECREEK', label: 'Dovecreek' },
+    { value: 'INNOVATIVE', label: 'Innovative' },
+];
 
 /**
  * Status options matching MySQL ENUM
@@ -104,6 +114,7 @@ const ClientsModule = () => {
     const [viewMode, setViewMode] = useState('grid');
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [billingEntityFilter, setBillingEntityFilter] = useState('ALL'); // ALL, DOVECREEK, INNOVATIVE
 
     // Modal states
     const [showModal, setShowModal] = useState(false);
@@ -197,6 +208,7 @@ const ClientsModule = () => {
             qbSyncStatus,
             listId: c.listId || c.qb_customer_id || null,
             notes: c.notes || '',
+            billingEntity: c.billing_entity || '',
         };
     };
 
@@ -243,8 +255,13 @@ const ClientsModule = () => {
         }
     };
 
-    // Filter clients
-    const filteredClients = clients.filter(c =>
+    // Filter clients by billing entity first
+    const entityFilteredClients = billingEntityFilter === 'ALL'
+        ? clients
+        : clients.filter(c => c.billingEntity === billingEntityFilter);
+
+    // Then filter by search term
+    const filteredClients = entityFilteredClients.filter(c =>
         c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -297,16 +314,78 @@ const ClientsModule = () => {
     };
 
     /**
-     * Sync with QuickBooks (placeholder - QB sync not yet implemented)
+     * Sync pending clients with QuickBooks via QBWC connector
      */
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            // QB sync will be implemented when backend is ready
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Get clients that need to be synced (no listId)
+            const pendingClients = clients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
+
+            if (pendingClients.length === 0) {
+                setToast({ message: 'All clients are already synced!', type: 'info' });
+                return;
+            }
+
+            let syncedCount = 0;
+            let errorCount = 0;
+
+            for (const client of pendingClients) {
+                try {
+                    // Send to QBWC connector
+                    const result = await qbwcApi.customers.add({
+                        name: client.companyName || client.name,
+                        companyName: client.companyName,
+                        firstName: client.contactName?.split(' ')[0] || client.name?.split(' ')[0] || '',
+                        lastName: client.contactName?.split(' ').slice(1).join(' ') || client.name?.split(' ').slice(1).join(' ') || '',
+                        email: client.email,
+                        phone: client.phone,
+                        billAddress: {
+                            addr1: client.address,
+                            city: client.city,
+                            state: client.state,
+                            postalCode: client.zipCode,
+                            country: client.country || 'México',
+                        },
+                        clientId: client.id,
+                    });
+
+                    // If QB returns a listId, update the client in Supabase
+                    if (result?.listId) {
+                        await supabase
+                            .from('clients')
+                            .update({
+                                list_id: result.listId,
+                                edit_sequence: result.editSequence || null,
+                                sync_status: 'synced',
+                                last_synced_at: new Date().toISOString()
+                            })
+                            .eq('id', client.id);
+                        syncedCount++;
+                    }
+                } catch (err) {
+                    console.error(`[Clients] Error syncing client ${client.name}:`, err);
+                    // Mark as error in Supabase
+                    await supabase
+                        .from('clients')
+                        .update({ sync_status: 'error' })
+                        .eq('id', client.id);
+                    errorCount++;
+                }
+            }
+
+            // Reload data to reflect changes
             await loadData();
+
+            if (syncedCount > 0) {
+                setToast({ message: `${syncedCount} client(s) synced to QuickBooks!`, type: 'success' });
+            }
+            if (errorCount > 0) {
+                setToast({ message: `${errorCount} client(s) failed to sync. Check QBWC connection.`, type: 'error' });
+            }
         } catch (error) {
-            console.error('Error syncing with QB:', error);
+            console.error('[Clients] Error syncing with QB:', error);
+            setToast({ message: 'Error connecting to QuickBooks: ' + error.message, type: 'error' });
         } finally {
             setIsSyncing(false);
         }
@@ -409,6 +488,7 @@ const ClientsModule = () => {
             if (currentClient.rfc?.trim()) clientToSave.tax_id = currentClient.rfc;
             if (currentClient.notes?.trim()) clientToSave.notes = currentClient.notes;
             if (currentClient.website?.trim()) clientToSave.website = currentClient.website;
+            if (currentClient.billingEntity) clientToSave.billing_entity = currentClient.billingEntity;
 
             console.log('[Clients] Final data:', clientToSave);
 
@@ -455,6 +535,8 @@ const ClientsModule = () => {
     const activeClients = clients.filter(c => c.status === 'ACTIVE').length;
     const pendingClients = clients.filter(c => c.status === 'PENDING').length;
     const uniqueCompanies = [...new Set(clients.map(c => c.companyName).filter(Boolean))].length;
+    const dovecreekClients = clients.filter(c => c.billingEntity === 'DOVECREEK').length;
+    const innovativeClients = clients.filter(c => c.billingEntity === 'INNOVATIVE').length;
 
     // Show skeleton while loading
     if (isLoading) {
@@ -530,6 +612,52 @@ const ClientsModule = () => {
                         <span className="stat-label">Companies</span>
                     </div>
                 </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon teal">
+                        <Icon name="apartment" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{dovecreekClients}</span>
+                        <span className="stat-label">Dovecreek</span>
+                    </div>
+                </div>
+                <div className="module-stat-card">
+                    <div className="stat-icon amber">
+                        <Icon name="lightbulb" />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-value">{innovativeClients}</span>
+                        <span className="stat-label">Innovative</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Billing Entity Filter Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${billingEntityFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('ALL')}
+                >
+                    <Icon name="groups" />
+                    All Clients
+                    <span className="tab-count">{clients.length}</span>
+                </button>
+                <button
+                    className={`entity-tab dovecreek ${billingEntityFilter === 'DOVECREEK' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('DOVECREEK')}
+                >
+                    <Icon name="business" />
+                    Dovecreek
+                    <span className="tab-count">{clients.filter(c => c.billingEntity === 'DOVECREEK').length}</span>
+                </button>
+                <button
+                    className={`entity-tab innovative ${billingEntityFilter === 'INNOVATIVE' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('INNOVATIVE')}
+                >
+                    <Icon name="lightbulb" />
+                    Innovative
+                    <span className="tab-count">{clients.filter(c => c.billingEntity === 'INNOVATIVE').length}</span>
+                </button>
             </div>
 
             {/* Toolbar */}
@@ -811,6 +939,25 @@ const ClientsModule = () => {
                                     placeholder="Contact person"
                                     disabled={modalMode === 'view'}
                                 />
+                            </div>
+                        </div>
+                        <div className="form-row">
+                            <div className="form-group">
+                                <label>Billing Entity</label>
+                                <select
+                                    value={currentClient.billingEntity}
+                                    onChange={(e) => handleInputChange('billingEntity', e.target.value)}
+                                    disabled={modalMode === 'view'}
+                                    className="form-select"
+                                >
+                                    <option value="">-- Select Entity --</option>
+                                    {billingEntityOptions.map(opt => (
+                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                {/* Empty for layout balance */}
                             </div>
                         </div>
                         <div className="form-row">

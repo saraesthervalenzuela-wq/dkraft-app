@@ -162,17 +162,17 @@ const StaffModule = () => {
     const confirmDelete = async () => {
         if (!userToDelete) return;
         try {
-            // Delete from profiles table
-            const { error } = await supabase
-                .from('profiles')
-                .delete()
-                .eq('id', userToDelete.id);
+            // Delete user completely using database function
+            const { error } = await supabase.rpc('delete_user_completely', {
+                user_id: userToDelete.id
+            });
 
             if (error) throw error;
 
             setShowDeleteConfirm(false);
             setUserToDelete(null);
             await loadData();
+            alert('Usuario eliminado correctamente');
         } catch (error) {
             console.error('[Staff] Error deleting user:', error);
             alert('Error deleting user: ' + error.message);
@@ -181,20 +181,21 @@ const StaffModule = () => {
 
     const handleDeleteSelected = async () => {
         if (selectedUsers.length === 0) return;
-        // Show confirmation for multiple delete
-        if (!window.confirm(`Are you sure you want to delete ${selectedUsers.length} user(s)? This action cannot be undone.`)) {
+        if (!window.confirm(`¿Estás seguro de eliminar ${selectedUsers.length} usuario(s)? Esta acción no se puede deshacer.`)) {
             return;
         }
         try {
-            const { error } = await supabase
-                .from('profiles')
-                .delete()
-                .in('id', selectedUsers);
-
-            if (error) throw error;
+            // Delete each user completely
+            for (const userId of selectedUsers) {
+                const { error } = await supabase.rpc('delete_user_completely', {
+                    user_id: userId
+                });
+                if (error) throw error;
+            }
 
             setSelectedUsers([]);
             await loadData();
+            alert(`${selectedUsers.length} usuario(s) eliminados correctamente`);
         } catch (error) {
             console.error('[Staff] Error deleting users:', error);
             alert('Error deleting users: ' + error.message);

@@ -5,6 +5,14 @@ import { supabase } from '../../../lib/supabase';
 const projectStatusOptions = ['Active', 'Inactive', 'Completed', 'On Hold'];
 const termsOptions = ['Net 15', 'Net 30', 'Net 45', 'Due on Receipt', 'COD'];
 
+/**
+ * Billing entity options
+ */
+const billingEntityOptions = [
+    { value: 'DOVECREEK', label: 'Dovecreek' },
+    { value: 'INNOVATIVE', label: 'Innovative' },
+];
+
 const ProjectsModule = () => {
     const [projects, setProjects] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +54,7 @@ const ProjectsModule = () => {
                 subtotal: parseFloat(p.subtotal) || 0,
                 tax: parseFloat(p.tax) || 0,
                 total: parseFloat(p.total) || 0,
+                billingEntity: p.billing_entity || '',
             }));
 
             setProjects(normalizedProjects);
@@ -70,12 +79,21 @@ const ProjectsModule = () => {
         poNumber: '', workOrder: '', estimateNumber: '', terms: '',
         nameAddress: '', shipTo: '', contact: '',
         salesRep: '', csr: '',
-        subtotal: 0, tax: 0, total: 0
+        subtotal: 0, tax: 0, total: 0,
+        billingEntity: ''
     });
+    const [billingEntityFilter, setBillingEntityFilter] = useState('ALL'); // ALL, DOVECREEK, INNOVATIVE
 
-    const filteredProjects = projects.filter(proj =>
+    // Filter by billing entity first
+    const entityFilteredProjects = billingEntityFilter === 'ALL'
+        ? projects
+        : projects.filter(p => p.billingEntity === billingEntityFilter);
+
+    // Then filter by search term
+    const filteredProjects = entityFilteredProjects.filter(proj =>
         proj.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        proj.description.toLowerCase().includes(searchTerm.toLowerCase())
+        proj.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        proj.client?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -134,6 +152,7 @@ const ProjectsModule = () => {
                 subtotal: parseFloat(newProject.subtotal) || 0,
                 tax: parseFloat(newProject.tax) || 0,
                 total: calculateTotal(newProject.subtotal, newProject.tax),
+                billing_entity: newProject.billingEntity || null,
             };
 
             console.log('[Projects] Creating in Supabase...');
@@ -186,6 +205,7 @@ const ProjectsModule = () => {
                 subtotal: parseFloat(newProject.subtotal) || 0,
                 tax: parseFloat(newProject.tax) || 0,
                 total: calculateTotal(newProject.subtotal, newProject.tax),
+                billing_entity: newProject.billingEntity || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -285,7 +305,8 @@ const ProjectsModule = () => {
             csr: project.csr || '',
             subtotal: project.subtotal?.toString() || '0',
             tax: project.tax?.toString() || '0',
-            total: project.total?.toString() || '0'
+            total: project.total?.toString() || '0',
+            billingEntity: project.billingEntity || ''
         });
         setShowModal(true);
     };
@@ -297,7 +318,8 @@ const ProjectsModule = () => {
             poNumber: '', workOrder: '', estimateNumber: '', terms: '',
             nameAddress: '', shipTo: '', contact: '',
             salesRep: '', csr: '',
-            subtotal: 0, tax: 0, total: 0
+            subtotal: 0, tax: 0, total: 0,
+            billingEntity: ''
         });
         setEditingProject(null);
     };
@@ -307,6 +329,8 @@ const ProjectsModule = () => {
     const activeProjects = projects.filter(p => p.status === 'Active').length;
     const totalRevenue = projects.reduce((sum, p) => sum + (p.total || 0), 0);
     const completedProjects = projects.filter(p => p.status === 'Completed').length;
+    const dovecreekProjects = projects.filter(p => p.billingEntity === 'DOVECREEK').length;
+    const innovativeProjects = projects.filter(p => p.billingEntity === 'INNOVATIVE').length;
 
     if (isLoading) {
         return (
@@ -376,6 +400,34 @@ const ProjectsModule = () => {
                         <span className="stat-label">Total Value</span>
                     </div>
                 </div>
+            </div>
+
+            {/* Billing Entity Filter Tabs */}
+            <div className="billing-entity-tabs">
+                <button
+                    className={`entity-tab ${billingEntityFilter === 'ALL' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('ALL')}
+                >
+                    <Icon name="assignment" />
+                    All Projects
+                    <span className="tab-count">{projects.length}</span>
+                </button>
+                <button
+                    className={`entity-tab dovecreek ${billingEntityFilter === 'DOVECREEK' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('DOVECREEK')}
+                >
+                    <Icon name="business" />
+                    Dovecreek
+                    <span className="tab-count">{dovecreekProjects}</span>
+                </button>
+                <button
+                    className={`entity-tab innovative ${billingEntityFilter === 'INNOVATIVE' ? 'active' : ''}`}
+                    onClick={() => setBillingEntityFilter('INNOVATIVE')}
+                >
+                    <Icon name="lightbulb" />
+                    Innovative
+                    <span className="tab-count">{innovativeProjects}</span>
+                </button>
             </div>
 
             <div className="projects-toolbar">
@@ -601,6 +653,19 @@ const ProjectsModule = () => {
                                         onChange={(e) => setNewProject({ ...newProject, client: e.target.value })}
                                         placeholder="Client name"
                                     />
+                                </div>
+                                <div className="form-group">
+                                    <label>Billing Entity</label>
+                                    <select
+                                        value={newProject.billingEntity}
+                                        onChange={(e) => setNewProject({ ...newProject, billingEntity: e.target.value })}
+                                        className="form-select"
+                                    >
+                                        <option value="">-- Select Entity --</option>
+                                        {billingEntityOptions.map(opt => (
+                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                             <div className="form-group">

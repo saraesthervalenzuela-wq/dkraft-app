@@ -20108,6 +20108,8 @@ label .required {
 .stat-icon.pink { background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); }
 .stat-icon.indigo { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
 .stat-icon.gray { background: linear-gradient(135deg, #64748b 0%, #475569 100%); }
+.stat-icon.teal { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+.stat-icon.amber { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
 
 .stat-info {
     display: flex;
@@ -25507,4 +25509,172 @@ label .required {
 
 [data-theme="light"] .bom-tab-content .bom-total-label {
     color: #64748b;
+}
+
+/* ================================
+   BILLING ENTITY TABS - Clients Module
+   Filter tabs for Dovecreek and Innovative
+   ================================ */
+
+.billing-entity-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
+
+.entity-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.entity-tab:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-hover);
+    color: var(--text-primary);
+}
+
+.entity-tab.active {
+    background: linear-gradient(135deg, rgba(0, 51, 179, 0.15) 0%, rgba(0, 71, 224, 0.1) 100%);
+    border-color: rgba(0, 51, 179, 0.4);
+    color: var(--text-primary);
+}
+
+.entity-tab.dovecreek.active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border-color: rgba(16, 185, 129, 0.4);
+}
+
+.entity-tab.innovative.active {
+    background: linear-gradient(135deg, rgba(211, 84, 0, 0.15) 0%, rgba(211, 84, 0, 0.08) 100%);
+    border-color: rgba(211, 84, 0, 0.4);
+}
+
+.entity-tab .material-symbols-rounded {
+    font-size: 1.125rem;
+    opacity: 0.7;
+}
+
+.entity-tab.active .material-symbols-rounded {
+    opacity: 1;
+}
+
+.entity-tab.dovecreek.active .material-symbols-rounded {
+    color: #10b981;
+}
+
+.entity-tab.innovative.active .material-symbols-rounded {
+    color: #d35400;
+}
+
+.tab-count {
+    background: var(--bg-hover);
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+.entity-tab.active .tab-count {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.entity-tab.dovecreek.active .tab-count {
+    background: rgba(16, 185, 129, 0.25);
+    color: #10b981;
+}
+
+.entity-tab.innovative.active .tab-count {
+    background: rgba(211, 84, 0, 0.25);
+    color: #d35400;
+}
+
+/* Light theme adjustments */
+[data-theme="light"] .billing-entity-tabs {
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .entity-tab {
+    background: rgba(0, 0, 0, 0.02);
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .entity-tab:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .entity-tab.active {
+    background: linear-gradient(135deg, rgba(0, 51, 179, 0.1) 0%, rgba(0, 71, 224, 0.05) 100%);
+    border-color: rgba(0, 51, 179, 0.3);
+}
+
+[data-theme="light"] .entity-tab.dovecreek.active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+[data-theme="light"] .entity-tab.innovative.active {
+    background: linear-gradient(135deg, rgba(211, 84, 0, 0.1) 0%, rgba(211, 84, 0, 0.05) 100%);
+    border-color: rgba(211, 84, 0, 0.3);
+}
+
+[data-theme="light"] .tab-count {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .entity-tab.active .tab-count {
+    background: rgba(0, 51, 179, 0.15);
+    color: #0033b3;
+}
+
+[data-theme="light"] .entity-tab.dovecreek.active .tab-count {
+    background: rgba(16, 185, 129, 0.15);
+    color: #059669;
+}
+
+[data-theme="light"] .entity-tab.innovative.active .tab-count {
+    background: rgba(211, 84, 0, 0.15);
+    color: #c2410c;
+}
+
+/* Form select styling for billing entity */
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-select:hover {
+    border-color: var(--border-hover);
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--border-accent);
+    box-shadow: 0 0 0 3px var(--input-focus);
+}
+
+.form-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
