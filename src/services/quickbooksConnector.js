@@ -6,7 +6,7 @@
  * Example: VITE_QBWC_URL=http://localhost:3000/quickbooks
  */
 
-const QBWC_BASE_URL = import.meta.env.VITE_QBWC_URL || 'http://localhost:3000/quickbooks';
+const QBWC_BASE_URL = import.meta.env.VITE_QBWC_URL;
 
 /**
  * Generic request handler for QBWC API
@@ -15,11 +15,11 @@ const qbRequest = async (endpoint, options = {}) => {
     const url = `${QBWC_BASE_URL}${endpoint}`;
 
     const config = {
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers,
-        },
-        ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
     };
 
     console.log(`[QBWC] ${options.method || 'GET'} ${url}`);
@@ -27,20 +27,22 @@ const qbRequest = async (endpoint, options = {}) => {
     try {
         const response = await fetch(url, config);
 
+        console.log('[QBWC] Response:', response);
+
         // Handle non-JSON responses
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return { success: true };
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return { success: true };
         }
 
         const result = await response.json();
         console.log('[QBWC] Response:', result);
 
         if (!response.ok) {
-            throw new Error(result.error || result.message || `HTTP ${response.status}`);
+          throw new Error(result.error || result.message || `HTTP ${response.status}`);
         }
 
         return result;
@@ -61,7 +63,7 @@ export const qbItemsApi = {
      * @param {number} item.price - Item price
      * @param {string} item.description - Item description
      * @param {string} item.accountFullName - Account name (Materials for Production, Supplies for Production, etc.)
-     * @param {string} item.subItem - Parent item for hierarchy
+     * @param {string} item.subItem - Parent item - nombre de la categoria sin el account name
      * @param {number} item.materialId - Internal material ID reference
      * @param {number} item.productId - Internal product ID reference
      */

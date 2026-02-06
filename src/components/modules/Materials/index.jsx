@@ -10,7 +10,7 @@ import { qbwcApi } from '../../../services/quickbooksConnector';
  */
 const emptyMaterial = {
     code_qb: '',
-    qbSyncStatus: 'pending',
+    sync_status: 'pending',
     name: '',
     description: '',
     categoryId: '',
@@ -115,6 +115,24 @@ const MaterialsModule = () => {
     const [currentMaterial, setCurrentMaterial] = useState(emptyMaterial);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [materialToDelete, setMaterialToDelete] = useState(null);
+    // state for qb format
+    const [qbFormat, setQbFormat] = useState(false);
+
+    // QB accounts
+    const accounts = [
+      {
+        id: 'Materials for Production',
+        name: 'Materials for Production'
+      },
+      {
+        id: 'Supplies for Production',
+        name: 'Supplies for Production'
+      },
+      {
+        id: 'Manufacturing Services',
+        name: 'Manufacturing Services'
+      }
+    ];
 
     // QB Sync status
     const [pendingSyncCount, setPendingSyncCount] = useState(0);
@@ -128,8 +146,8 @@ const MaterialsModule = () => {
      * Track pending QB sync count
      */
     useEffect(() => {
-        const pendingMaterials = materials.filter(m => !m.qbListId && m.qbSyncStatus !== 'error');
-        setPendingSyncCount(pendingMaterials.length);
+      const pendingMaterials = materials.filter(m => m.sync_status === 'pending' || m.sync_status === 'error' || !m.qb_list_id);
+      setPendingSyncCount(pendingMaterials.length);
     }, [materials]);
 
     /**
@@ -149,6 +167,15 @@ const MaterialsModule = () => {
                 supabase.from('warehouses').select('*').order('name'),
                 supabase.from('material_stock').select('*'),
             ]);
+
+            console.log('[Materials] Data loaded:', {
+                materials: materialsRes.data,
+                suppliers: suppliersRes.data,
+                categories: categoriesRes.data,
+                units: unitsRes.data,
+                warehouses: warehousesRes.data,
+                materialStocks: materialStocksRes.data,
+            });
 
             if (materialsRes.error) throw materialsRes.error;
             if (suppliersRes.error) throw suppliersRes.error;
@@ -191,32 +218,32 @@ const MaterialsModule = () => {
     };
 
     /**
-     * Determine QB sync status based on qbListId presence
-     * - If qbListId exists -> 'synced'
-     * - If no qbListId and qbSyncStatus is 'error' -> 'error'
+     * Determine QB sync status based on qb_list_id presence
+     * - If qb_list_id exists -> 'synced'
+     * - If no qb_list_id and qbSyncStatus is 'error' -> 'error'
      * - Otherwise -> 'pending'
      */
     const getQBSyncStatusFromData = (material) => {
-        if (material.qbListId) {
-            return 'synced';
-        }
-        if (material.qbSyncStatus === 'error') {
-            return 'error';
-        }
-        return 'pending';
+      if (material.qb_list_id && material.sync_status === 'synced') {
+          return 'synced';
+      }
+      if (material.sync_status === 'error') {
+          return 'error';
+      }
+      return 'pending';
     };
 
     /**
      * Normalize material data from Supabase to frontend format
      */
     const normalizeMaterial = (m) => {
-        // Determine qbSyncStatus based on qbListId
+        // Determine qbSyncStatus based on qb_list_id
         const qbSyncStatus = getQBSyncStatusFromData(m);
 
         return {
             id: m.id,
             code_qb: m.sku || m.code || m.code_qb || '',
-            qbSyncStatus,
+            sync_status: qbSyncStatus,
             name: m.name || '',
             description: m.description || '',
             categoryId: m.category_id || m.categoryId || '',
@@ -228,7 +255,8 @@ const MaterialsModule = () => {
             minStock: m.min_stock || m.minStock || 0,
             price: m.unit_cost || m.price || 0,
             currency: m.currency || 'USD',
-            qbListId: m.qb_item_id || m.qbListId || null,
+            qb_list_id: m.qb_item_id || m.qb_list_id || null,
+            qb_edit_sequence: m.qb_edit_sequence || null,
             created_at: m.created_at,
         };
     };
@@ -402,6 +430,7 @@ const MaterialsModule = () => {
      * QuickBooks sync status icon
      */
     const getQBStatusIcon = (status) => {
+        console.log(status);
         switch (status) {
             case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced' };
             case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending' };
@@ -507,9 +536,12 @@ const MaterialsModule = () => {
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            // Get materials that need to be synced (no qbListId)
-            const pendingMaterials = materials.filter(m => !m.qbListId && m.qbSyncStatus !== 'error');
+          console.log('Syncing materials...');
+            // Get materials that need to be synced (no qb_list_id) or need to be updated (sync_status === 'pending' || sync_status === 'error')
+            const pendingMaterials = materials.filter(m => (m.sync_status === 'pending' || m.sync_status === 'error') || !m.qb_list_id);
+            console.log('Pending materials:', pendingMaterials);
 
+            // If no materials need to be synced, show toast and return
             if (pendingMaterials.length === 0) {
                 setToast({ message: 'All materials are already synced!', type: 'info' });
                 return;
@@ -520,34 +552,36 @@ const MaterialsModule = () => {
 
             for (const material of pendingMaterials) {
                 try {
-                    // Send to QBWC connector
-                    const result = await qbwcApi.items.add({
-                        name: material.name,
-                        price: material.unitCost || 0,
-                        description: material.description || '',
-                        accountFullName: 'Materials for Production',
-                        materialId: material.id,
+                  if (material.qb_list_id) {
+                    // Send to QBWC connector to update
+                    await qbwcApi.items.modify({
+                      qb_list_id: material.qb_list_id,
+                      qb_edit_sequence: material.qb_edit_sequence,
+                      name: material.name,
+                      price: material.price || 0,
+                      description: material.description || '',
+                      accountFullName: material.account,
+                      subItem: material.categoryId,
+                      material_id: material.id,
                     });
-
-                    // If QB returns a listId, update the material in Supabase
-                    if (result?.listId) {
-                        await supabase
-                            .from('materials')
-                            .update({
-                                qb_list_id: result.listId,
-                                qb_edit_sequence: result.editSequence || null,
-                                sync_status: 'synced'
-                            })
-                            .eq('id', material.id);
-                        syncedCount++;
-                    }
+                  } else {
+                    // Send to QBWC connector to add
+                    await qbwcApi.items.add({
+                      name: material.name,
+                      price: material.price || 0,
+                      description: material.description || '',
+                      accountFullName: material.account,
+                      subItem: qbFormat.subItem,
+                      materialId: material.id,
+                    });
+                  }
                 } catch (err) {
-                    console.error(`[Materials] Error syncing material ${material.name}:`, err);
-                    await supabase
-                        .from('materials')
-                        .update({ sync_status: 'error' })
-                        .eq('id', material.id);
-                    errorCount++;
+                  console.error(`[Materials] Error syncing material ${material.name}:`, err);
+                  await supabase
+                      .from('materials')
+                      .update({ sync_status: 'error' })
+                      .eq('id', material.id);
+                  errorCount++;
                 }
             }
 
@@ -667,7 +701,7 @@ const MaterialsModule = () => {
                 console.log('[Materials] Updating in Supabase with ID:', currentMaterial.id);
                 const { data: updatedMaterial, error } = await supabase
                     .from('materials')
-                    .update({ ...materialToSave, updated_at: new Date().toISOString() })
+                    .update({ ...materialToSave, updated_at: new Date().toISOString(), sync_status: 'pending' })
                     .eq('id', currentMaterial.id)
                     .select()
                     .single();
@@ -873,7 +907,7 @@ const MaterialsModule = () => {
                 /* Cards View */
                 <div className="materials-cards-grid">
                     {sortedMaterials.map((material) => {
-                        const qbStatus = getQBStatusIcon(material.qbSyncStatus);
+                        const qbStatus = getQBStatusIcon(material.sync_status);
                         const statusStyle = getStatusStyle(material.status);
                         return (
                             <div key={material.id} className="material-card">
@@ -991,7 +1025,7 @@ const MaterialsModule = () => {
                     </div>
 
                     {sortedMaterials.map((material) => {
-                        const qbStatus = getQBStatusIcon(material.qbSyncStatus);
+                        const qbStatus = getQBStatusIcon(material.sync_status);
                         const statusStyle = getStatusStyle(material.status);
                         const isLowStock = material.stock <= material.minStock && material.stock > 0;
 
@@ -1111,14 +1145,14 @@ const MaterialsModule = () => {
 
                     <div className="form-group">
                         <label>Material Name *</label>
-                        <input
+                          <input
                             type="text"
                             value={currentMaterial.name}
                             onChange={(e) => handleInputChange('name', e.target.value)}
                             placeholder="Material name"
                             disabled={modalMode === 'view'}
                             required
-                        />
+                          />
                     </div>
 
                     <div className="form-group">
@@ -1132,41 +1166,58 @@ const MaterialsModule = () => {
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label>Account</label>
-                        <input
-                            type="text"
-                            value={currentMaterial.account}
-                            onChange={(e) => handleInputChange('account', e.target.value)}
-                            placeholder="Account"
-                            disabled={modalMode === 'view'}
-                        />
-                    </div>
 
                     <div className="form-row">
                         <div className="form-group">
-                            <label>Category *</label>
+                            <label>Account</label>
                             <select
-                                value={currentMaterial.categoryId}
-                                onChange={(e) => handleInputChange('categoryId', e.target.value)}
+                                value={currentMaterial.account}
+                                onChange={(e) => handleInputChange('account', e.target.value)}
                                 disabled={modalMode === 'view'}
                                 required
                             >
-                                <option value="">Select category</option>
-                                {categories.map(cat => (
-                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                ))}
+                              <option value="">Select account</option>
+                              { 
+                                accounts.map(account => (
+                                  <option key={account.id} value={account.id}>
+                                      {account.name}
+                                  </option>
+                                ))
+                              }
                             </select>
+                            <p>{currentMaterial.account} - QB</p>
+                        </div>
+                        <div className="form-group">
+                            <label>Category *</label>
+                            <select
+                              value={currentMaterial.categoryId}
+                              onChange={(e) => {
+                                handleInputChange('categoryId', e.target.value)
+                                // Nombre de la categoria para QB
+                                const category = categories.find(cat => cat.id === e.target.value)
+                                setQbFormat(prev => ({ ...prev, subItem: category?.name }));
+                              }}
+                              disabled={modalMode === 'view'}
+                              required
+                            >
+                              <option value="">Select category</option>
+                              {
+                                categories.map(cat => (
+                                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                ))
+                              }
+                            </select>
+                            <p>{qbFormat.subItem} - QB</p>
                         </div>
                         <div className="form-group">
                             <label>Unit *</label>
                             <select
-                                value={currentMaterial.unitId}
-                                onChange={(e) => handleInputChange('unitId', e.target.value)}
-                                disabled={modalMode === 'view'}
-                                required
+                              value={currentMaterial.unitId}
+                              onChange={(e) => handleInputChange('unitId', e.target.value)}
+                              disabled={modalMode === 'view'}
+                              required
                             >
-                                <option value="">Select unit</option>
+                              <option value="">Select unit</option>
                                 {units.map(unit => (
                                     <option key={unit.id} value={unit.id}>{unit.name}</option>
                                 ))}
@@ -1250,19 +1301,22 @@ const MaterialsModule = () => {
                                                 border: '1px solid rgba(255,255,255,0.08)'
                                             }}
                                         >
-                                            <select
-                                                value={stock.warehouse_id}
-                                                onChange={(e) => handleWarehouseStockChange(index, 'warehouse_id', e.target.value)}
-                                                disabled={modalMode === 'view'}
-                                                style={{ padding: '8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: 'inherit' }}
+                                            <div className="form-group">
+                                                <label>Warehouse *</label>
+                                                <select
+                                                    value={stock.warehouse_id}
+                                                    onChange={(e) => handleWarehouseStockChange(index, 'warehouse_id', e.target.value)}
+                                                    disabled={modalMode === 'view'}
+                                                    style={{ padding: '8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: 'inherit' }}
                                             >
                                                 <option value="">Select warehouse</option>
                                                 {warehouses.map(wh => (
                                                     <option key={wh.id} value={wh.id}>{wh.name}</option>
                                                 ))}
                                             </select>
-                                            <div>
-                                                <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '4px' }}>Quantity</label>
+                                            </div>
+                                            <div className="form-group">
+                                                <label>Quantity</label>
                                                 <input
                                                     type="number"
                                                     value={stock.quantity}
@@ -1273,8 +1327,8 @@ const MaterialsModule = () => {
                                                     style={{ width: '100%', padding: '8px', borderRadius: '6px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.15)', color: 'inherit' }}
                                                 />
                                             </div>
-                                            <div>
-                                                <label style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', display: 'block', marginBottom: '4px' }}>Minimum</label>
+                                            <div className="form-group">
+                                                <label>Minimum</label>
                                                 <input
                                                     type="number"
                                                     value={stock.min_stock}
@@ -1355,15 +1409,15 @@ const MaterialsModule = () => {
                         </div>
                     </div>
 
-                    {modalMode === 'view' && currentMaterial.qbSyncStatus && (
+                    {modalMode === 'view' && currentMaterial.sync_status && (
                         <div className="form-group">
                             <label>QuickBooks Status</label>
                             <div className="qb-status-display">
                                 <Icon
-                                    name={getQBStatusIcon(currentMaterial.qbSyncStatus).icon}
-                                    style={{ color: getQBStatusIcon(currentMaterial.qbSyncStatus).color }}
+                                    name={getQBStatusIcon(currentMaterial.sync_status).icon}
+                                    style={{ color: getQBStatusIcon(currentMaterial.sync_status).color }}
                                 />
-                                <span>{getQBStatusIcon(currentMaterial.qbSyncStatus).label}</span>
+                                <span>{getQBStatusIcon(currentMaterial.sync_status).label}</span>
                             </div>
                         </div>
                     )}
