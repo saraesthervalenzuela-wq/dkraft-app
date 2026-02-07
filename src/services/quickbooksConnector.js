@@ -132,6 +132,37 @@ export const qbCustomersApi = {
 };
 
 // ============================================
+// VENDORS (Suppliers) API
+// ============================================
+export const qbVendorsApi = {
+    /**
+     * Add a new vendor to QuickBooks
+     * @param {Object} vendor - Vendor data
+     * @param {string} vendor.name - Vendor name (required, must be unique)
+     * @param {string} vendor.companyName - Company name
+     * @param {string} vendor.firstName - Contact first name
+     * @param {string} vendor.lastName - Contact last name
+     * @param {string} vendor.email - Email address
+     * @param {string} vendor.phone - Phone number
+     * @param {Object} vendor.vendorAddress - Vendor address { addr1, city, state, postalCode, country }
+     * @param {string} vendor.supplierId - Internal supplier ID reference (optional)
+     */
+    add: (vendor) => qbRequest('/add-vendor', {
+        method: 'POST',
+        body: JSON.stringify(vendor),
+    }),
+
+    /**
+     * Query all active vendors from QuickBooks
+     * @returns {Promise<Array>} List of vendors
+     */
+    query: () => qbRequest('/query-vendors', {
+        method: 'POST',
+        body: JSON.stringify({}),
+    }),
+};
+
+// ============================================
 // ESTIMATES & SALES ORDERS (MRP) API
 // ============================================
 export const qbSalesApi = {
@@ -269,6 +300,32 @@ export const syncProductToQB = async (product) => {
 };
 
 /**
+ * Sync a supplier to QuickBooks as a vendor
+ * @param {Object} supplier - Supplier data from Supabase
+ * @returns {Promise<Object>} QB response with listId
+ */
+export const syncSupplierToQB = async (supplier) => {
+    const qbVendor = {
+        name: supplier.name,
+        companyName: supplier.name,
+        firstName: supplier.contact_name?.split(' ')[0] || '',
+        lastName: supplier.contact_name?.split(' ').slice(1).join(' ') || '',
+        email: supplier.email,
+        phone: supplier.phone,
+        vendorAddress: {
+            addr1: supplier.address,
+            city: supplier.city,
+            state: supplier.state,
+            postalCode: supplier.postal_code,
+            country: supplier.country || 'México',
+        },
+        supplierId: supplier.id,
+    };
+
+    return qbVendorsApi.add(qbVendor);
+};
+
+/**
  * Create a quotation in QuickBooks as an Estimate
  * @param {Object} quotation - Quotation data from Supabase
  * @param {string} customerListId - QB customer ListID
@@ -299,6 +356,7 @@ export const createQuotationInQB = async (quotation, customerListId, itemsWithLi
 export const qbwcApi = {
     items: qbItemsApi,
     customers: qbCustomersApi,
+    vendors: qbVendorsApi,
     sales: qbSalesApi,
     accounts: qbAccountsApi,
 
@@ -310,6 +368,7 @@ export const qbwcApi = {
     syncClient: syncClientToQB,
     syncMaterial: syncMaterialToQB,
     syncProduct: syncProductToQB,
+    syncSupplier: syncSupplierToQB,
     createQuotation: createQuotationInQB,
 };
 

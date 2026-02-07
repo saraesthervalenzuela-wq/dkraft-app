@@ -3,6 +3,7 @@ import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { productsService } from '../../../lib/supabase';
 import { supabase } from '../../../lib/supabase';
 import { qbwcApi } from '../../../services/quickbooksConnector';
+import { billingEntityOptions, shouldSyncToQB } from '../../../constants/billingEntities';
 
 /**
  * Empty product template matching MySQL schema
@@ -21,14 +22,6 @@ const emptyProduct = {
     deleted: false,
     billingEntity: ''
 };
-
-/**
- * Billing entity options
- */
-const billingEntityOptions = [
-    { value: 'DOVECREEK', label: 'Dovecreek' },
-    { value: 'INNOVATIVE', label: 'Innovative' },
-];
 
 /**
  * Status options matching MySQL ENUM
@@ -93,7 +86,11 @@ const ProductsModule = () => {
      * Update pending QB sync count when products change
      */
     useEffect(() => {
-        const pendingProducts = products.filter(p => !p.qbListId && p.qbSyncStatus !== 'error');
+        const pendingProducts = products.filter(p =>
+            !p.qbListId &&
+            p.qbSyncStatus !== 'error' &&
+            shouldSyncToQB(p.billingEntity)
+        );
         setPendingSyncCount(pendingProducts.length);
 
         // Cleanup polling on unmount
@@ -176,7 +173,15 @@ const ProductsModule = () => {
     const normalizeProduct = (p) => {
         // Handle both snake_case (Supabase) and camelCase formats
         const qbListId = p.qb_list_id || p.qbListId || null;
-        const qbSyncStatus = qbListId ? 'synced' : (p.qb_sync_status || p.qbSyncStatus || 'pending');
+        const entityValue = p.billing_entity || p.billingEntity || '';
+        let qbSyncStatus;
+        if (!shouldSyncToQB(entityValue)) {
+            qbSyncStatus = 'local_only';
+        } else if (qbListId) {
+            qbSyncStatus = 'synced';
+        } else {
+            qbSyncStatus = p.qb_sync_status || p.qbSyncStatus || 'pending';
+        }
 
         // Parse price and costPrice as numbers - handle both formats
         const costPrice = parseFloat(p.cost_price || p.costPrice) || 0;
@@ -234,9 +239,10 @@ const ProductsModule = () => {
 
     const getQBStatusIcon = (status) => {
         switch (status) {
-            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced' };
-            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending' };
-            case 'error': return { icon: 'error', color: '#ef4444', label: 'Error' };
+            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced with QB' };
+            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending QB Sync' };
+            case 'error': return { icon: 'error', color: '#ef4444', label: 'Sync Error' };
+            case 'local_only': return { icon: 'cloud_off', color: '#64748b', label: 'Local Only' };
             default: return { icon: 'help', color: '#64748b', label: 'Unknown' };
         }
     };
@@ -310,7 +316,11 @@ const ProductsModule = () => {
         setIsSyncing(true);
         try {
             // Get products that need to be synced (no qb_list_id)
-            const pendingProducts = products.filter(p => !p.qbListId && p.status === 'active');
+            const pendingProducts = products.filter(p =>
+                !p.qbListId &&
+                p.status === 'active' &&
+                shouldSyncToQB(p.billingEntity)
+            );
 
             if (pendingProducts.length === 0) {
                 setToast({ message: 'All products are already synced!', type: 'info' });
@@ -718,6 +728,7 @@ const ProductsModule = () => {
                 cost_price: parseFloat(currentProduct.costPrice) || 0,
                 base_price: parseFloat(currentProduct.price) || 0,
                 billing_entity: currentProduct.billingEntity || null,
+                sync_status: shouldSyncToQB(currentProduct.billingEntity) ? 'pending' : 'local_only',
             };
 
             let savedProduct;

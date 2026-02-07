@@ -146,9 +146,12 @@ const MaterialsModule = () => {
      * Track pending QB sync count
      */
     useEffect(() => {
-      const pendingMaterials = materials.filter(m => m.sync_status === 'pending' || m.sync_status === 'error' || !m.qb_list_id);
+      const pendingMaterials = materials.filter(m =>
+          (m.sync_status === 'pending' || m.sync_status === 'error' || !m.qb_list_id) &&
+          materialHasDovecreekStock(m.id)
+      );
       setPendingSyncCount(pendingMaterials.length);
-    }, [materials]);
+    }, [materials, allMaterialStocks, warehouses]);
 
     /**
      * Load materials and related data from Supabase
@@ -430,11 +433,11 @@ const MaterialsModule = () => {
      * QuickBooks sync status icon
      */
     const getQBStatusIcon = (status) => {
-        console.log(status);
         switch (status) {
-            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced' };
-            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending' };
-            case 'error': return { icon: 'error', color: '#ef4444', label: 'Error' };
+            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced with QB' };
+            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending QB Sync' };
+            case 'error': return { icon: 'error', color: '#ef4444', label: 'Sync Error' };
+            case 'local_only': return { icon: 'cloud_off', color: '#64748b', label: 'Local Only' };
             default: return { icon: 'help', color: '#64748b', label: 'Unknown' };
         }
     };
@@ -453,6 +456,18 @@ const MaterialsModule = () => {
             allMaterialStocks
                 .filter(stock => stock.warehouse_id === warehouseId && stock.quantity > 0)
                 .map(stock => stock.material_id)
+        );
+    };
+
+    // Helper: Check if material has stock in a Dovecreek warehouse (should sync to QB)
+    const materialHasDovecreekStock = (materialId) => {
+        const dovecreekWarehouses = warehouses.filter(w =>
+            w.name?.toLowerCase().includes('dovecreek') || w.name?.toLowerCase().includes('dove creek')
+        );
+        return allMaterialStocks.some(stock =>
+            stock.material_id === materialId &&
+            stock.quantity > 0 &&
+            dovecreekWarehouses.some(dw => dw.id === stock.warehouse_id)
         );
     };
 
@@ -538,7 +553,10 @@ const MaterialsModule = () => {
         try {
           console.log('Syncing materials...');
             // Get materials that need to be synced (no qb_list_id) or need to be updated (sync_status === 'pending' || sync_status === 'error')
-            const pendingMaterials = materials.filter(m => (m.sync_status === 'pending' || m.sync_status === 'error') || !m.qb_list_id);
+            const pendingMaterials = materials.filter(m =>
+                ((m.sync_status === 'pending' || m.sync_status === 'error') || !m.qb_list_id) &&
+                materialHasDovecreekStock(m.id)
+            );
             console.log('Pending materials:', pendingMaterials);
 
             // If no materials need to be synced, show toast and return
@@ -1177,7 +1195,7 @@ const MaterialsModule = () => {
                                 required
                             >
                               <option value="">Select account</option>
-                              { 
+                              {
                                 accounts.map(account => (
                                   <option key={account.id} value={account.id}>
                                       {account.name}
@@ -1185,7 +1203,6 @@ const MaterialsModule = () => {
                                 ))
                               }
                             </select>
-                            <p>{currentMaterial.account} - QB</p>
                         </div>
                         <div className="form-group">
                             <label>Category *</label>

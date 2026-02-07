@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { supabase } from '../../../lib/supabase';
+import { qbwcApi } from '../../../services/quickbooksConnector';
+import { billingEntityOptions, shouldSyncToQB } from '../../../constants/billingEntities';
 
 // Avatar color palette - vibrant and varied
 const AVATAR_COLORS = [
@@ -59,14 +61,6 @@ const emptySupplier = {
 };
 
 /**
- * Billing entity options
- */
-const billingEntityOptions = [
-    { value: 'DOVECREEK', label: 'Dovecreek' },
-    { value: 'INNOVATIVE', label: 'Innovative' },
-];
-
-/**
  * Status options matching MySQL ENUM
  */
 const statusOptions = [
@@ -87,6 +81,7 @@ const SuppliersModule = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [billingEntityFilter, setBillingEntityFilter] = useState('ALL'); // ALL, DOVECREEK, INNOVATIVE
+    const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
     // Modal states
     const [showModal, setShowModal] = useState(false);
@@ -99,6 +94,18 @@ const SuppliersModule = () => {
     useEffect(() => {
         loadData();
     }, []);
+
+    /**
+     * Track pending QB sync count
+     */
+    useEffect(() => {
+        const pendingSuppliers = suppliers.filter(s =>
+            !s.qbListId &&
+            s.qbSyncStatus !== 'error' &&
+            shouldSyncToQB(s.billingEntity)
+        );
+        setPendingSyncCount(pendingSuppliers.length);
+    }, [suppliers]);
 
     /**
      * Load suppliers from Supabase
@@ -133,6 +140,20 @@ const SuppliersModule = () => {
      * Normalize supplier data from Supabase to frontend format
      */
     const normalizeSupplier = (s) => {
+        const entityValue = s.billing_entity || s.billingEntity || '';
+        const qbListId = s.list_id || s.qbListId || null;
+
+        let qbSyncStatus;
+        if (!shouldSyncToQB(entityValue)) {
+            qbSyncStatus = 'local_only';
+        } else if (qbListId) {
+            qbSyncStatus = 'synced';
+        } else if (s.sync_status === 'error' || s.qbSyncStatus === 'error') {
+            qbSyncStatus = 'error';
+        } else {
+            qbSyncStatus = s.sync_status || s.qbSyncStatus || 'pending';
+        }
+
         return {
             id: s.id,
             name: s.name || '',
@@ -147,10 +168,10 @@ const SuppliersModule = () => {
             contactName: s.contact_name || s.contact || s.contactName || '',
             website: s.website || '',
             status: normalizeStatus(s.status),
-            qbSyncStatus: s.qbSyncStatus || 'pending',
-            qbListId: s.qbListId || null,
+            qbSyncStatus,
+            qbListId,
             notes: s.notes || '',
-            billingEntity: s.billing_entity || '',
+            billingEntity: entityValue,
             created_at: s.created_at,
         };
     };
@@ -180,9 +201,10 @@ const SuppliersModule = () => {
      */
     const getQBStatusIcon = (status) => {
         switch (status) {
-            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced' };
-            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending' };
-            case 'error': return { icon: 'error', color: '#ef4444', label: 'Error' };
+            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced with QB' };
+            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending QB Sync' };
+            case 'error': return { icon: 'error', color: '#ef4444', label: 'Sync Error' };
+            case 'local_only': return { icon: 'cloud_off', color: '#64748b', label: 'Local Only' };
             default: return { icon: 'help', color: '#64748b', label: 'Unknown' };
         }
     };
@@ -245,16 +267,82 @@ const SuppliersModule = () => {
     };
 
     /**
-     * Sync with QuickBooks (placeholder - QB sync not yet implemented)
+     * Sync pending suppliers with QuickBooks via QBWC connector
      */
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            // QB sync will be implemented when backend is ready
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Get suppliers that need to be synced (no listId, DOVECREEK only)
+            const pendingSuppliers = suppliers.filter(s =>
+                !s.qbListId &&
+                s.qbSyncStatus !== 'error' &&
+                shouldSyncToQB(s.billingEntity)
+            );
+
+            if (pendingSuppliers.length === 0) {
+                setToast({ message: 'All suppliers are already synced!', type: 'info' });
+                return;
+            }
+
+            let syncedCount = 0;
+            let errorCount = 0;
+
+            for (const supplier of pendingSuppliers) {
+                try {
+                    // Send to QBWC connector as vendor
+                    const result = await qbwcApi.vendors.add({
+                        name: supplier.name,
+                        companyName: supplier.name,
+                        firstName: supplier.contactName?.split(' ')[0] || '',
+                        lastName: supplier.contactName?.split(' ').slice(1).join(' ') || '',
+                        email: supplier.email,
+                        phone: supplier.phone,
+                        vendorAddress: {
+                            addr1: supplier.address,
+                            city: supplier.city,
+                            state: supplier.state,
+                            postalCode: supplier.zipCode,
+                            country: supplier.country || 'México',
+                        },
+                        supplierId: supplier.id,
+                    });
+
+                    // If QB returns a listId, update the supplier in Supabase
+                    if (result?.listId) {
+                        await supabase
+                            .from('suppliers')
+                            .update({
+                                list_id: result.listId,
+                                edit_sequence: result.editSequence || null,
+                                sync_status: 'synced',
+                                last_synced_at: new Date().toISOString()
+                            })
+                            .eq('id', supplier.id);
+                        syncedCount++;
+                    }
+                } catch (err) {
+                    console.error(`[Suppliers] Error syncing supplier ${supplier.name}:`, err);
+                    // Mark as error in Supabase
+                    await supabase
+                        .from('suppliers')
+                        .update({ sync_status: 'error' })
+                        .eq('id', supplier.id);
+                    errorCount++;
+                }
+            }
+
+            // Reload data to reflect changes
             await loadData();
+
+            if (syncedCount > 0) {
+                setToast({ message: `${syncedCount} supplier(s) synced to QuickBooks!`, type: 'success' });
+            }
+            if (errorCount > 0) {
+                setToast({ message: `${errorCount} supplier(s) failed to sync. Check QBWC connection.`, type: 'error' });
+            }
         } catch (error) {
-            console.error('Error syncing with QB:', error);
+            console.error('[Suppliers] Error syncing with QB:', error);
+            setToast({ message: 'Error connecting to QuickBooks: ' + error.message, type: 'error' });
         } finally {
             setIsSyncing(false);
         }
@@ -345,7 +433,10 @@ const SuppliersModule = () => {
             if (currentSupplier.contactName?.trim()) supplierToSave.contact_name = currentSupplier.contactName;
             if (currentSupplier.notes?.trim()) supplierToSave.notes = currentSupplier.notes;
             if (currentSupplier.website?.trim()) supplierToSave.website = currentSupplier.website;
-            if (currentSupplier.billingEntity) supplierToSave.billing_entity = currentSupplier.billingEntity;
+            if (currentSupplier.billingEntity) {
+                supplierToSave.billing_entity = currentSupplier.billingEntity;
+                supplierToSave.sync_status = shouldSyncToQB(currentSupplier.billingEntity) ? 'pending' : 'local_only';
+            }
 
             console.log('[Suppliers] Final data:', supplierToSave);
 
@@ -411,6 +502,9 @@ const SuppliersModule = () => {
                     <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
                         <span className="material-symbols-rounded">sync</span>
                         {isSyncing ? 'Syncing...' : 'Sync with QB'}
+                        {pendingSyncCount > 0 && (
+                            <span className="sync-badge">{pendingSyncCount}</span>
+                        )}
                     </button>
                     <button className="btn-primary-action" onClick={handleAdd}>
                         <span className="material-symbols-rounded">add</span>

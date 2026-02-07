@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal, SkeletonStatsRow, SkeletonCard, Skeleton, EmptyState, Toast } from '../../common';
 import { supabase } from '../../../lib/supabase';
 import { qbwcApi } from '../../../services/quickbooksConnector';
+import { billingEntityOptions, shouldSyncToQB } from '../../../constants/billingEntities';
 
 // No local data - all data comes from Supabase
 
@@ -28,14 +29,6 @@ const emptyClient = {
     notes: '',
     billingEntity: ''
 };
-
-/**
- * Billing entity options
- */
-const billingEntityOptions = [
-    { value: 'DOVECREEK', label: 'Dovecreek' },
-    { value: 'INNOVATIVE', label: 'Innovative' },
-];
 
 /**
  * Status options matching MySQL ENUM
@@ -136,7 +129,11 @@ const ClientsModule = () => {
      * Track pending QB sync count
      */
     useEffect(() => {
-        const pendingClients = clients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
+        const pendingClients = clients.filter(c =>
+            !c.listId &&
+            c.qbSyncStatus !== 'error' &&
+            shouldSyncToQB(c.billingEntity)
+        );
         setPendingSyncCount(pendingClients.length);
     }, [clients]);
 
@@ -173,10 +170,13 @@ const ClientsModule = () => {
      * Determine QB sync status based on listId presence
      */
     const getQBSyncStatusFromData = (client) => {
-        if (client.listId) {
+        if (!shouldSyncToQB(client.billing_entity || client.billingEntity)) {
+            return 'local_only';
+        }
+        if (client.listId || client.list_id || client.qb_customer_id) {
             return 'synced';
         }
-        if (client.qbSyncStatus === 'error') {
+        if (client.qbSyncStatus === 'error' || client.sync_status === 'error') {
             return 'error';
         }
         return 'pending';
@@ -248,9 +248,10 @@ const ClientsModule = () => {
      */
     const getQBStatusIcon = (status) => {
         switch (status) {
-            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced' };
-            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending' };
-            case 'error': return { icon: 'error', color: '#ef4444', label: 'Error' };
+            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced with QB' };
+            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending QB Sync' };
+            case 'error': return { icon: 'error', color: '#ef4444', label: 'Sync Error' };
+            case 'local_only': return { icon: 'cloud_off', color: '#64748b', label: 'Local Only' };
             default: return { icon: 'help', color: '#64748b', label: 'Unknown' };
         }
     };
@@ -320,7 +321,11 @@ const ClientsModule = () => {
         setIsSyncing(true);
         try {
             // Get clients that need to be synced (no listId)
-            const pendingClients = clients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
+            const pendingClients = clients.filter(c =>
+                !c.listId &&
+                c.qbSyncStatus !== 'error' &&
+                shouldSyncToQB(c.billingEntity)
+            );
 
             if (pendingClients.length === 0) {
                 setToast({ message: 'All clients are already synced!', type: 'info' });
@@ -488,7 +493,10 @@ const ClientsModule = () => {
             if (currentClient.rfc?.trim()) clientToSave.tax_id = currentClient.rfc;
             if (currentClient.notes?.trim()) clientToSave.notes = currentClient.notes;
             if (currentClient.website?.trim()) clientToSave.website = currentClient.website;
-            if (currentClient.billingEntity) clientToSave.billing_entity = currentClient.billingEntity;
+            if (currentClient.billingEntity) {
+                clientToSave.billing_entity = currentClient.billingEntity;
+                clientToSave.sync_status = shouldSyncToQB(currentClient.billingEntity) ? 'pending' : 'local_only';
+            }
 
             console.log('[Clients] Final data:', clientToSave);
 
