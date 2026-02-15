@@ -7,6 +7,7 @@
  */
 
 const QBWC_BASE_URL = import.meta.env.VITE_QBWC_URL;
+// const QBWC_BASE_URL = 'http://localhost:3003/quickbooks';
 
 /**
  * Generic request handler for QBWC API
@@ -128,6 +129,25 @@ export const qbCustomersApi = {
     query: () => qbRequest('/query-customers', {
         method: 'POST',
         body: JSON.stringify({}),
+    }),
+
+    /**
+     * Update a customer in QuickBooks
+     * @param {Object} customer - Customer data
+     * @param {string} customer.listId - QuickBooks ListID of the customer
+     * @param {string} customer.name - Customer name (required, must be unique)
+     * @param {string} customer.companyName - Company name
+     * @param {string} customer.firstName - Contact first name
+     * @param {string} customer.lastName - Contact last name
+     * @param {string} customer.email - Email address
+     * @param {string} customer.phone - Phone number
+     * @param {Object} customer.billAddress - Billing address { addr1, city, state, postalCode, country }
+     * @param {Object} customer.shipAddress - Shipping address { addr1, city, state, postalCode, country }
+     * @param {string} customer.clientId - Internal client ID reference (optional)
+     */
+    update: (customer) => qbRequest('/mod-customer', {
+        method: 'PUT',
+        body: JSON.stringify(customer),
     }),
 };
 

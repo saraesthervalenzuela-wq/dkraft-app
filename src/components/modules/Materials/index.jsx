@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal, SkeletonStatsRow, Skeleton, Toast } from '../../common';
 import { supabase } from '../../../lib/supabase';
 import { qbwcApi } from '../../../services/quickbooksConnector';
+import { shouldSyncToQB } from '../../../constants/billingEntities';
 
 // No local data - all data comes from Supabase
 
@@ -554,8 +555,8 @@ const MaterialsModule = () => {
           console.log('Syncing materials...');
             // Get materials that need to be synced (no qb_list_id) or need to be updated (sync_status === 'pending' || sync_status === 'error')
             const pendingMaterials = materials.filter(m =>
-                ((m.sync_status === 'pending' || m.sync_status === 'error') || !m.qb_list_id) &&
-                materialHasDovecreekStock(m.id)
+                ((m.sync_status === 'pending' || m.sync_status === 'error') || !m.qb_list_id) 
+                // && materialHasDovecreekStock(m.id)
             );
             console.log('Pending materials:', pendingMaterials);
 
@@ -570,7 +571,9 @@ const MaterialsModule = () => {
 
             for (const material of pendingMaterials) {
                 try {
-                  if (material.qb_list_id) {
+
+                  // const qbEnable = shouldSyncToQB(material);
+                  if (material.qb_list_id ) {
                     // Send to QBWC connector to update
                     await qbwcApi.items.modify({
                       qb_list_id: material.qb_list_id,
@@ -581,6 +584,7 @@ const MaterialsModule = () => {
                       accountFullName: material.account,
                       subItem: material.categoryId,
                       material_id: material.id,
+                      is_active: material?.status === 'ACTIVE' ? true : false,
                     });
                   } else {
                     // Send to QBWC connector to add
@@ -591,6 +595,7 @@ const MaterialsModule = () => {
                       accountFullName: material.account,
                       subItem: qbFormat.subItem,
                       materialId: material.id,
+                      is_active: material?.status === 'ACTIVE' ? true : false,
                     });
                   }
                 } catch (err) {

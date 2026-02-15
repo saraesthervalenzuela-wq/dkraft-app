@@ -25,7 +25,7 @@ const emptyClient = {
     website: '',
     status: 'ACTIVE',
     qbSyncStatus: 'pending',
-    listId: null,
+    list_id: null,
     notes: '',
     billingEntity: ''
 };
@@ -130,8 +130,7 @@ const ClientsModule = () => {
      */
     useEffect(() => {
         const pendingClients = clients.filter(c =>
-            !c.listId &&
-            c.qbSyncStatus !== 'error' &&
+            c.qbSyncStatus === 'pending' &&
             shouldSyncToQB(c.billingEntity)
         );
         setPendingSyncCount(pendingClients.length);
@@ -167,13 +166,17 @@ const ClientsModule = () => {
     };
 
     /**
-     * Determine QB sync status based on listId presence
+     * Determine QB sync status based on list_id presence
      */
     const getQBSyncStatusFromData = (client) => {
         if (!shouldSyncToQB(client.billing_entity || client.billingEntity)) {
             return 'local_only';
         }
-        if (client.listId || client.list_id || client.qb_customer_id) {
+        // If explicitly marked as pending (e.g. after edit), return pending regardless of list_id
+        if (client.sync_status === 'pending' || client.qbSyncStatus === 'pending') {
+            return 'pending';
+        }
+        if (client.list_id || client.list_id || client.qb_customer_id) {
             return 'synced';
         }
         if (client.qbSyncStatus === 'error' || client.sync_status === 'error') {
@@ -186,7 +189,7 @@ const ClientsModule = () => {
      * Normalize client data from Supabase to frontend format
      */
     const normalizeClient = (c) => {
-        // Determine qbSyncStatus based on listId
+        // Determine qbSyncStatus based on list_id
         const qbSyncStatus = getQBSyncStatusFromData(c);
 
         return {
@@ -205,10 +208,13 @@ const ClientsModule = () => {
             contactName: c.contact_name || c.contact || c.contactName || '',
             website: c.website || '',
             status: normalizeStatus(c.status),
-            qbSyncStatus,
-            listId: c.listId || c.qb_customer_id || null,
+            qbSyncStatus: c.sync_status,
+            syncStatus: c.sync_status,
+            list_id: c.list_id || c.listId || null,
+            edit_sequence: c.edit_sequence || c.editSequence || null,
             notes: c.notes || '',
             billingEntity: c.billing_entity || '',
+            sync_status: c.sync_status || '', // Keep raw sync_status
         };
     };
 
@@ -318,12 +324,13 @@ const ClientsModule = () => {
      * Sync pending clients with QuickBooks via QBWC connector
      */
     const handleSync = async () => {
-        setIsSyncing(true);
+      setIsSyncing(true);
         try {
-            // Get clients that need to be synced (no listId)
+          console.log('[Clients] Syncing clients...', clients);
+            // Get clients that need to be synced (status is pending)
+            // This includes NEW clients (no list_id) AND MODIFIED clients (list_id but sync_status='pending')
             const pendingClients = clients.filter(c =>
-                !c.listId &&
-                c.qbSyncStatus !== 'error' &&
+                c.qbSyncStatus === 'pending' &&
                 shouldSyncToQB(c.billingEntity)
             );
 
@@ -336,47 +343,64 @@ const ClientsModule = () => {
             let errorCount = 0;
 
             for (const client of pendingClients) {
-                try {
-                    // Send to QBWC connector
-                    const result = await qbwcApi.customers.add({
-                        name: client.companyName || client.name,
-                        companyName: client.companyName,
-                        firstName: client.contactName?.split(' ')[0] || client.name?.split(' ')[0] || '',
-                        lastName: client.contactName?.split(' ').slice(1).join(' ') || client.name?.split(' ').slice(1).join(' ') || '',
-                        email: client.email,
-                        phone: client.phone,
-                        billAddress: {
-                            addr1: client.address,
-                            city: client.city,
-                            state: client.state,
-                            postalCode: client.zipCode,
-                            country: client.country || 'México',
-                        },
-                        clientId: client.id,
-                    });
+              try {
+                const qbEnable = shouldSyncToQB(client.billingEntity);
 
-                    // If QB returns a listId, update the client in Supabase
-                    if (result?.listId) {
-                        await supabase
-                            .from('clients')
-                            .update({
-                                list_id: result.listId,
-                                edit_sequence: result.editSequence || null,
-                                sync_status: 'synced',
-                                last_synced_at: new Date().toISOString()
-                            })
-                            .eq('id', client.id);
-                        syncedCount++;
-                    }
-                } catch (err) {
-                    console.error(`[Clients] Error syncing client ${client.name}:`, err);
-                    // Mark as error in Supabase
-                    await supabase
-                        .from('clients')
-                        .update({ sync_status: 'error' })
-                        .eq('id', client.id);
-                    errorCount++;
+                if (qbEnable) {
+                  // Check if we are UPDATING (has list_id) or CREATING (no list_id)
+                  if (client.list_id) {
+                    console.log(`[Clients] Updating existing client in QB: ${client.name} (ListID: ${client.list_id})`);
+                    qbwcApi.customers.update({
+                      list_id: client.list_id, // REQUIRED for update
+                      edit_sequence: client.edit_sequence,
+                      name: client.name, // QuickBooks name (might be company name or contact name depending on setup)
+                      company_name: client.companyName || client.name,
+                      first_name: client.contactName?.split(' ')[0] || client.name?.split(' ')[0] || '',
+                      last_name: client.contactName?.split(' ').slice(1).join(' ') || client.name?.split(' ').slice(1).join(' ') || '',
+                      email: client.email,
+                      phone: client.phone,
+                      bill_address: {
+                        addr1: client.address,
+                        city: client.city,
+                        state: client.state,
+                        postal_code: client.zipCode,
+                        country: client.country || 'México',
+                      },
+                      client_id: client.id,
+                      is_active: client.status === 'ACTIVE',
+                    });
+                  } else {
+                    console.log(`[Clients] Creating new client in QB: ${client.name}`);
+                    // Send to QBWC connector
+                    qbwcApi.customers.add({
+                      name: client.companyName || client.name,
+                      company_name: client.companyName,
+                      first_name: client.contactName?.split(' ')[0] || client.name?.split(' ')[0] || '',
+                      last_name: client.contactName?.split(' ').slice(1).join(' ') || client.name?.split(' ').slice(1).join(' ') || '',
+                      email: client.email,
+                      phone: client.phone,
+                      bill_address: {
+                        addr1: client.address,
+                        city: client.city,
+                        state: client.state,
+                        postal_code: client.zipCode,
+                        country: client.country || 'México',
+                      },
+                      client_id: client.id,
+                      is_active: client.status === 'ACTIVE',
+                    });
+                  }
+                  syncedCount++;
                 }
+              } catch (err) {
+                console.error(`[Clients] Error syncing client ${client.name}:`, err);
+                // Mark as error in Supabase
+                await supabase
+                  .from('clients')
+                  .update({ sync_status: 'error' })
+                  .eq('id', client.id);
+                errorCount++;
+              }
             }
 
             // Reload data to reflect changes
@@ -571,9 +595,13 @@ const ClientsModule = () => {
                             <span className="sync-count">{pendingSyncCount} pending</span>
                         </div>
                     )}
-                    <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
-                        <span className="material-symbols-rounded">sync</span>
-                        {isSyncing ? 'Syncing...' : 'Sync with QB'}
+                    <button
+                      className={`btn-sync ${isSyncing ? 'syncing' : ''}`}
+                      onClick={handleSync}
+                      disabled={isSyncing}
+                    >
+                      <span className="material-symbols-rounded">sync</span>
+                      {isSyncing ? 'Syncing...' : 'Sync with QB'}
                     </button>
                     <button className="btn-primary-action" onClick={handleAdd}>
                         <span className="material-symbols-rounded">add</span>
