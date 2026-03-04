@@ -5,22 +5,17 @@ import { supabase } from '../../../lib/supabase';
 const projectStatusOptions = ['Active', 'Inactive', 'Completed', 'On Hold'];
 const termsOptions = ['Net 15', 'Net 30', 'Net 45', 'Due on Receipt', 'COD'];
 
-/**
- * Billing entity options
- */
-const billingEntityOptions = [
-    { value: 'DOVECREEK', label: 'Dovecreek' },
-    { value: 'INNOVATIVE', label: 'Innovative' },
-];
 
 const ProjectsModule = () => {
     const [projects, setProjects] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [toast, setToast] = useState(null);
+    const [clients, setClients] = useState([]);
 
     // Load from Supabase on mount
     useEffect(() => {
         loadData();
+        loadClients();
     }, []);
 
     const loadData = async () => {
@@ -29,7 +24,7 @@ const ProjectsModule = () => {
             console.log('[Projects] Loading from Supabase...');
             const { data, error } = await supabase
                 .from('projects')
-                .select('*')
+                .select('*, clients(id, name, company_name)')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -41,20 +36,17 @@ const ProjectsModule = () => {
                 name: p.name || '',
                 description: p.description || '',
                 status: p.status || 'Active',
-                client: p.client || '',
+                clientId: p.client_id || '',
+                clientName: p.clients ? (p.clients.company_name || p.clients.name) : '',
                 poNumber: p.po_number || '',
                 workOrder: p.work_order || '',
                 estimateNumber: p.estimate_number || '',
                 terms: p.terms || '',
-                nameAddress: p.name_address || '',
                 shipTo: p.ship_to || '',
                 contact: p.contact || '',
-                salesRep: p.sales_rep || '',
-                csr: p.csr || '',
                 subtotal: parseFloat(p.subtotal) || 0,
                 tax: parseFloat(p.tax) || 0,
                 total: parseFloat(p.total) || 0,
-                billingEntity: p.billing_entity || '',
             }));
 
             setProjects(normalizedProjects);
@@ -65,6 +57,21 @@ const ProjectsModule = () => {
             setIsLoading(false);
         }
     };
+
+    const loadClients = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('clients')
+                .select('id, name, company_name')
+                .eq('status', 'ACTIVE')
+                .order('name');
+            if (error) throw error;
+            setClients(data || []);
+        } catch (error) {
+            console.error('[Projects] Error loading clients:', error);
+        }
+    };
+
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProjects, setSelectedProjects] = useState([]);
     const [showModal, setShowModal] = useState(false);
@@ -75,25 +82,16 @@ const ProjectsModule = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState(null);
     const [newProject, setNewProject] = useState({
-        name: '', description: '', status: 'Active', client: '',
+        name: '', description: '', status: 'Active', clientId: '',
         poNumber: '', workOrder: '', estimateNumber: '', terms: '',
-        nameAddress: '', shipTo: '', contact: '',
-        salesRep: '', csr: '',
+        shipTo: '', contact: '',
         subtotal: 0, tax: 0, total: 0,
-        billingEntity: ''
     });
-    const [billingEntityFilter, setBillingEntityFilter] = useState('ALL'); // ALL, DOVECREEK, INNOVATIVE
-
-    // Filter by billing entity first
-    const entityFilteredProjects = billingEntityFilter === 'ALL'
-        ? projects
-        : projects.filter(p => p.billingEntity === billingEntityFilter);
-
-    // Then filter by search term
-    const filteredProjects = entityFilteredProjects.filter(proj =>
+    // Filter by search term
+    const filteredProjects = projects.filter(proj =>
         proj.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         proj.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        proj.client?.toLowerCase().includes(searchTerm.toLowerCase())
+        proj.clientName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const sortedProjects = [...filteredProjects].sort((a, b) => {
@@ -139,35 +137,33 @@ const ProjectsModule = () => {
                 name: newProject.name,
                 description: newProject.description || '',
                 status: newProject.status || 'Active',
-                client: newProject.client || null,
+                client_id: newProject.clientId || null,
                 po_number: newProject.poNumber || null,
                 work_order: newProject.workOrder || null,
                 estimate_number: newProject.estimateNumber || null,
                 terms: newProject.terms || null,
-                name_address: newProject.nameAddress || null,
                 ship_to: newProject.shipTo || null,
                 contact: newProject.contact || null,
-                sales_rep: newProject.salesRep || null,
-                csr: newProject.csr || null,
                 subtotal: parseFloat(newProject.subtotal) || 0,
                 tax: parseFloat(newProject.tax) || 0,
                 total: calculateTotal(newProject.subtotal, newProject.tax),
-                billing_entity: newProject.billingEntity || null,
             };
 
             console.log('[Projects] Creating in Supabase...');
             const { data: savedProject, error } = await supabase
                 .from('projects')
                 .insert(projectData)
-                .select()
+                .select('*, clients(id, name, company_name)')
                 .single();
 
             if (error) throw error;
 
             // Add to local state with all fields
+            const selectedClient = clients.find(c => c.id === newProject.clientId);
             const normalizedProject = {
                 id: savedProject.id,
                 ...newProject,
+                clientName: selectedClient ? (selectedClient.company_name || selectedClient.name) : '',
                 subtotal: projectData.subtotal,
                 tax: projectData.tax,
                 total: projectData.total,
@@ -192,20 +188,16 @@ const ProjectsModule = () => {
                 name: newProject.name,
                 description: newProject.description || '',
                 status: newProject.status || 'Active',
-                client: newProject.client || null,
+                client_id: newProject.clientId || null,
                 po_number: newProject.poNumber || null,
                 work_order: newProject.workOrder || null,
                 estimate_number: newProject.estimateNumber || null,
                 terms: newProject.terms || null,
-                name_address: newProject.nameAddress || null,
                 ship_to: newProject.shipTo || null,
                 contact: newProject.contact || null,
-                sales_rep: newProject.salesRep || null,
-                csr: newProject.csr || null,
                 subtotal: parseFloat(newProject.subtotal) || 0,
                 tax: parseFloat(newProject.tax) || 0,
                 total: calculateTotal(newProject.subtotal, newProject.tax),
-                billing_entity: newProject.billingEntity || null,
                 updated_at: new Date().toISOString(),
             };
 
@@ -218,9 +210,11 @@ const ProjectsModule = () => {
             if (error) throw error;
 
             // Update local state
+            const selectedClient = clients.find(c => c.id === newProject.clientId);
             setProjects(projects.map(p => p.id === editingProject.id ? {
                 ...p,
                 ...newProject,
+                clientName: selectedClient ? (selectedClient.company_name || selectedClient.name) : '',
                 subtotal: projectData.subtotal,
                 tax: projectData.tax,
                 total: projectData.total,
@@ -293,20 +287,16 @@ const ProjectsModule = () => {
             name: project.name,
             description: project.description || '',
             status: project.status,
-            client: project.client || '',
+            clientId: project.clientId || '',
             poNumber: project.poNumber || '',
             workOrder: project.workOrder || '',
             estimateNumber: project.estimateNumber || '',
             terms: project.terms || '',
-            nameAddress: project.nameAddress || '',
             shipTo: project.shipTo || '',
             contact: project.contact || '',
-            salesRep: project.salesRep || '',
-            csr: project.csr || '',
             subtotal: project.subtotal?.toString() || '0',
             tax: project.tax?.toString() || '0',
             total: project.total?.toString() || '0',
-            billingEntity: project.billingEntity || ''
         });
         setShowModal(true);
     };
@@ -314,12 +304,10 @@ const ProjectsModule = () => {
     const resetForm = () => {
         setShowModal(false);
         setNewProject({
-            name: '', description: '', status: 'Active', client: '',
+            name: '', description: '', status: 'Active', clientId: '',
             poNumber: '', workOrder: '', estimateNumber: '', terms: '',
-            nameAddress: '', shipTo: '', contact: '',
-            salesRep: '', csr: '',
+            shipTo: '', contact: '',
             subtotal: 0, tax: 0, total: 0,
-            billingEntity: ''
         });
         setEditingProject(null);
     };
@@ -329,8 +317,6 @@ const ProjectsModule = () => {
     const activeProjects = projects.filter(p => p.status === 'Active').length;
     const totalRevenue = projects.reduce((sum, p) => sum + (p.total || 0), 0);
     const completedProjects = projects.filter(p => p.status === 'Completed').length;
-    const dovecreekProjects = projects.filter(p => p.billingEntity === 'DOVECREEK').length;
-    const innovativeProjects = projects.filter(p => p.billingEntity === 'INNOVATIVE').length;
 
     if (isLoading) {
         return (
@@ -402,34 +388,6 @@ const ProjectsModule = () => {
                 </div>
             </div>
 
-            {/* Billing Entity Filter Tabs */}
-            <div className="billing-entity-tabs">
-                <button
-                    className={`entity-tab ${billingEntityFilter === 'ALL' ? 'active' : ''}`}
-                    onClick={() => setBillingEntityFilter('ALL')}
-                >
-                    <Icon name="assignment" />
-                    All Projects
-                    <span className="tab-count">{projects.length}</span>
-                </button>
-                <button
-                    className={`entity-tab dovecreek ${billingEntityFilter === 'DOVECREEK' ? 'active' : ''}`}
-                    onClick={() => setBillingEntityFilter('DOVECREEK')}
-                >
-                    <Icon name="business" />
-                    Dovecreek
-                    <span className="tab-count">{dovecreekProjects}</span>
-                </button>
-                <button
-                    className={`entity-tab innovative ${billingEntityFilter === 'INNOVATIVE' ? 'active' : ''}`}
-                    onClick={() => setBillingEntityFilter('INNOVATIVE')}
-                >
-                    <Icon name="lightbulb" />
-                    Innovative
-                    <span className="tab-count">{innovativeProjects}</span>
-                </button>
-            </div>
-
             <div className="projects-toolbar">
                 <SearchBox
                     value={searchTerm}
@@ -479,7 +437,7 @@ const ProjectsModule = () => {
                                 <p className="project-card-description">{project.description}</p>
                                 <div className="project-card-client">
                                     <Icon name="group" />
-                                    <span>{project.client || 'No client assigned'}</span>
+                                    <span>{project.clientName || 'No client assigned'}</span>
                                 </div>
                                 <div className="project-card-details">
                                     <div className="project-detail">
@@ -492,7 +450,7 @@ const ProjectsModule = () => {
                                     </div>
                                     <div className="project-detail">
                                         <Icon name="person" />
-                                        <span>{project.salesRep}</span>
+                                        <span>{project.contact}</span>
                                     </div>
                                 </div>
                             </div>
@@ -563,7 +521,7 @@ const ProjectsModule = () => {
                                         </div>
                                         {project.name}
                                     </span>
-                                    <span className="col-client">{project.client || '-'}</span>
+                                    <span className="col-client">{project.clientName || '-'}</span>
                                     <span className="col-description">{project.description}</span>
                                     <span className="col-status">
                                         <span className={`status-badge ${project.status.toLowerCase().replace(' ', '-')}`}>
@@ -647,23 +605,16 @@ const ProjectsModule = () => {
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Client</label>
-                                    <input
-                                        type="text"
-                                        value={newProject.client}
-                                        onChange={(e) => setNewProject({ ...newProject, client: e.target.value })}
-                                        placeholder="Client name"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Billing Entity</label>
                                     <select
-                                        value={newProject.billingEntity}
-                                        onChange={(e) => setNewProject({ ...newProject, billingEntity: e.target.value })}
+                                        value={newProject.clientId}
+                                        onChange={(e) => setNewProject({ ...newProject, clientId: e.target.value })}
                                         className="form-select"
                                     >
-                                        <option value="">-- Select Entity --</option>
-                                        {billingEntityOptions.map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                        <option value="">-- Select Client --</option>
+                                        {clients.map(client => (
+                                            <option key={client.id} value={client.id}>
+                                                {client.company_name || client.name}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
@@ -724,15 +675,6 @@ const ProjectsModule = () => {
                             </div>
 
                             <h4 className="form-section-title">Contact and shipping</h4>
-                            <div className="form-group">
-                                <label>Name/Address</label>
-                                <input
-                                    type="text"
-                                    value={newProject.nameAddress}
-                                    onChange={(e) => setNewProject({ ...newProject, nameAddress: e.target.value })}
-                                    placeholder="Company name and address"
-                                />
-                            </div>
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Ship To</label>
@@ -750,28 +692,6 @@ const ProjectsModule = () => {
                                         value={newProject.contact}
                                         onChange={(e) => setNewProject({ ...newProject, contact: e.target.value })}
                                         placeholder="Contact name and phone"
-                                    />
-                                </div>
-                            </div>
-
-                            <h4 className="form-section-title">Work team</h4>
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Sales Representative</label>
-                                    <input
-                                        type="text"
-                                        value={newProject.salesRep}
-                                        onChange={(e) => setNewProject({ ...newProject, salesRep: e.target.value })}
-                                        placeholder="Sales rep name"
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>CSR</label>
-                                    <input
-                                        type="text"
-                                        value={newProject.csr}
-                                        onChange={(e) => setNewProject({ ...newProject, csr: e.target.value })}
-                                        placeholder="CSR name"
                                     />
                                 </div>
                             </div>
@@ -844,7 +764,7 @@ const ProjectsModule = () => {
                             </div>
                             <div className="modal-header-text">
                                 <h3>{viewingProject.name}</h3>
-                                <p>{viewingProject.client}</p>
+                                <p>{viewingProject.clientName}</p>
                             </div>
                             <span className={`status-badge ${viewingProject.status.toLowerCase().replace(' ', '-')}`}>
                                 <span className="status-dot"></span>
@@ -896,13 +816,6 @@ const ProjectsModule = () => {
                                 <h4 className="form-section-title">Contact & Shipping</h4>
                                 <div className="view-grid">
                                     <div className="view-item">
-                                        <Icon name="location_on" />
-                                        <div>
-                                            <span className="view-label">Address</span>
-                                            <span className="view-value">{viewingProject.nameAddress || '-'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="view-item">
                                         <Icon name="local_shipping" />
                                         <div>
                                             <span className="view-label">Ship To</span>
@@ -914,26 +827,6 @@ const ProjectsModule = () => {
                                         <div>
                                             <span className="view-label">Contact</span>
                                             <span className="view-value">{viewingProject.contact || '-'}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="view-section">
-                                <h4 className="form-section-title">Team</h4>
-                                <div className="view-grid">
-                                    <div className="view-item">
-                                        <Icon name="person" />
-                                        <div>
-                                            <span className="view-label">Sales Rep</span>
-                                            <span className="view-value">{viewingProject.salesRep || '-'}</span>
-                                        </div>
-                                    </div>
-                                    <div className="view-item">
-                                        <Icon name="support_agent" />
-                                        <div>
-                                            <span className="view-label">CSR</span>
-                                            <span className="view-value">{viewingProject.csr || '-'}</span>
                                         </div>
                                     </div>
                                 </div>
