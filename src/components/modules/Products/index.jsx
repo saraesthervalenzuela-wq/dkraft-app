@@ -82,6 +82,12 @@ const ProductsModule = () => {
         loadData();
     }, []);
 
+    const shouldSyncToQB = (billingEntity) => {
+        // INNOVATIVE products are not synced to QB, DOVECREEK and DKRAFT are synced to QB
+        if (!billingEntity) return true;
+        return billingEntity === 'INNOVATIVE' ? false : true;
+    };
+
     /**
      * Update pending QB sync count when products change
      */
@@ -338,7 +344,7 @@ const ProductsModule = () => {
                         name: product.name,
                         price: product.unitPrice || 0,
                         description: product.description || '',
-                        accountFullName: 'Finished Goods',
+                        accountFullName: 'SALES',
                         productId: product.id,
                     });
 
@@ -1316,7 +1322,7 @@ const ProductsModule = () => {
                 size="large"
                 onSave={modalMode !== 'view' ? handleSave : undefined}
                 saveText={modalMode === 'add' ? 'Create Product' : 'Save Changes'}
-                saveDisabled={!currentProduct.name || !currentProduct.categoryId}
+                saveDisabled={!currentProduct.name}
                 isViewMode={modalMode === 'view'}
             >
                 {/* Modal Tabs */}
@@ -1408,7 +1414,7 @@ const ProductsModule = () => {
                                 />
                             </div>
 
-                            <div className="form-group">
+                            {/* <div className="form-group">
                                 <label>Category *</label>
                                 <select
                                     value={currentProduct.categoryId}
@@ -1421,7 +1427,7 @@ const ProductsModule = () => {
                                         <option key={cat.id} value={cat.id}>{cat.name}</option>
                                     ))}
                                 </select>
-                            </div>
+                            </div> */}
 
                             <div className="form-row">
                                 <div className="form-group">
