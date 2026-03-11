@@ -561,3 +561,22 @@
         justify-content: space-between;
     }
 }
+
+/* Date input wrapper - clickable area opens picker */
+.date-input-wrapper {
+    cursor: pointer;
+    position: relative;
+}
+
+.date-input-wrapper input[type="date"] {
+    cursor: pointer;
+    width: 100%;
+}
+
+/* White calendar icon */
+.date-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+    opacity: 1;
+    font-size: 18px;
+}

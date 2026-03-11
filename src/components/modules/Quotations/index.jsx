@@ -1438,61 +1438,94 @@ const QuotationsModule = () => {
                                 </div>
                             </div>
 
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Approval Date</label>
-                                    <input
-                                        type="date"
-                                        value={currentQuotation.approvalDate?.split('T')[0] || ''}
-                                        onChange={(e) => handleInputChange('approvalDate', e.target.value)}
-                                        disabled={modalMode === 'view'}
-                                    />
+                            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: '#8899aa', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    <Icon name="event" />
+                                    <span>Dates & Schedule</span>
                                 </div>
-                                <div className="form-group">
-                                    <label>ETA (Estimated Delivery Date)</label>
-                                    <input
-                                        type="date"
-                                        value={currentQuotation.eta?.split('T')[0] || ''}
-                                        onChange={(e) => handleInputChange('eta', e.target.value)}
-                                        disabled={modalMode === 'view'}
-                                    />
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Icon name="check_circle" style={{ fontSize: '16px', color: '#4ade80' }} />
+                                            Approval Date
+                                        </label>
+                                        <div className="date-input-wrapper" onClick={(e) => { const input = e.currentTarget.querySelector('input'); input?.showPicker?.(); }}>
+                                            <input
+                                                type="date"
+                                                value={currentQuotation.approvalDate?.split('T')[0] || ''}
+                                                onChange={(e) => handleInputChange('approvalDate', e.target.value)}
+                                                disabled={modalMode === 'view'}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-group">
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Icon name="local_shipping" style={{ fontSize: '16px', color: '#60a5fa' }} />
+                                            ETA (Estimated Delivery)
+                                        </label>
+                                        <div className="date-input-wrapper" onClick={(e) => { const input = e.currentTarget.querySelector('input'); input?.showPicker?.(); }}>
+                                            <input
+                                                type="date"
+                                                value={currentQuotation.eta?.split('T')[0] || ''}
+                                                onChange={(e) => handleInputChange('eta', e.target.value)}
+                                                disabled={modalMode === 'view'}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="form-row">
-                                <div className="form-group">
-                                    <label>Deposit Required</label>
-                                    <select
-                                        value={currentQuotation.depositRequired || 50}
-                                        onChange={(e) => handleInputChange('depositRequired', parseInt(e.target.value))}
-                                        disabled={modalMode === 'view'}
-                                    >
-                                        {DEPOSIT_OPTIONS.map(opt => (
-                                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                        ))}
-                                    </select>
+                            <div style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '10px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', color: '#8899aa', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                    <Icon name="payments" />
+                                    <span>Deposit Information</span>
                                 </div>
-                                <div className="form-group">
-                                    <label>Deposit Amount</label>
-                                    <input
-                                        type="number"
-                                        value={currentQuotation.deposit}
-                                        onChange={(e) => handleInputChange('deposit', parseFloat(e.target.value) || 0)}
-                                        disabled={modalMode === 'view'}
-                                        min="0"
-                                        step="0.01"
-                                    />
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Icon name="percent" style={{ fontSize: '16px', color: '#fbbf24' }} />
+                                            Deposit Required
+                                        </label>
+                                        <select
+                                            value={currentQuotation.depositRequired || 50}
+                                            onChange={(e) => handleInputChange('depositRequired', parseInt(e.target.value))}
+                                            disabled={modalMode === 'view'}
+                                        >
+                                            {DEPOSIT_OPTIONS.map(opt => (
+                                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Icon name="attach_money" style={{ fontSize: '16px', color: '#4ade80' }} />
+                                            Deposit Amount
+                                        </label>
+                                        <input
+                                            type="number"
+                                            value={currentQuotation.deposit}
+                                            onChange={(e) => handleInputChange('deposit', parseFloat(e.target.value) || 0)}
+                                            disabled={modalMode === 'view'}
+                                            min="0"
+                                            step="0.01"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="form-group">
-                                    <label>Deposit Paid</label>
-                                    <select
-                                        value={currentQuotation.depositPaid ? 'true' : 'false'}
-                                        onChange={(e) => handleInputChange('depositPaid', e.target.value === 'true')}
-                                        disabled={modalMode === 'view'}
-                                    >
-                                        <option value="false">No</option>
-                                        <option value="true">Yes</option>
-                                    </select>
+                                <div className="form-row">
+                                    <div className="form-group">
+                                        <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <Icon name="task_alt" style={{ fontSize: '16px', color: currentQuotation.depositPaid ? '#4ade80' : '#8899aa' }} />
+                                            Deposit Paid
+                                        </label>
+                                        <select
+                                            value={currentQuotation.depositPaid ? 'true' : 'false'}
+                                            onChange={(e) => handleInputChange('depositPaid', e.target.value === 'true')}
+                                            disabled={modalMode === 'view'}
+                                        >
+                                            <option value="false">No</option>
+                                            <option value="true">Yes</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
 

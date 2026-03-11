@@ -564,6 +564,21 @@ const ProductsModule = () => {
     };
 
     /**
+     * Auto-calculate costPrice from BOM materials + operations
+     */
+    useEffect(() => {
+        const totalMaterialCost = bomComponents.reduce((sum, comp) => sum + (parseFloat(comp.total_cost) || 0), 0);
+        const totalLaborCost = bomOperations.reduce((sum, op) => sum + (parseFloat(op.labor_cost) || 0), 0);
+        const calculatedCost = parseFloat((totalMaterialCost + totalLaborCost).toFixed(2));
+        setCurrentProduct(prev => {
+            if (prev.costPrice !== calculatedCost) {
+                return { ...prev, costPrice: calculatedCost };
+            }
+            return prev;
+        });
+    }, [bomComponents, bomOperations]);
+
+    /**
      * Get operation name by ID
      */
     const getOperationName = (operationId) => {
@@ -1431,19 +1446,26 @@ const ProductsModule = () => {
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Cost Price</label>
+                                    <label>Cost Price (auto-calculated)</label>
                                     <div className="price-input">
                                         <span className="price-prefix">$</span>
                                         <input
                                             type="number"
                                             value={currentProduct.costPrice}
-                                            onChange={(e) => handleInputChange('costPrice', parseFloat(e.target.value) || 0)}
                                             placeholder="0.00"
                                             step="0.01"
                                             min="0"
-                                            disabled={modalMode === 'view'}
+                                            disabled
+                                            style={{ opacity: 0.8 }}
                                         />
                                     </div>
+                                    {modalMode !== 'view' && (bomComponents.length > 0 || bomOperations.length > 0) && (
+                                        <span style={{ fontSize: '0.75rem', color: '#8899aa', marginTop: '4px' }}>
+                                            Materials: ${bomComponents.reduce((s, c) => s + (parseFloat(c.total_cost) || 0), 0).toFixed(2)}
+                                            {' + '}
+                                            Labor: ${bomOperations.reduce((s, o) => s + (parseFloat(o.labor_cost) || 0), 0).toFixed(2)}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="form-group">
                                     <label>Sale Price *</label>
