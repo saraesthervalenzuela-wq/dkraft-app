@@ -130,10 +130,68 @@ COMMIT;
 
 ---
 
-## 7. Próximos pasos (objetivos del día)
+## 7. 🔎 Auditoría de control — ¿quién tiene acceso? (verificado en vivo)
 
-- [ ] Pedir a Sara: subir a `devscali` a **Admin** del repo (o transferir).
-- [ ] Cablear **Supabase Auth** real en `AuthContext`.
-- [ ] Alta de usuarios reales (empezando por `Avaladez@innovativemillwkmex.com`).
+Pregunta del cliente: además de nosotros y Sara, **¿algún dev anterior (Miguel)
+sigue teniendo control?** Respuesta: **sí, en tres frentes.**
+
+**Miguel = Jesús Miguel Corona López** — identidades: `mcorl95@gmail.com` (app),
+`miguel1411` (GitHub), `jesusmiguelcoronalopez@gmail.com` (Supabase org).
+
+| Frente               | Tú (`devscali` / CaliDevs)                                       | Miguel               | Veredicto              |
+| -------------------- | ---------------------------------------------------------------- | -------------------- | ---------------------- |
+| **Supabase org**     | **Owner** + `anon`/`service_role`/`sb_secret` + management token | Developer (MFA off)  | 🟢 Tú mandas más       |
+| **App (`profiles`)** | ADMIN (`biz@calidevs.com`)                                       | USER                 | 🟢 Tú mandas más       |
+| **GitHub repo**      | write (admin: **false**)                                         | write (admin: false) | 🟡 Empate (abajo Sara) |
+
+- **Decisión del cliente (2026-06-04): NO cortar a Miguel.** Sigue colaborando; solo
+  se documenta su acceso y se confirma paridad. Miguel estuvo **activo hoy** (creó
+  `mcorl95` y se logueó 2026-06-05 UTC).
+- **Único hueco de control para nosotros:** admin de GitHub (lo tiene solo Sara).
+  Se le pidió a Sara subir a `devscali` a Admin (mensaje enviado 2026-06-04).
+- Backend (Supabase) y app: control nuestro confirmado, por encima de Miguel.
+
+### Usuarios en `auth.users` (7) — por qué "Avaladez" no entraba
+
+| Email                                | Creado     | Último login | Confirmado | Rol (profiles) |
+| ------------------------------------ | ---------- | ------------ | ---------- | -------------- |
+| saraesthervalenzuela@gmail.com       | 2026-02-03 | 2026-02-14   | ✅         | ADMIN          |
+| biz@calidevs.com                     | 2026-02-03 | 2026-02-03   | ✅         | ADMIN          |
+| sara@calidevs.com                    | 2026-02-03 | 2026-02-03   | ✅         | ADMIN          |
+| avaladez@**dovecreekproducts.com**   | 2026-02-04 | nunca        | ❌         | ADMIN          |
+| acastellanos@dovecreekproducts.com   | 2026-03-03 | 2026-03-03   | ✅         | ADMIN          |
+| mcorl95@gmail.com (Miguel)           | 2026-06-05 | 2026-06-05   | ✅         | USER           |
+| avaladez@**innovativemillwkmex.com** | 2026-06-05 | nunca        | ❌         | USER           |
+
+**Por qué "Avaladez" no tenía acceso:** existen **dos cuentas Avaladez distintas**.
+La original (`@dovecreekproducts.com`, feb-04, ADMIN) **nunca confirmó email ni entró**.
+La de `@innovativemillwkmex.com` (la que se pidió) es **nueva, USER, sin confirmar,
+nunca logueada** → no puede entrar tal cual.
+
+---
+
+## 8. Avance de hoy (2026-06-04)
+
+- ✅ **Control verificado:** Supabase Owner (nosotros) + service_role/secret + mgmt
+  token en mano; app ADMIN; GitHub write (admin pendiente de Sara).
+- ✅ **Supabase Auth cableado** en `dkraft-app/src/context/AuthContext.jsx` (Aurelia):
+  `login()` usa `supabase.auth.signInWithPassword` → queries salen como
+  `authenticated`, ya no `anon`. `getSession()` + `onAuthStateChange` en el montaje;
+  `register()` con `signUp`; `logout()` con `signOut`; `loginAsDemo()` conservado pero
+  marcado `⚠️ BYPASS MVP` (se quita al cerrar RLS). **Cambio LOCAL, NO pusheado ni
+  desplegado** — el sitio en vivo sigue con el login viejo a propósito (esperando OK).
+- ⏳ **Avaladez (innovative) NO activo:** cuenta sin confirmar / sin password usable +
+  login real sin desplegar. Pendiente: setear password temporal + confirmar email +
+  push/redeploy.
+
+---
+
+## 9. Próximos pasos (objetivos del día)
+
+- [x] Auditar control real (Supabase/GitHub/app) y comparar contra Miguel.
+- [x] Cablear **Supabase Auth** real en `AuthContext` (local, sin deploy).
+- [ ] Pedir a Sara: subir a `devscali` a **Admin** del repo — **mensaje enviado**, en espera.
+- [ ] Activar `avaladez@innovativemillwkmex.com` (password temporal + confirmar email).
+- [ ] Push + redeploy del login real a Netlify (cuando Cali dé OK).
 - [ ] Cerrar **RLS** + rotar **anon key** + actualizar Netlify.
 - [ ] Limpieza de repo (DANGER file, carpeta `1/`, `.gitignore` temp).
