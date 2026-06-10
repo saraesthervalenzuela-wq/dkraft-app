@@ -1,7 +1,23 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Icon, SearchBox, Modal, SkeletonStatsRow, SkeletonCard, Skeleton, EmptyState, Toast } from '../../common';
-import { clientsService } from '../../../firebase';
-import { isApiEnabled, clientsApi } from '../../../services/api';
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  Icon,
+  SearchBox,
+  Modal,
+  SkeletonStatsRow,
+  SkeletonCard,
+  Skeleton,
+  EmptyState,
+  Toast,
+} from "../../common";
+import { clientsService } from "../../../firebase";
+import { isApiEnabled, clientsApi } from "../../../services/api";
+import {
+  BILLING_ENTITIES,
+  DEFAULT_BILLING_ENTITY,
+  getBillingEntity,
+  normalizeBillingEntity,
+} from "../../../data/billingEntities";
+import "./styles.css";
 
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
@@ -12,1041 +28,1291 @@ const QB_SYNC_POLL_INTERVAL = 30000;
  * Empty client template matching MySQL schema
  */
 const emptyClient = {
-    code: '',
-    name: '',
-    companyName: '',
-    email: '',
-    phone: '',
-    address: '',
-    city: '',
-    state: '',
-    country: 'USA',
-    zipCode: '',
-    rfc: '',
-    contactName: '',
-    website: '',
-    status: 'ACTIVE',
-    qbSyncStatus: 'pending',
-    listId: null,
-    notes: ''
+  code: "",
+  name: "",
+  companyName: "",
+  email: "",
+  phone: "",
+  address: "",
+  city: "",
+  state: "",
+  country: "USA",
+  zipCode: "",
+  rfc: "",
+  contactName: "",
+  website: "",
+  status: "ACTIVE",
+  qbSyncStatus: "pending",
+  listId: null,
+  notes: "",
+  billingEntity: DEFAULT_BILLING_ENTITY,
 };
 
 /**
  * Status options matching MySQL ENUM
  */
 const statusOptions = [
-    { value: 'ACTIVE', label: 'Active', color: 'green' },
-    { value: 'INACTIVE', label: 'Inactive', color: 'gray' },
-    { value: 'PENDING', label: 'Pending', color: 'orange' },
+  { value: "ACTIVE", label: "Active", color: "green" },
+  { value: "INACTIVE", label: "Inactive", color: "gray" },
+  { value: "PENDING", label: "Pending", color: "orange" },
 ];
 
 /**
  * Clients Skeleton - Sexy loading state
  */
-const ClientsSkeleton = ({ viewMode = 'grid' }) => (
-    <div className="module-page clients-module">
-        {/* Header skeleton */}
-        <div className="page-header">
-            <div className="header-content">
-                <Skeleton width="48px" height="48px" radius="12px" />
-                <div className="header-text">
-                    <Skeleton width="120px" height="1.5rem" />
-                    <Skeleton width="180px" height="0.875rem" />
-                </div>
-            </div>
-            <div className="header-actions" style={{ display: 'flex', gap: '0.75rem' }}>
-                <Skeleton width="120px" height="40px" radius="8px" />
-                <Skeleton width="140px" height="40px" radius="8px" />
-            </div>
+const ClientsSkeleton = ({ viewMode = "grid" }) => (
+  <div className="module-page clients-module">
+    {/* Header skeleton */}
+    <div className="page-header">
+      <div className="header-content">
+        <Skeleton width="48px" height="48px" radius="12px" />
+        <div className="header-text">
+          <Skeleton width="120px" height="1.5rem" />
+          <Skeleton width="180px" height="0.875rem" />
         </div>
-
-        {/* Stats skeleton */}
-        <SkeletonStatsRow count={4} />
-
-        {/* Toolbar skeleton */}
-        <div className="clients-toolbar">
-            <Skeleton width="300px" height="44px" radius="8px" />
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <Skeleton width="80px" height="40px" radius="8px" />
-            </div>
-        </div>
-
-        {/* Content skeleton */}
-        {viewMode === 'grid' ? (
-            <div className="clients-cards-grid">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                    <SkeletonCard key={i} />
-                ))}
-            </div>
-        ) : (
-            <div className="skeleton-table skeleton-glow">
-                <div className="skeleton-table-header">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
-                        <Skeleton key={i} width="80%" height="0.75rem" />
-                    ))}
-                </div>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                    <div key={i} className="skeleton-table-row">
-                        {[1, 2, 3, 4, 5, 6].map(j => (
-                            <Skeleton key={j} width={j === 1 ? '40px' : '80%'} height="1rem" />
-                        ))}
-                    </div>
-                ))}
-            </div>
-        )}
+      </div>
+      <div
+        className="header-actions"
+        style={{ display: "flex", gap: "0.75rem" }}
+      >
+        <Skeleton width="120px" height="40px" radius="8px" />
+        <Skeleton width="140px" height="40px" radius="8px" />
+      </div>
     </div>
+
+    {/* Stats skeleton */}
+    <SkeletonStatsRow count={4} />
+
+    {/* Toolbar skeleton */}
+    <div className="clients-toolbar">
+      <Skeleton width="300px" height="44px" radius="8px" />
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <Skeleton width="80px" height="40px" radius="8px" />
+      </div>
+    </div>
+
+    {/* Content skeleton */}
+    {viewMode === "grid" ? (
+      <div className="clients-cards-grid">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    ) : (
+      <div className="skeleton-table skeleton-glow">
+        <div className="skeleton-table-header">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} width="80%" height="0.75rem" />
+          ))}
+        </div>
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <div key={i} className="skeleton-table-row">
+            {[1, 2, 3, 4, 5, 6].map((j) => (
+              <Skeleton
+                key={j}
+                width={j === 1 ? "40px" : "80%"}
+                height="1rem"
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
 );
 
 const ClientsModule = () => {
-    // Data state
-    const [clients, setClients] = useState([]);
+  // Data state
+  const [clients, setClients] = useState([]);
 
-    // UI state
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedClients, setSelectedClients] = useState([]);
-    const [sortConfig, setSortConfig] = useState({ key: 'created_at', direction: 'desc' }); // Newest first
-    const [viewMode, setViewMode] = useState('grid');
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSyncing, setIsSyncing] = useState(false);
+  // UI state
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClients, setSelectedClients] = useState([]);
+  const [sortConfig, setSortConfig] = useState({
+    key: "created_at",
+    direction: "desc",
+  }); // Newest first
+  const [viewMode, setViewMode] = useState("grid");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-    // Modal states
-    const [showModal, setShowModal] = useState(false);
-    const [modalMode, setModalMode] = useState('add');
-    const [currentClient, setCurrentClient] = useState(emptyClient);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [clientToDelete, setClientToDelete] = useState(null);
-    const [toast, setToast] = useState(null);
+  // Modal states
+  const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState("add");
+  const [currentClient, setCurrentClient] = useState(emptyClient);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [clientToDelete, setClientToDelete] = useState(null);
+  const [toast, setToast] = useState(null);
 
-    // QB Sync polling ref
-    const pollIntervalRef = useRef(null);
-    const [pendingSyncCount, setPendingSyncCount] = useState(0);
+  // QB Sync polling ref
+  const pollIntervalRef = useRef(null);
+  const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
-    // Load data on mount
-    useEffect(() => {
-        loadData();
-    }, []);
+  // Load data on mount
+  useEffect(() => {
+    loadData();
+  }, []);
 
-    /**
-     * Check if any clients have pending QB sync
-     */
-    const _hasPendingQBSync = useCallback((clientsList) => {
-        return clientsList.some(c => !c.listId && c.qbSyncStatus !== 'error');
-    }, []);
+  /**
+   * Check if any clients have pending QB sync
+   */
+  const _hasPendingQBSync = useCallback((clientsList) => {
+    return clientsList.some((c) => !c.listId && c.qbSyncStatus !== "error");
+  }, []);
 
-    /**
-     * Start polling for QB sync status updates
-     */
-    useEffect(() => {
-        const useApi = isApiEnabled();
-        if (!useApi) return;
+  /**
+   * Start polling for QB sync status updates
+   */
+  useEffect(() => {
+    const useApi = isApiEnabled();
+    if (!useApi) return;
 
-        // Check if we have pending syncs
-        const pendingClients = clients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
-        setPendingSyncCount(pendingClients.length);
-
-        if (pendingClients.length > 0) {
-            console.log(`[Clients] ${pendingClients.length} clients pending QB sync, starting polling...`);
-
-            // Clear existing interval
-            if (pollIntervalRef.current) {
-                clearInterval(pollIntervalRef.current);
-            }
-
-            // Start polling
-            pollIntervalRef.current = setInterval(async () => {
-                console.log('[Clients] Polling for QB sync updates...');
-                try {
-                    const updatedClients = await clientsApi.getAll();
-                    if (updatedClients?.length > 0) {
-                        const normalizedClients = updatedClients.map(normalizeClient);
-
-                        // Check for newly synced clients
-                        const newlySynced = normalizedClients.filter(updated => {
-                            const original = clients.find(c => c.id === updated.id);
-                            return original && !original.listId && updated.listId;
-                        });
-
-                        if (newlySynced.length > 0) {
-                            console.log(`[Clients] ${newlySynced.length} clients synced with QB:`, newlySynced.map(c => c.name));
-                        }
-
-                        setClients(normalizedClients);
-
-                        // Update pending count
-                        const stillPending = normalizedClients.filter(c => !c.listId && c.qbSyncStatus !== 'error');
-                        setPendingSyncCount(stillPending.length);
-
-                        // Stop polling if no more pending
-                        if (stillPending.length === 0) {
-                            console.log('[Clients] All clients synced, stopping polling');
-                            clearInterval(pollIntervalRef.current);
-                            pollIntervalRef.current = null;
-                        }
-                    }
-                } catch (error) {
-                    console.error('[Clients] Polling error:', error);
-                }
-            }, QB_SYNC_POLL_INTERVAL);
-        }
-
-        // Cleanup on unmount
-        return () => {
-            if (pollIntervalRef.current) {
-                clearInterval(pollIntervalRef.current);
-                pollIntervalRef.current = null;
-            }
-        };
-    }, [clients.length]); // Re-run when clients count changes
-
-    /**
-     * Load clients from Firebase or API
-     */
-    const loadData = async () => {
-        setIsLoading(true);
-        try {
-            const useApi = isApiEnabled();
-            const clientsData = useApi
-                ? await clientsApi.getAll()
-                : await clientsService.getAll();
-
-            if (clientsData?.length > 0) {
-                const normalizedClients = clientsData.map(normalizeClient);
-                setClients(normalizedClients);
-            }
-        } catch (error) {
-            console.error('Error loading clients:', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    /**
-     * Determine QB sync status based on listId presence
-     */
-    const getQBSyncStatusFromData = (client) => {
-        if (client.listId) {
-            return 'synced';
-        }
-        if (client.qbSyncStatus === 'error') {
-            return 'error';
-        }
-        return 'pending';
-    };
-
-    /**
-     * Normalize client data from Supabase to frontend format
-     */
-    const normalizeClient = (c) => {
-        // Determine qbSyncStatus based on listId
-        const qbSyncStatus = getQBSyncStatusFromData(c);
-
-        return {
-            id: c.id || c.idClient,
-            code: c.code || '',
-            name: c.name || '',
-            companyName: c.company_name || c.company || c.companyName || c.name || '',
-            email: c.email || '',
-            phone: c.phone || '',
-            address: c.address || '',
-            city: c.city || '',
-            state: c.state || '',
-            country: c.country || 'México',
-            zipCode: c.postal_code || c.zip || c.zipCode || '',
-            rfc: c.tax_id || c.rfc || '',
-            contactName: c.contact_name || c.contact || c.contactName || '',
-            website: c.website || '',
-            status: normalizeStatus(c.status),
-            qbSyncStatus,
-            listId: c.listId || c.qb_customer_id || null,
-            notes: c.notes || '',
-        };
-    };
-
-    /**
-     * Normalize status to MySQL ENUM format
-     */
-    const normalizeStatus = (status) => {
-        if (!status) return 'ACTIVE';
-        const statusUpper = status.toUpperCase();
-        if (['ACTIVE', 'INACTIVE', 'PENDING'].includes(statusUpper)) {
-            return statusUpper;
-        }
-        return 'ACTIVE';
-    };
-
-    /**
-     * Get status style
-     */
-    const getStatusStyle = (status) => {
-        const statusOpt = statusOptions.find(s => s.value === status);
-        return statusOpt || { value: status, label: status, color: 'gray' };
-    };
-
-    /**
-     * Get avatar color class based on name
-     */
-    const getAvatarColorClass = (name) => {
-        if (!name) return 'color-7';
-        // Create a simple hash from the name to get consistent colors
-        const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        const colorNum = (hash % 8) + 1;
-        return `color-${colorNum}`;
-    };
-
-    /**
-     * QuickBooks sync status icon
-     */
-    const getQBStatusIcon = (status) => {
-        switch (status) {
-            case 'synced': return { icon: 'check_circle', color: '#10b981', label: 'Synced' };
-            case 'pending': return { icon: 'schedule', color: '#f59e0b', label: 'Pending' };
-            case 'error': return { icon: 'error', color: '#ef4444', label: 'Error' };
-            default: return { icon: 'help', color: '#64748b', label: 'Unknown' };
-        }
-    };
-
-    // Filter clients
-    const filteredClients = clients.filter(c =>
-        c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.rfc?.toLowerCase().includes(searchTerm.toLowerCase())
+    // Check if we have pending syncs
+    const pendingClients = clients.filter(
+      (c) => !c.listId && c.qbSyncStatus !== "error",
     );
+    setPendingSyncCount(pendingClients.length);
 
-    // Sort clients - default newest first
-    const sortedClients = [...filteredClients].sort((a, b) => {
-        if (!sortConfig.key) {
-            // Default: newest first by created_at
-            const aDate = new Date(a.created_at || 0);
-            const bDate = new Date(b.created_at || 0);
-            return bDate - aDate;
-        }
-        // Handle date fields
-        if (sortConfig.key === 'created_at' || sortConfig.key === 'updated_at') {
-            const aDate = new Date(a[sortConfig.key] || 0);
-            const bDate = new Date(b[sortConfig.key] || 0);
-            return sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
-        }
-        // Handle string fields
-        const aVal = String(a[sortConfig.key] || '').toLowerCase();
-        const bVal = String(b[sortConfig.key] || '').toLowerCase();
-        if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
-        if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
-        return 0;
-    });
+    if (pendingClients.length > 0) {
+      console.log(
+        `[Clients] ${pendingClients.length} clients pending QB sync, starting polling...`,
+      );
 
-    const handleSort = (key) => {
-        setSortConfig(prev => ({
-            key,
-            direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
-        }));
-    };
+      // Clear existing interval
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+      }
 
-    const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            setSelectedClients(sortedClients.map(c => c.id));
-        } else {
-            setSelectedClients([]);
-        }
-    };
-
-    const handleSelectClient = (id) => {
-        setSelectedClients(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
-    };
-
-    /**
-     * Sync with QuickBooks
-     */
-    const handleSync = async () => {
-        setIsSyncing(true);
+      // Start polling
+      pollIntervalRef.current = setInterval(async () => {
+        console.log("[Clients] Polling for QB sync updates...");
         try {
-            if (isApiEnabled()) {
-                // await quickbooksApi.syncClients();
+          const updatedClients = await clientsApi.getAll();
+          if (updatedClients?.length > 0) {
+            const normalizedClients = updatedClients.map(normalizeClient);
+
+            // Check for newly synced clients
+            const newlySynced = normalizedClients.filter((updated) => {
+              const original = clients.find((c) => c.id === updated.id);
+              return original && !original.listId && updated.listId;
+            });
+
+            if (newlySynced.length > 0) {
+              console.log(
+                `[Clients] ${newlySynced.length} clients synced with QB:`,
+                newlySynced.map((c) => c.name),
+              );
             }
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            await loadData();
+
+            setClients(normalizedClients);
+
+            // Update pending count
+            const stillPending = normalizedClients.filter(
+              (c) => !c.listId && c.qbSyncStatus !== "error",
+            );
+            setPendingSyncCount(stillPending.length);
+
+            // Stop polling if no more pending
+            if (stillPending.length === 0) {
+              console.log("[Clients] All clients synced, stopping polling");
+              clearInterval(pollIntervalRef.current);
+              pollIntervalRef.current = null;
+            }
+          }
         } catch (error) {
-            console.error('Error syncing with QB:', error);
-        } finally {
-            setIsSyncing(false);
+          console.error("[Clients] Polling error:", error);
         }
-    };
-
-    /**
-     * Generate a unique client code
-     */
-    const generateClientCode = () => {
-        const timestamp = Date.now().toString(36).toUpperCase();
-        const random = Math.random().toString(36).substring(2, 5).toUpperCase();
-        return `CLI-${timestamp}-${random}`;
-    };
-
-    // Modal handlers
-    const handleAdd = () => {
-        const newCode = generateClientCode();
-        setCurrentClient({ ...emptyClient, code: newCode });
-        setModalMode('add');
-        setShowModal(true);
-    };
-
-    const handleEdit = (client) => {
-        setCurrentClient({ ...client });
-        setModalMode('edit');
-        setShowModal(true);
-    };
-
-    const handleView = (client) => {
-        setCurrentClient({ ...client });
-        setModalMode('view');
-        setShowModal(true);
-    };
-
-    const handleDelete = (client) => {
-        setClientToDelete(client);
-        setShowDeleteConfirm(true);
-    };
-
-    const handleDeleteSelected = async () => {
-        if (selectedClients.length === 0) return;
-
-        try {
-            const useApi = isApiEnabled();
-            for (const id of selectedClients) {
-                if (useApi) {
-                    await clientsApi.delete(id);
-                } else {
-                    await clientsService.delete(id);
-                }
-            }
-            setClients(prev => prev.filter(c => !selectedClients.includes(c.id)));
-            setSelectedClients([]);
-        } catch (error) {
-            console.error('Error deleting clients:', error);
-        }
-    };
-
-    const confirmDelete = async () => {
-        if (clientToDelete) {
-            try {
-                const useApi = isApiEnabled();
-                if (useApi) {
-                    await clientsApi.delete(clientToDelete.id);
-                } else {
-                    await clientsService.delete(clientToDelete.id);
-                }
-                setClients(prev => prev.filter(c => c.id !== clientToDelete.id));
-            } catch (error) {
-                console.error('Error deleting client:', error);
-            }
-        }
-        setShowDeleteConfirm(false);
-        setClientToDelete(null);
-    };
-
-    const handleSave = async () => {
-        try {
-            const useApi = isApiEnabled();
-            console.log('[Clients] Saving client, useApi:', useApi);
-            console.log('[Clients] Mode:', modalMode);
-            console.log('[Clients] Data to save:', currentClient);
-
-            // Build client object - required fields: code, name, email
-            const clientToSave = {
-                code: currentClient.code || generateClientCode(),
-                name: currentClient.name || '',
-                email: currentClient.email || '',
-                status: currentClient.status || 'ACTIVE',
-            };
-
-            // Add optional fields only if they have values (map to Supabase column names)
-            if (currentClient.phone?.trim()) clientToSave.phone = currentClient.phone;
-            if (currentClient.companyName?.trim()) clientToSave.company_name = currentClient.companyName;
-            if (currentClient.contactName?.trim()) clientToSave.contact_name = currentClient.contactName;
-            if (currentClient.address?.trim()) clientToSave.address = currentClient.address;
-            if (currentClient.city?.trim()) clientToSave.city = currentClient.city;
-            if (currentClient.state?.trim()) clientToSave.state = currentClient.state;
-            if (currentClient.country?.trim()) clientToSave.country = currentClient.country;
-            if (currentClient.zipCode?.trim()) clientToSave.postal_code = currentClient.zipCode;
-            if (currentClient.rfc?.trim()) clientToSave.tax_id = currentClient.rfc;
-            if (currentClient.notes?.trim()) clientToSave.notes = currentClient.notes;
-            if (currentClient.website?.trim()) clientToSave.website = currentClient.website;
-
-            console.log('[Clients] Final data:', clientToSave);
-
-            if (modalMode === 'add') {
-                let newClient;
-                if (useApi) {
-                    console.log('[Clients] Calling clientsApi.create...');
-                    newClient = await clientsApi.create(clientToSave);
-                    console.log('[Clients] API response:', newClient);
-                } else {
-                    newClient = await clientsService.create(clientToSave);
-                }
-                setClients(prev => [...prev, normalizeClient({ ...clientToSave, id: newClient?.id || newClient })]);
-            } else if (modalMode === 'edit') {
-                if (useApi) {
-                    console.log('[Clients] Calling clientsApi.update...');
-                    await clientsApi.update(currentClient.id, clientToSave);
-                } else {
-                    await clientsService.update(currentClient.id, clientToSave);
-                }
-                setClients(prev => prev.map(c => c.id === currentClient.id ? normalizeClient({ ...c, ...clientToSave }) : c));
-            }
-
-            console.log('[Clients] Save successful!');
-            setShowModal(false);
-            setCurrentClient(emptyClient);
-            setToast({ message: modalMode === 'add' ? 'Client created successfully!' : 'Client updated successfully!', type: 'success' });
-            // Reload data to get fresh data from server
-            await loadData();
-        } catch (error) {
-            console.error('[Clients] Error saving client:', error);
-            setToast({ message: 'Error saving client: ' + error.message, type: 'error' });
-        }
-    };
-
-    const handleInputChange = (field, value) => {
-        setCurrentClient(prev => ({ ...prev, [field]: value }));
-    };
-
-    // Calculate stats
-    const totalClients = clients.length;
-    const activeClients = clients.filter(c => c.status === 'ACTIVE').length;
-    const pendingClients = clients.filter(c => c.status === 'PENDING').length;
-    const uniqueCompanies = [...new Set(clients.map(c => c.companyName).filter(Boolean))].length;
-
-    // Show skeleton while loading
-    if (isLoading) {
-        return <ClientsSkeleton viewMode={viewMode} />;
+      }, QB_SYNC_POLL_INTERVAL);
     }
 
-    return (
-        <div className="module-page clients-module">
-            {/* Page Header */}
-            <div className="page-header">
-                <div className="header-content">
-                    <div className="header-icon">
-                        <span className="material-symbols-rounded">group</span>
-                    </div>
-                    <div className="header-text">
-                        <h1>Clients</h1>
-                        <p>Manage your client database</p>
-                    </div>
-                </div>
-                <div className="header-actions">
-                    {pendingSyncCount > 0 && (
-                        <div className="qb-sync-indicator pending" title={`${pendingSyncCount} clients pending QB sync`}>
-                            <span className="material-symbols-rounded spinning">sync</span>
-                            <span className="sync-count">{pendingSyncCount} pending</span>
-                        </div>
-                    )}
-                    <button className={`btn-sync ${isSyncing ? 'syncing' : ''}`} onClick={handleSync} disabled={isSyncing}>
-                        <span className="material-symbols-rounded">sync</span>
-                        {isSyncing ? 'Syncing...' : 'Sync with QB'}
-                    </button>
-                    <button className="btn-primary-action" onClick={handleAdd}>
-                        <span className="material-symbols-rounded">add</span>
-                        Add new client
-                    </button>
-                </div>
-            </div>
+    // Cleanup on unmount
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    };
+  }, [clients.length]); // Re-run when clients count changes
 
-            {/* Stats Row */}
-            <div className="module-stats-row">
-                <div className="module-stat-card">
-                    <div className="stat-icon green">
-                        <Icon name="group" />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{totalClients}</span>
-                        <span className="stat-label">Total Clients</span>
-                    </div>
-                </div>
-                <div className="module-stat-card">
-                    <div className="stat-icon blue">
-                        <Icon name="check_circle" />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{activeClients}</span>
-                        <span className="stat-label">Active</span>
-                    </div>
-                </div>
-                <div className="module-stat-card">
-                    <div className="stat-icon orange">
-                        <Icon name="pending" />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{pendingClients}</span>
-                        <span className="stat-label">Pending</span>
-                    </div>
-                </div>
-                <div className="module-stat-card">
-                    <div className="stat-icon purple">
-                        <Icon name="business" />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{uniqueCompanies}</span>
-                        <span className="stat-label">Companies</span>
-                    </div>
-                </div>
-            </div>
+  /**
+   * Load clients from Firebase or API
+   */
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const useApi = isApiEnabled();
+      const clientsData = useApi
+        ? await clientsApi.getAll()
+        : await clientsService.getAll();
 
-            {/* Toolbar */}
-            <div className="clients-toolbar">
-                <SearchBox
-                    value={searchTerm}
-                    onChange={setSearchTerm}
-                    placeholder="Search clients..."
-                    className="clients-search"
-                />
-                <div className="toolbar-actions">
-                    {selectedClients.length > 0 && (
-                        <button className="btn-delete-selected" onClick={handleDeleteSelected}>
-                            <Icon name="delete" />
-                            Delete ({selectedClients.length})
-                        </button>
-                    )}
-                    <div className="view-toggle-buttons">
-                        <button
-                            className={`view-toggle-btn ${viewMode === 'grid' ? 'active' : ''}`}
-                            onClick={() => setViewMode('grid')}
-                            title="Grid view"
-                        >
-                            <Icon name="grid_view" />
-                        </button>
-                        <button
-                            className={`view-toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
-                            onClick={() => setViewMode('table')}
-                            title="Table view"
-                        >
-                            <Icon name="view_list" />
-                        </button>
-                    </div>
-                </div>
-            </div>
+      if (clientsData?.length > 0) {
+        const normalizedClients = clientsData.map(normalizeClient);
+        setClients(normalizedClients);
+      }
+    } catch (error) {
+      console.error("Error loading clients:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-            {viewMode === 'grid' ? (
-                /* Cards View */
-                <div className="clients-cards-grid">
-                    {sortedClients.map((client) => {
-                        const statusStyle = getStatusStyle(client.status);
-                        const qbStatus = getQBStatusIcon(client.qbSyncStatus);
+  /**
+   * Determine QB sync status based on listId presence
+   */
+  const getQBSyncStatusFromData = (client) => {
+    if (client.listId) {
+      return "synced";
+    }
+    if (client.qbSyncStatus === "error") {
+      return "error";
+    }
+    return "pending";
+  };
 
-                        return (
-                            <div key={client.id} className="client-card">
-                                <div className="client-card-header">
-                                    <div className={`client-avatar ${getAvatarColorClass(client.name)}`}>
-                                        {client.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                                    </div>
-                                    <div className="client-card-badges">
-                                        <span className={`status-badge ${statusStyle.color}`}>
-                                            <span className="status-dot"></span>
-                                            {statusStyle.label}
-                                        </span>
-                                        <span className="qb-status-badge" style={{ color: qbStatus.color }} title={qbStatus.label}>
-                                            <Icon name={qbStatus.icon} />
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="client-card-body">
-                                    <h3 className="client-name">{client.name}</h3>
-                                    <p className="client-company">{client.companyName || client.name}</p>
-                                    <div className="client-details">
-                                        <div className="client-detail">
-                                            <Icon name="mail" />
-                                            <span>{client.email || '-'}</span>
-                                        </div>
-                                        <div className="client-detail">
-                                            <Icon name="phone" />
-                                            <span>{client.phone || '-'}</span>
-                                        </div>
-                                        <div className="client-detail">
-                                            <Icon name="location_on" />
-                                            <span>{client.city ? `${client.city}, ${client.state}` : client.address || '-'}</span>
-                                        </div>
-                                        {client.contactName && (
-                                            <div className="client-detail">
-                                                <Icon name="person" />
-                                                <span>{client.contactName}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="client-card-footer">
-                                    <button className="btn-icon" onClick={() => handleView(client)} title="View">
-                                        <Icon name="visibility" />
-                                    </button>
-                                    <button className="btn-icon" onClick={() => handleEdit(client)} title="Edit">
-                                        <Icon name="edit" />
-                                    </button>
-                                    <button className="btn-icon danger" onClick={() => handleDelete(client)} title="Delete">
-                                        <Icon name="delete" />
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
-                    {sortedClients.length === 0 && (
-                        <EmptyState
-                            type={searchTerm ? 'search' : 'clients'}
-                            onAction={searchTerm ? () => setSearchTerm('') : handleAdd}
-                            size="medium"
-                        />
-                    )}
-                </div>
-            ) : (
-                /* Table View */
-                <div className="clients-table-container">
-                    <div className="clients-table">
-                        <div className="clients-table-header">
-                            <span className="col-checkbox">
-                                <input
-                                    type="checkbox"
-                                    checked={sortedClients.length > 0 && selectedClients.length === sortedClients.length}
-                                    onChange={handleSelectAll}
-                                />
-                            </span>
-                            <span className="col-status-qb">QB</span>
-                            <span className="col-name sortable" onClick={() => handleSort('name')}>
-                                Name
-                                <Icon name={sortConfig.key === 'name' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-company sortable" onClick={() => handleSort('companyName')}>
-                                Company
-                                <Icon name={sortConfig.key === 'companyName' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-email sortable" onClick={() => handleSort('email')}>
-                                Email
-                                <Icon name={sortConfig.key === 'email' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-phone">Phone</span>
-                            <span className="col-city sortable" onClick={() => handleSort('city')}>
-                                City
-                                <Icon name={sortConfig.key === 'city' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-status sortable" onClick={() => handleSort('status')}>
-                                Status
-                                <Icon name={sortConfig.key === 'status' ? (sortConfig.direction === 'asc' ? 'arrow_upward' : 'arrow_downward') : 'unfold_more'} />
-                            </span>
-                            <span className="col-actions">Actions</span>
-                        </div>
+  /**
+   * Normalize client data from Supabase to frontend format
+   */
+  const normalizeClient = (c) => {
+    // Determine qbSyncStatus based on listId
+    const qbSyncStatus = getQBSyncStatusFromData(c);
 
-                        <div className="clients-table-body">
-                            {sortedClients.map((client) => {
-                                const statusStyle = getStatusStyle(client.status);
-                                const qbStatus = getQBStatusIcon(client.qbSyncStatus);
+    return {
+      id: c.id || c.idClient,
+      code: c.code || "",
+      name: c.name || "",
+      companyName: c.company_name || c.company || c.companyName || c.name || "",
+      email: c.email || "",
+      phone: c.phone || "",
+      address: c.address || "",
+      city: c.city || "",
+      state: c.state || "",
+      country: c.country || "México",
+      zipCode: c.postal_code || c.zip || c.zipCode || "",
+      rfc: c.tax_id || c.rfc || "",
+      contactName: c.contact_name || c.contact || c.contactName || "",
+      website: c.website || "",
+      status: normalizeStatus(c.status),
+      qbSyncStatus,
+      listId: c.listId || c.qb_customer_id || null,
+      notes: c.notes || "",
+      billingEntity: normalizeBillingEntity(
+        c.billing_entity || c.billingEntity,
+      ),
+    };
+  };
 
-                                return (
-                                    <div key={client.id} className="clients-table-row">
-                                        <span className="col-checkbox">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedClients.includes(client.id)}
-                                                onChange={() => handleSelectClient(client.id)}
-                                            />
-                                        </span>
-                                        <span className="col-status-qb" title={qbStatus.label}>
-                                            <Icon name={qbStatus.icon} style={{ color: qbStatus.color, fontSize: '20px' }} />
-                                        </span>
-                                        <span className="col-name">
-                                            <div className="client-info">
-                                                <span className="client-name-text">{client.name}</span>
-                                                {client.contactName && (
-                                                    <span className="client-contact-text">{client.contactName}</span>
-                                                )}
-                                            </div>
-                                        </span>
-                                        <span className="col-company">{client.companyName || '-'}</span>
-                                        <span className="col-email">{client.email}</span>
-                                        <span className="col-phone">{client.phone || '-'}</span>
-                                        <span className="col-city">{client.city || '-'}</span>
-                                        <span className={`col-status status-badge ${statusStyle.color}`}>
-                                            <span className="status-dot"></span>
-                                            {statusStyle.label}
-                                        </span>
-                                        <span className="col-actions">
-                                            <button className="btn-icon" onClick={() => handleView(client)} title="View">
-                                                <Icon name="visibility" />
-                                            </button>
-                                            <button className="btn-icon" onClick={() => handleEdit(client)} title="Edit">
-                                                <Icon name="edit" />
-                                            </button>
-                                            <button className="btn-icon danger" onClick={() => handleDelete(client)} title="Delete">
-                                                <Icon name="delete" />
-                                            </button>
-                                        </span>
-                                    </div>
-                                );
-                            })}
+  /**
+   * Normalize status to MySQL ENUM format
+   */
+  const normalizeStatus = (status) => {
+    if (!status) return "ACTIVE";
+    const statusUpper = status.toUpperCase();
+    if (["ACTIVE", "INACTIVE", "PENDING"].includes(statusUpper)) {
+      return statusUpper;
+    }
+    return "ACTIVE";
+  };
 
-                            {sortedClients.length === 0 && (
-                                <EmptyState
-                                    type={searchTerm ? 'search' : 'clients'}
-                                    onAction={searchTerm ? () => setSearchTerm('') : handleAdd}
-                                    size="small"
-                                />
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+  /**
+   * Get status style
+   */
+  const getStatusStyle = (status) => {
+    const statusOpt = statusOptions.find((s) => s.value === status);
+    return statusOpt || { value: status, label: status, color: "gray" };
+  };
 
-            {/* Footer */}
-            <div className="table-footer-simple">
-                <span>{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</span>
-            </div>
+  /**
+   * Get avatar color class based on name
+   */
+  const getAvatarColorClass = (name) => {
+    if (!name) return "color-7";
+    // Create a simple hash from the name to get consistent colors
+    const hash = name
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const colorNum = (hash % 8) + 1;
+    return `color-${colorNum}`;
+  };
 
-            {/* Add/Edit/View Modal */}
-            <Modal
-                isOpen={showModal}
-                title={modalMode === 'add' ? 'New Client' : modalMode === 'edit' ? 'Edit Client' : 'Client Details'}
-                onClose={() => setShowModal(false)}
-                icon={modalMode === 'add' ? 'add_box' : modalMode === 'edit' ? 'edit' : 'visibility'}
-                size="large"
-                onSave={modalMode !== 'view' ? handleSave : undefined}
-                saveText={modalMode === 'add' ? 'Create Client' : 'Save Changes'}
-                saveDisabled={!currentClient.name || !currentClient.email}
-                isViewMode={modalMode === 'view'}
-            >
-                <div className="client-form" style={{ maxHeight: '60vh', overflowY: 'auto', paddingRight: '8px' }}>
-                    {/* Basic Information */}
-                    <div className="form-section">
-                        <h4 className="form-section-title">Basic Information</h4>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Client Name *</label>
-                                <input
-                                    type="text"
-                                    value={currentClient.name}
-                                    onChange={(e) => handleInputChange('name', e.target.value)}
-                                    placeholder="Client name"
-                                    disabled={modalMode === 'view'}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Status</label>
-                                <div className="status-toggle">
-                                    <button
-                                        type="button"
-                                        className={`status-toggle-btn status-active ${currentClient.status === 'ACTIVE' ? 'active' : ''}`}
-                                        onClick={() => modalMode !== 'view' && handleInputChange('status', 'ACTIVE')}
-                                        disabled={modalMode === 'view'}
-                                    >
-                                        <span className="status-indicator"></span>
-                                        <Icon name="check_circle" />
-                                        Active
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className={`status-toggle-btn status-inactive ${currentClient.status === 'INACTIVE' ? 'active' : ''}`}
-                                        onClick={() => modalMode !== 'view' && handleInputChange('status', 'INACTIVE')}
-                                        disabled={modalMode === 'view'}
-                                    >
-                                        <span className="status-indicator"></span>
-                                        <Icon name="cancel" />
-                                        Inactive
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Company Name</label>
-                                <input
-                                    type="text"
-                                    value={currentClient.companyName}
-                                    onChange={(e) => handleInputChange('companyName', e.target.value)}
-                                    placeholder="Company name"
-                                    disabled={modalMode === 'view'}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Contact Name</label>
-                                <input
-                                    type="text"
-                                    value={currentClient.contactName}
-                                    onChange={(e) => handleInputChange('contactName', e.target.value)}
-                                    placeholder="Contact person"
-                                    disabled={modalMode === 'view'}
-                                />
-                            </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Email *</label>
-                                <input
-                                    type="email"
-                                    value={currentClient.email}
-                                    onChange={(e) => handleInputChange('email', e.target.value)}
-                                    placeholder="email@example.com"
-                                    disabled={modalMode === 'view'}
-                                    required
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Phone</label>
-                                <input
-                                    type="tel"
-                                    value={currentClient.phone}
-                                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                                    placeholder="(555) 555-5555"
-                                    disabled={modalMode === 'view'}
-                                />
-                            </div>
-                        </div>
-                        <div className="form-group">
-                            <label>Website</label>
-                            <input
-                                type="url"
-                                value={currentClient.website}
-                                onChange={(e) => handleInputChange('website', e.target.value)}
-                                placeholder="https://..."
-                                disabled={modalMode === 'view'}
-                            />
-                        </div>
-                    </div>
+  /**
+   * QuickBooks sync status icon
+   */
+  const getQBStatusIcon = (status) => {
+    switch (status) {
+      case "synced":
+        return { icon: "check_circle", color: "#10b981", label: "Synced" };
+      case "pending":
+        return { icon: "schedule", color: "#f59e0b", label: "Pending" };
+      case "error":
+        return { icon: "error", color: "#ef4444", label: "Error" };
+      default:
+        return { icon: "help", color: "#64748b", label: "Unknown" };
+    }
+  };
 
-                    {/* Address Information */}
-                    <div className="form-section">
-                        <h4 className="form-section-title">Address</h4>
-                        <div className="form-group">
-                            <label>Street Address</label>
-                            <input
-                                type="text"
-                                value={currentClient.address}
-                                onChange={(e) => handleInputChange('address', e.target.value)}
-                                placeholder="Street address"
-                                disabled={modalMode === 'view'}
-                            />
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>City</label>
-                                <input
-                                    type="text"
-                                    value={currentClient.city}
-                                    onChange={(e) => handleInputChange('city', e.target.value)}
-                                    placeholder="City"
-                                    disabled={modalMode === 'view'}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>State</label>
-                                <input
-                                    type="text"
-                                    value={currentClient.state}
-                                    onChange={(e) => handleInputChange('state', e.target.value)}
-                                    placeholder="State"
-                                    disabled={modalMode === 'view'}
-                                />
-                            </div>
-                        </div>
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label>Country</label>
-                                <input
-                                    type="text"
-                                    value={currentClient.country}
-                                    onChange={(e) => handleInputChange('country', e.target.value)}
-                                    placeholder="Country"
-                                    disabled={modalMode === 'view'}
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label>Zip Code</label>
-                                <input
-                                    type="text"
-                                    value={currentClient.zipCode}
-                                    onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                                    placeholder="00000"
-                                    disabled={modalMode === 'view'}
-                                />
-                            </div>
-                        </div>
-                    </div>
+  // Filter clients
+  const filteredClients = clients.filter(
+    (c) =>
+      c.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.rfc?.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
-                    {/* Tax Information */}
-                    <div className="form-section">
-                        <h4 className="form-section-title">Tax Information</h4>
-                        <div className="form-group">
-                            <label>RFC / Tax ID</label>
-                            <input
-                                type="text"
-                                value={currentClient.rfc}
-                                onChange={(e) => handleInputChange('rfc', e.target.value.toUpperCase())}
-                                placeholder="RFC123456ABC"
-                                disabled={modalMode === 'view'}
-                            />
-                        </div>
-                    </div>
+  // Sort clients - default newest first
+  const sortedClients = [...filteredClients].sort((a, b) => {
+    if (!sortConfig.key) {
+      // Default: newest first by created_at
+      const aDate = new Date(a.created_at || 0);
+      const bDate = new Date(b.created_at || 0);
+      return bDate - aDate;
+    }
+    // Handle date fields
+    if (sortConfig.key === "created_at" || sortConfig.key === "updated_at") {
+      const aDate = new Date(a[sortConfig.key] || 0);
+      const bDate = new Date(b[sortConfig.key] || 0);
+      return sortConfig.direction === "asc" ? aDate - bDate : bDate - aDate;
+    }
+    // Handle string fields
+    const aVal = String(a[sortConfig.key] || "").toLowerCase();
+    const bVal = String(b[sortConfig.key] || "").toLowerCase();
+    if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+    if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
 
-                    {/* Notes */}
-                    <div className="form-section">
-                        <h4 className="form-section-title">Additional Information</h4>
-                        <div className="form-group">
-                            <label>Notes</label>
-                            <textarea
-                                value={currentClient.notes}
-                                onChange={(e) => handleInputChange('notes', e.target.value)}
-                                placeholder="Additional notes..."
-                                rows={3}
-                                disabled={modalMode === 'view'}
-                            />
-                        </div>
-                    </div>
+  const handleSort = (key) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
 
-                    {modalMode === 'view' && currentClient.qbSyncStatus && (
-                        <div className="form-section">
-                            <h4 className="form-section-title">QuickBooks</h4>
-                            <div className="form-group">
-                                <label>Sync Status</label>
-                                <div className="qb-status-display">
-                                    <Icon
-                                        name={getQBStatusIcon(currentClient.qbSyncStatus).icon}
-                                        style={{ color: getQBStatusIcon(currentClient.qbSyncStatus).color }}
-                                    />
-                                    <span>{getQBStatusIcon(currentClient.qbSyncStatus).label}</span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedClients(sortedClients.map((c) => c.id));
+    } else {
+      setSelectedClients([]);
+    }
+  };
 
-                </div>
-            </Modal>
-
-            {/* Delete Confirmation Modal */}
-            <Modal
-                isOpen={showDeleteConfirm}
-                title="Delete Client"
-                onClose={() => setShowDeleteConfirm(false)}
-                icon="warning"
-                size="small"
-                variant="danger"
-                onSave={confirmDelete}
-                saveText="Delete"
-                confirmOnClose={false}
-            >
-                <div className="delete-confirm">
-                    <p>Are you sure you want to delete <strong>{clientToDelete?.name}</strong>?</p>
-                    <p className="text-muted">This action cannot be undone.</p>
-                </div>
-            </Modal>
-
-            {/* Toast Notification */}
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
-        </div>
+  const handleSelectClient = (id) => {
+    setSelectedClients((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
+  };
+
+  /**
+   * Sync with QuickBooks
+   */
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      if (isApiEnabled()) {
+        // await quickbooksApi.syncClients();
+      }
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await loadData();
+    } catch (error) {
+      console.error("Error syncing with QB:", error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  /**
+   * Generate a unique client code
+   */
+  const generateClientCode = () => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `CLI-${timestamp}-${random}`;
+  };
+
+  // Modal handlers
+  const handleAdd = () => {
+    const newCode = generateClientCode();
+    setCurrentClient({ ...emptyClient, code: newCode });
+    setModalMode("add");
+    setShowModal(true);
+  };
+
+  const handleEdit = (client) => {
+    setCurrentClient({ ...client });
+    setModalMode("edit");
+    setShowModal(true);
+  };
+
+  const handleView = (client) => {
+    setCurrentClient({ ...client });
+    setModalMode("view");
+    setShowModal(true);
+  };
+
+  const handleDelete = (client) => {
+    setClientToDelete(client);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedClients.length === 0) return;
+
+    try {
+      const useApi = isApiEnabled();
+      for (const id of selectedClients) {
+        if (useApi) {
+          await clientsApi.delete(id);
+        } else {
+          await clientsService.delete(id);
+        }
+      }
+      setClients((prev) => prev.filter((c) => !selectedClients.includes(c.id)));
+      setSelectedClients([]);
+    } catch (error) {
+      console.error("Error deleting clients:", error);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (clientToDelete) {
+      try {
+        const useApi = isApiEnabled();
+        if (useApi) {
+          await clientsApi.delete(clientToDelete.id);
+        } else {
+          await clientsService.delete(clientToDelete.id);
+        }
+        setClients((prev) => prev.filter((c) => c.id !== clientToDelete.id));
+      } catch (error) {
+        console.error("Error deleting client:", error);
+      }
+    }
+    setShowDeleteConfirm(false);
+    setClientToDelete(null);
+  };
+
+  const handleSave = async () => {
+    try {
+      const useApi = isApiEnabled();
+      console.log("[Clients] Saving client, useApi:", useApi);
+      console.log("[Clients] Mode:", modalMode);
+      console.log("[Clients] Data to save:", currentClient);
+
+      // Build client object - required fields: code, name, email
+      const clientToSave = {
+        code: currentClient.code || generateClientCode(),
+        name: currentClient.name || "",
+        email: currentClient.email || "",
+        status: currentClient.status || "ACTIVE",
+      };
+
+      // Add optional fields only if they have values (map to Supabase column names)
+      if (currentClient.phone?.trim()) clientToSave.phone = currentClient.phone;
+      if (currentClient.companyName?.trim())
+        clientToSave.company_name = currentClient.companyName;
+      if (currentClient.contactName?.trim())
+        clientToSave.contact_name = currentClient.contactName;
+      if (currentClient.address?.trim())
+        clientToSave.address = currentClient.address;
+      if (currentClient.city?.trim()) clientToSave.city = currentClient.city;
+      if (currentClient.state?.trim()) clientToSave.state = currentClient.state;
+      if (currentClient.country?.trim())
+        clientToSave.country = currentClient.country;
+      if (currentClient.zipCode?.trim())
+        clientToSave.postal_code = currentClient.zipCode;
+      if (currentClient.rfc?.trim()) clientToSave.tax_id = currentClient.rfc;
+      if (currentClient.notes?.trim()) clientToSave.notes = currentClient.notes;
+      if (currentClient.website?.trim())
+        clientToSave.website = currentClient.website;
+      // Billing entity always persists (normalized so a bad/empty value
+      // collapses to DEFAULT_BILLING_ENTITY instead of NULL).
+      clientToSave.billing_entity = normalizeBillingEntity(
+        currentClient.billingEntity,
+      );
+
+      console.log("[Clients] Final data:", clientToSave);
+
+      if (modalMode === "add") {
+        let newClient;
+        if (useApi) {
+          console.log("[Clients] Calling clientsApi.create...");
+          newClient = await clientsApi.create(clientToSave);
+          console.log("[Clients] API response:", newClient);
+        } else {
+          newClient = await clientsService.create(clientToSave);
+        }
+        setClients((prev) => [
+          ...prev,
+          normalizeClient({ ...clientToSave, id: newClient?.id || newClient }),
+        ]);
+      } else if (modalMode === "edit") {
+        if (useApi) {
+          console.log("[Clients] Calling clientsApi.update...");
+          await clientsApi.update(currentClient.id, clientToSave);
+        } else {
+          await clientsService.update(currentClient.id, clientToSave);
+        }
+        setClients((prev) =>
+          prev.map((c) =>
+            c.id === currentClient.id
+              ? normalizeClient({ ...c, ...clientToSave })
+              : c,
+          ),
+        );
+      }
+
+      console.log("[Clients] Save successful!");
+      setShowModal(false);
+      setCurrentClient(emptyClient);
+      setToast({
+        message:
+          modalMode === "add"
+            ? "Client created successfully!"
+            : "Client updated successfully!",
+        type: "success",
+      });
+      // Reload data to get fresh data from server
+      await loadData();
+    } catch (error) {
+      console.error("[Clients] Error saving client:", error);
+      setToast({
+        message: "Error saving client: " + error.message,
+        type: "error",
+      });
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setCurrentClient((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Calculate stats
+  const totalClients = clients.length;
+  const activeClients = clients.filter((c) => c.status === "ACTIVE").length;
+  const pendingClients = clients.filter((c) => c.status === "PENDING").length;
+  const uniqueCompanies = [
+    ...new Set(clients.map((c) => c.companyName).filter(Boolean)),
+  ].length;
+
+  // Show skeleton while loading
+  if (isLoading) {
+    return <ClientsSkeleton viewMode={viewMode} />;
+  }
+
+  return (
+    <div className="module-page clients-module">
+      {/* Page Header */}
+      <div className="page-header">
+        <div className="header-content">
+          <div className="header-icon">
+            <span className="material-symbols-rounded">group</span>
+          </div>
+          <div className="header-text">
+            <h1>Clients</h1>
+            <p>Manage your client database</p>
+          </div>
+        </div>
+        <div className="header-actions">
+          {pendingSyncCount > 0 && (
+            <div
+              className="qb-sync-indicator pending"
+              title={`${pendingSyncCount} clients pending QB sync`}
+            >
+              <span className="material-symbols-rounded spinning">sync</span>
+              <span className="sync-count">{pendingSyncCount} pending</span>
+            </div>
+          )}
+          <button
+            className={`btn-sync ${isSyncing ? "syncing" : ""}`}
+            onClick={handleSync}
+            disabled={isSyncing}
+          >
+            <span className="material-symbols-rounded">sync</span>
+            {isSyncing ? "Syncing..." : "Sync with QB"}
+          </button>
+          <button className="btn-primary-action" onClick={handleAdd}>
+            <span className="material-symbols-rounded">add</span>
+            Add new client
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="module-stats-row">
+        <div className="module-stat-card">
+          <div className="stat-icon green">
+            <Icon name="group" />
+          </div>
+          <div className="stat-info">
+            <span className="stat-value">{totalClients}</span>
+            <span className="stat-label">Total Clients</span>
+          </div>
+        </div>
+        <div className="module-stat-card">
+          <div className="stat-icon blue">
+            <Icon name="check_circle" />
+          </div>
+          <div className="stat-info">
+            <span className="stat-value">{activeClients}</span>
+            <span className="stat-label">Active</span>
+          </div>
+        </div>
+        <div className="module-stat-card">
+          <div className="stat-icon orange">
+            <Icon name="pending" />
+          </div>
+          <div className="stat-info">
+            <span className="stat-value">{pendingClients}</span>
+            <span className="stat-label">Pending</span>
+          </div>
+        </div>
+        <div className="module-stat-card">
+          <div className="stat-icon purple">
+            <Icon name="business" />
+          </div>
+          <div className="stat-info">
+            <span className="stat-value">{uniqueCompanies}</span>
+            <span className="stat-label">Companies</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Toolbar */}
+      <div className="clients-toolbar">
+        <SearchBox
+          value={searchTerm}
+          onChange={setSearchTerm}
+          placeholder="Search clients..."
+          className="clients-search"
+        />
+        <div className="toolbar-actions">
+          {selectedClients.length > 0 && (
+            <button
+              className="btn-delete-selected"
+              onClick={handleDeleteSelected}
+            >
+              <Icon name="delete" />
+              Delete ({selectedClients.length})
+            </button>
+          )}
+          <div className="view-toggle-buttons">
+            <button
+              className={`view-toggle-btn ${viewMode === "grid" ? "active" : ""}`}
+              onClick={() => setViewMode("grid")}
+              title="Grid view"
+            >
+              <Icon name="grid_view" />
+            </button>
+            <button
+              className={`view-toggle-btn ${viewMode === "table" ? "active" : ""}`}
+              onClick={() => setViewMode("table")}
+              title="Table view"
+            >
+              <Icon name="view_list" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {viewMode === "grid" ? (
+        /* Cards View */
+        <div className="clients-cards-grid">
+          {sortedClients.map((client) => {
+            const statusStyle = getStatusStyle(client.status);
+            const qbStatus = getQBStatusIcon(client.qbSyncStatus);
+
+            return (
+              <div key={client.id} className="client-card">
+                <div className="client-card-header">
+                  <div
+                    className={`client-avatar ${getAvatarColorClass(client.name)}`}
+                  >
+                    {client.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </div>
+                  <div className="client-card-badges">
+                    <span className={`status-badge ${statusStyle.color}`}>
+                      <span className="status-dot"></span>
+                      {statusStyle.label}
+                    </span>
+                    <span
+                      className={`client-entity-badge ${client.billingEntity?.toLowerCase()}`}
+                      title={
+                        getBillingEntity(client.billingEntity)?.name ||
+                        client.billingEntity
+                      }
+                    >
+                      {getBillingEntity(client.billingEntity)?.name ||
+                        client.billingEntity}
+                    </span>
+                    <span
+                      className="qb-status-badge"
+                      style={{ color: qbStatus.color }}
+                      title={qbStatus.label}
+                    >
+                      <Icon name={qbStatus.icon} />
+                    </span>
+                  </div>
+                </div>
+                <div className="client-card-body">
+                  <h3 className="client-name">{client.name}</h3>
+                  <p className="client-company">
+                    {client.companyName || client.name}
+                  </p>
+                  <div className="client-details">
+                    <div className="client-detail">
+                      <Icon name="mail" />
+                      <span>{client.email || "-"}</span>
+                    </div>
+                    <div className="client-detail">
+                      <Icon name="phone" />
+                      <span>{client.phone || "-"}</span>
+                    </div>
+                    <div className="client-detail">
+                      <Icon name="location_on" />
+                      <span>
+                        {client.city
+                          ? `${client.city}, ${client.state}`
+                          : client.address || "-"}
+                      </span>
+                    </div>
+                    {client.contactName && (
+                      <div className="client-detail">
+                        <Icon name="person" />
+                        <span>{client.contactName}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div className="client-card-footer">
+                  <button
+                    className="btn-icon"
+                    onClick={() => handleView(client)}
+                    title="View"
+                  >
+                    <Icon name="visibility" />
+                  </button>
+                  <button
+                    className="btn-icon"
+                    onClick={() => handleEdit(client)}
+                    title="Edit"
+                  >
+                    <Icon name="edit" />
+                  </button>
+                  <button
+                    className="btn-icon danger"
+                    onClick={() => handleDelete(client)}
+                    title="Delete"
+                  >
+                    <Icon name="delete" />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+          {sortedClients.length === 0 && (
+            <EmptyState
+              type={searchTerm ? "search" : "clients"}
+              onAction={searchTerm ? () => setSearchTerm("") : handleAdd}
+              size="medium"
+            />
+          )}
+        </div>
+      ) : (
+        /* Table View */
+        <div className="clients-table-container">
+          <div className="clients-table">
+            <div className="clients-table-header">
+              <span className="col-checkbox">
+                <input
+                  type="checkbox"
+                  checked={
+                    sortedClients.length > 0 &&
+                    selectedClients.length === sortedClients.length
+                  }
+                  onChange={handleSelectAll}
+                />
+              </span>
+              <span className="col-status-qb">QB</span>
+              <span
+                className="col-name sortable"
+                onClick={() => handleSort("name")}
+              >
+                Name
+                <Icon
+                  name={
+                    sortConfig.key === "name"
+                      ? sortConfig.direction === "asc"
+                        ? "arrow_upward"
+                        : "arrow_downward"
+                      : "unfold_more"
+                  }
+                />
+              </span>
+              <span
+                className="col-company sortable"
+                onClick={() => handleSort("companyName")}
+              >
+                Company
+                <Icon
+                  name={
+                    sortConfig.key === "companyName"
+                      ? sortConfig.direction === "asc"
+                        ? "arrow_upward"
+                        : "arrow_downward"
+                      : "unfold_more"
+                  }
+                />
+              </span>
+              <span
+                className="col-email sortable"
+                onClick={() => handleSort("email")}
+              >
+                Email
+                <Icon
+                  name={
+                    sortConfig.key === "email"
+                      ? sortConfig.direction === "asc"
+                        ? "arrow_upward"
+                        : "arrow_downward"
+                      : "unfold_more"
+                  }
+                />
+              </span>
+              <span className="col-phone">Phone</span>
+              <span
+                className="col-city sortable"
+                onClick={() => handleSort("city")}
+              >
+                City
+                <Icon
+                  name={
+                    sortConfig.key === "city"
+                      ? sortConfig.direction === "asc"
+                        ? "arrow_upward"
+                        : "arrow_downward"
+                      : "unfold_more"
+                  }
+                />
+              </span>
+              <span
+                className="col-status sortable"
+                onClick={() => handleSort("status")}
+              >
+                Status
+                <Icon
+                  name={
+                    sortConfig.key === "status"
+                      ? sortConfig.direction === "asc"
+                        ? "arrow_upward"
+                        : "arrow_downward"
+                      : "unfold_more"
+                  }
+                />
+              </span>
+              <span className="col-actions">Actions</span>
+            </div>
+
+            <div className="clients-table-body">
+              {sortedClients.map((client) => {
+                const statusStyle = getStatusStyle(client.status);
+                const qbStatus = getQBStatusIcon(client.qbSyncStatus);
+
+                return (
+                  <div key={client.id} className="clients-table-row">
+                    <span className="col-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={selectedClients.includes(client.id)}
+                        onChange={() => handleSelectClient(client.id)}
+                      />
+                    </span>
+                    <span className="col-status-qb" title={qbStatus.label}>
+                      <Icon
+                        name={qbStatus.icon}
+                        style={{ color: qbStatus.color, fontSize: "20px" }}
+                      />
+                    </span>
+                    <span className="col-name">
+                      <div className="client-info">
+                        <span className="client-name-text">{client.name}</span>
+                        {client.contactName && (
+                          <span className="client-contact-text">
+                            {client.contactName}
+                          </span>
+                        )}
+                      </div>
+                    </span>
+                    <span className="col-company">
+                      <span className="col-company-name">
+                        {client.companyName || "-"}
+                      </span>
+                      <span
+                        className={`client-entity-badge sm ${client.billingEntity?.toLowerCase()}`}
+                      >
+                        {getBillingEntity(client.billingEntity)?.name ||
+                          client.billingEntity}
+                      </span>
+                    </span>
+                    <span className="col-email">{client.email}</span>
+                    <span className="col-phone">{client.phone || "-"}</span>
+                    <span className="col-city">{client.city || "-"}</span>
+                    <span
+                      className={`col-status status-badge ${statusStyle.color}`}
+                    >
+                      <span className="status-dot"></span>
+                      {statusStyle.label}
+                    </span>
+                    <span className="col-actions">
+                      <button
+                        className="btn-icon"
+                        onClick={() => handleView(client)}
+                        title="View"
+                      >
+                        <Icon name="visibility" />
+                      </button>
+                      <button
+                        className="btn-icon"
+                        onClick={() => handleEdit(client)}
+                        title="Edit"
+                      >
+                        <Icon name="edit" />
+                      </button>
+                      <button
+                        className="btn-icon danger"
+                        onClick={() => handleDelete(client)}
+                        title="Delete"
+                      >
+                        <Icon name="delete" />
+                      </button>
+                    </span>
+                  </div>
+                );
+              })}
+
+              {sortedClients.length === 0 && (
+                <EmptyState
+                  type={searchTerm ? "search" : "clients"}
+                  onAction={searchTerm ? () => setSearchTerm("") : handleAdd}
+                  size="small"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="table-footer-simple">
+        <span>
+          {sortedClients.length} client{sortedClients.length !== 1 ? "s" : ""}
+        </span>
+      </div>
+
+      {/* Add/Edit/View Modal */}
+      <Modal
+        isOpen={showModal}
+        title={
+          modalMode === "add"
+            ? "New Client"
+            : modalMode === "edit"
+              ? "Edit Client"
+              : "Client Details"
+        }
+        onClose={() => setShowModal(false)}
+        icon={
+          modalMode === "add"
+            ? "add_box"
+            : modalMode === "edit"
+              ? "edit"
+              : "visibility"
+        }
+        size="large"
+        onSave={modalMode !== "view" ? handleSave : undefined}
+        saveText={modalMode === "add" ? "Create Client" : "Save Changes"}
+        saveDisabled={!currentClient.name || !currentClient.email}
+        isViewMode={modalMode === "view"}
+      >
+        <div
+          className="client-form"
+          style={{ maxHeight: "60vh", overflowY: "auto", paddingRight: "8px" }}
+        >
+          {/* Basic Information */}
+          <div className="form-section">
+            <h4 className="form-section-title">Basic Information</h4>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Client Name *</label>
+                <input
+                  type="text"
+                  value={currentClient.name}
+                  onChange={(e) => handleInputChange("name", e.target.value)}
+                  placeholder="Client name"
+                  disabled={modalMode === "view"}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Status</label>
+                <div className="status-toggle">
+                  <button
+                    type="button"
+                    className={`status-toggle-btn status-active ${currentClient.status === "ACTIVE" ? "active" : ""}`}
+                    onClick={() =>
+                      modalMode !== "view" &&
+                      handleInputChange("status", "ACTIVE")
+                    }
+                    disabled={modalMode === "view"}
+                  >
+                    <span className="status-indicator"></span>
+                    <Icon name="check_circle" />
+                    Active
+                  </button>
+                  <button
+                    type="button"
+                    className={`status-toggle-btn status-inactive ${currentClient.status === "INACTIVE" ? "active" : ""}`}
+                    onClick={() =>
+                      modalMode !== "view" &&
+                      handleInputChange("status", "INACTIVE")
+                    }
+                    disabled={modalMode === "view"}
+                  >
+                    <span className="status-indicator"></span>
+                    <Icon name="cancel" />
+                    Inactive
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Company Name</label>
+                <input
+                  type="text"
+                  value={currentClient.companyName}
+                  onChange={(e) =>
+                    handleInputChange("companyName", e.target.value)
+                  }
+                  placeholder="Company name"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+              <div className="form-group">
+                <label>Contact Name</label>
+                <input
+                  type="text"
+                  value={currentClient.contactName}
+                  onChange={(e) =>
+                    handleInputChange("contactName", e.target.value)
+                  }
+                  placeholder="Contact person"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Email *</label>
+                <input
+                  type="email"
+                  value={currentClient.email}
+                  onChange={(e) => handleInputChange("email", e.target.value)}
+                  placeholder="email@example.com"
+                  disabled={modalMode === "view"}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Phone</label>
+                <input
+                  type="tel"
+                  value={currentClient.phone}
+                  onChange={(e) => handleInputChange("phone", e.target.value)}
+                  placeholder="(555) 555-5555"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Billing Entity *</label>
+                <select
+                  value={currentClient.billingEntity || DEFAULT_BILLING_ENTITY}
+                  onChange={(e) =>
+                    handleInputChange("billingEntity", e.target.value)
+                  }
+                  disabled={modalMode === "view"}
+                >
+                  {BILLING_ENTITIES.map((entity) => (
+                    <option key={entity.id} value={entity.id}>
+                      {entity.name} {entity.syncsToQB ? "(QB)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="form-group">
+              <label>Website</label>
+              <input
+                type="url"
+                value={currentClient.website}
+                onChange={(e) => handleInputChange("website", e.target.value)}
+                placeholder="https://..."
+                disabled={modalMode === "view"}
+              />
+            </div>
+          </div>
+
+          {/* Address Information */}
+          <div className="form-section">
+            <h4 className="form-section-title">Address</h4>
+            <div className="form-group">
+              <label>Street Address</label>
+              <input
+                type="text"
+                value={currentClient.address}
+                onChange={(e) => handleInputChange("address", e.target.value)}
+                placeholder="Street address"
+                disabled={modalMode === "view"}
+              />
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>City</label>
+                <input
+                  type="text"
+                  value={currentClient.city}
+                  onChange={(e) => handleInputChange("city", e.target.value)}
+                  placeholder="City"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+              <div className="form-group">
+                <label>State</label>
+                <input
+                  type="text"
+                  value={currentClient.state}
+                  onChange={(e) => handleInputChange("state", e.target.value)}
+                  placeholder="State"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Country</label>
+                <input
+                  type="text"
+                  value={currentClient.country}
+                  onChange={(e) => handleInputChange("country", e.target.value)}
+                  placeholder="Country"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+              <div className="form-group">
+                <label>Zip Code</label>
+                <input
+                  type="text"
+                  value={currentClient.zipCode}
+                  onChange={(e) => handleInputChange("zipCode", e.target.value)}
+                  placeholder="00000"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Tax Information */}
+          <div className="form-section">
+            <h4 className="form-section-title">Tax Information</h4>
+            <div className="form-group">
+              <label>RFC / Tax ID</label>
+              <input
+                type="text"
+                value={currentClient.rfc}
+                onChange={(e) =>
+                  handleInputChange("rfc", e.target.value.toUpperCase())
+                }
+                placeholder="RFC123456ABC"
+                disabled={modalMode === "view"}
+              />
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="form-section">
+            <h4 className="form-section-title">Additional Information</h4>
+            <div className="form-group">
+              <label>Notes</label>
+              <textarea
+                value={currentClient.notes}
+                onChange={(e) => handleInputChange("notes", e.target.value)}
+                placeholder="Additional notes..."
+                rows={3}
+                disabled={modalMode === "view"}
+              />
+            </div>
+          </div>
+
+          {modalMode === "view" && currentClient.qbSyncStatus && (
+            <div className="form-section">
+              <h4 className="form-section-title">QuickBooks</h4>
+              <div className="form-group">
+                <label>Sync Status</label>
+                <div className="qb-status-display">
+                  <Icon
+                    name={getQBStatusIcon(currentClient.qbSyncStatus).icon}
+                    style={{
+                      color: getQBStatusIcon(currentClient.qbSyncStatus).color,
+                    }}
+                  />
+                  <span>
+                    {getQBStatusIcon(currentClient.qbSyncStatus).label}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        title="Delete Client"
+        onClose={() => setShowDeleteConfirm(false)}
+        icon="warning"
+        size="small"
+        variant="danger"
+        onSave={confirmDelete}
+        saveText="Delete"
+        confirmOnClose={false}
+      >
+        <div className="delete-confirm">
+          <p>
+            Are you sure you want to delete{" "}
+            <strong>{clientToDelete?.name}</strong>?
+          </p>
+          <p className="text-muted">This action cannot be undone.</p>
+        </div>
+      </Modal>
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
+  );
 };
 
 export default ClientsModule;
