@@ -22,6 +22,7 @@ import {
   categoriesApi,
   unitsApi,
 } from "../../../services/api";
+import { supabase } from "../../../lib/supabase";
 
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
@@ -109,6 +110,9 @@ const MaterialsModule = () => {
   const [suppliers, setSuppliers] = useState([]);
   const [categories, setCategories] = useState([]);
   const [units, setUnits] = useState([]);
+  const [warehouses, setWarehouses] = useState([]);
+  // Per-material warehouse stock rows shown in the Edit/Add modal
+  const [warehouseStocks, setWarehouseStocks] = useState([]);
   const [toast, setToast] = useState(null);
 
   // UI state
@@ -230,13 +234,19 @@ const MaterialsModule = () => {
       const useApi = isApiEnabled();
 
       // Load all data in parallel
-      const [materialsData, suppliersData, categoriesData, unitsData] =
-        await Promise.all([
-          useApi ? materialsApi.getAll() : materialsService.getAll(),
-          useApi ? suppliersApi.getAll() : suppliersService.getAll(),
-          useApi ? categoriesApi.getAll() : categoriesService.getAll(),
-          useApi ? unitsApi.getAll() : unitsService.getAll(),
-        ]);
+      const [
+        materialsData,
+        suppliersData,
+        categoriesData,
+        unitsData,
+        warehousesRes,
+      ] = await Promise.all([
+        useApi ? materialsApi.getAll() : materialsService.getAll(),
+        useApi ? suppliersApi.getAll() : suppliersService.getAll(),
+        useApi ? categoriesApi.getAll() : categoriesService.getAll(),
+        useApi ? unitsApi.getAll() : unitsService.getAll(),
+        supabase.from("warehouses").select("*").order("name"),
+      ]);
 
       // Update state with fetched data or keep defaults
       if (materialsData?.length > 0) {
@@ -247,6 +257,14 @@ const MaterialsModule = () => {
       if (suppliersData?.length > 0) setSuppliers(suppliersData);
       if (categoriesData?.length > 0) setCategories(categoriesData);
       if (unitsData?.length > 0) setUnits(unitsData);
+      // Warehouses optional — log but don't break the page if it fails
+      if (warehousesRes?.error) {
+        console.warn(
+          "[Materials] Could not load warehouses:",
+          warehousesRes.error,
+        );
+      }
+      setWarehouses(warehousesRes?.data || []);
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -472,6 +490,112 @@ const MaterialsModule = () => {
   };
 
   /**
+   * Load warehouse stock rows for a given material (used when opening Edit modal)
+   */
+  const loadWarehouseStocks = async (materialId) => {
+    try {
+      const { data, error } = await supabase
+        .from("material_stock")
+        .select("*")
+        .eq("material_id", materialId);
+
+      if (error) {
+        console.warn("[Materials] Could not load warehouse stocks:", error);
+        return [];
+      }
+      return data || [];
+    } catch (error) {
+      console.warn("[Materials] Error loading warehouse stocks:", error);
+      return [];
+    }
+  };
+
+  /**
+   * Persist warehouse stock rows for a material.
+   * FIX #1: keep rows with quantity === 0 (only require warehouse_id) — previously
+   *         filtering by `quantity > 0` silently dropped the value the user typed.
+   * FIX #2: validate BEFORE delete so we never wipe existing stock if the user
+   *         left a row without a warehouse selected.
+   * FIX #3: throw on Supabase errors so the caller's catch shows a real toast
+   *         instead of pretending the save succeeded.
+   *
+   * Returns { ok: true } on success. Throws on any error.
+   */
+  const saveWarehouseStocks = async (materialId, stocks) => {
+    // FIX #2: pre-validation — every row needs a warehouse selected
+    const incompleteRow = stocks.find((s) => !s.warehouse_id);
+    if (incompleteRow) {
+      const err = new Error(
+        "Selecciona un warehouse para cada fila antes de guardar.",
+      );
+      err.code = "WAREHOUSE_REQUIRED";
+      throw err;
+    }
+
+    // FIX #1: allow quantity 0 explicitly — only require warehouse_id
+    const validStocks = stocks.filter((s) => s.warehouse_id);
+
+    // Only after validation passes, delete old rows
+    const { error: deleteError } = await supabase
+      .from("material_stock")
+      .delete()
+      .eq("material_id", materialId);
+
+    // FIX #3: throw instead of console.warn
+    if (deleteError) {
+      throw new Error(`Error removing previous stock: ${deleteError.message}`);
+    }
+
+    if (validStocks.length > 0) {
+      const stocksToInsert = validStocks.map((s) => ({
+        material_id: materialId,
+        warehouse_id: s.warehouse_id,
+        quantity: parseFloat(s.quantity) || 0,
+        min_stock: parseFloat(s.min_stock) || 0,
+      }));
+
+      const { error: insertError } = await supabase
+        .from("material_stock")
+        .insert(stocksToInsert);
+
+      // FIX #3: throw instead of console.warn
+      if (insertError) {
+        throw new Error(`Error saving warehouse stock: ${insertError.message}`);
+      }
+    }
+
+    return { ok: true };
+  };
+
+  const handleAddWarehouseStock = () => {
+    setWarehouseStocks((prev) => [
+      ...prev,
+      { warehouse_id: "", quantity: 0, min_stock: 0 },
+    ]);
+  };
+
+  const handleRemoveWarehouseStock = (index) => {
+    setWarehouseStocks((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleWarehouseStockChange = (index, field, value) => {
+    setWarehouseStocks((prev) =>
+      prev.map((stock, i) =>
+        i === index ? { ...stock, [field]: value } : stock,
+      ),
+    );
+  };
+
+  /**
+   * Get display name for a warehouse ID
+   */
+  const getWarehouseName = (warehouseId) => {
+    if (!warehouseId) return "-";
+    const wh = warehouses.find((w) => w.id === warehouseId);
+    return wh?.name || "-";
+  };
+
+  /**
    * Sync with QuickBooks
    */
   const handleSync = async () => {
@@ -495,20 +619,26 @@ const MaterialsModule = () => {
   const handleAdd = () => {
     const newCode = `MAT-${String(materials.length + 1).padStart(3, "0")}`;
     setCurrentMaterial({ ...emptyMaterial, code_qb: newCode });
+    setWarehouseStocks([]);
     setModalMode("add");
     setShowModal(true);
   };
 
-  const handleEdit = (material) => {
+  const handleEdit = async (material) => {
     setCurrentMaterial({ ...material });
     setModalMode("edit");
     setShowModal(true);
+    // Load existing warehouse stock rows so the modal can edit them
+    const stocks = await loadWarehouseStocks(material.id);
+    setWarehouseStocks(stocks);
   };
 
-  const handleView = (material) => {
+  const handleView = async (material) => {
     setCurrentMaterial({ ...material });
     setModalMode("view");
     setShowModal(true);
+    const stocks = await loadWarehouseStocks(material.id);
+    setWarehouseStocks(stocks);
   };
 
   const handleDelete = (material) => {
@@ -543,11 +673,42 @@ const MaterialsModule = () => {
       console.log("[Materials] Mode:", modalMode);
       console.log("[Materials] Data to save:", currentMaterial);
 
-      // Auto-calculate status based on stock vs minStock
+      // FIX #2 (pre-validation): if there are warehouse stock rows, every row
+      // must have a warehouse selected. Bail out BEFORE touching the DB so we
+      // never wipe existing material_stock when the form is incomplete.
+      if (
+        warehouseStocks.length > 0 &&
+        warehouseStocks.some((s) => !s.warehouse_id)
+      ) {
+        setToast({
+          message: "Selecciona un warehouse para cada fila antes de guardar.",
+          type: "error",
+        });
+        return;
+      }
+
+      // Derive the flat `stock` field from the per-warehouse rows when present
+      // (warehouse stock is the source of truth). Fall back to the legacy
+      // currentMaterial.stock for materials that don't use warehouse stock yet.
+      const hasWarehouseStock = warehouseStocks.length > 0;
+      const derivedStock = hasWarehouseStock
+        ? warehouseStocks.reduce(
+            (sum, s) => sum + (parseFloat(s.quantity) || 0),
+            0,
+          )
+        : parseFloat(currentMaterial.stock) || 0;
+
+      // For minStock keep the existing field; warehouse rows carry their own
+      // per-warehouse minimum but the top-level minStock stays useful for the
+      // status calculation and list view.
+      const derivedMinStock =
+        parseFloat(currentMaterial.minStock || currentMaterial.min_stock) || 0;
+
+      // Auto-calculate status based on derived stock vs minStock
       let finalStatus = currentMaterial.status;
-      if (currentMaterial.stock <= 0) {
+      if (derivedStock <= 0) {
         finalStatus = "INACTIVE";
-      } else if (currentMaterial.stock <= currentMaterial.minStock) {
+      } else if (derivedStock <= derivedMinStock) {
         finalStatus = "LOW_STOCK";
       }
 
@@ -561,10 +722,8 @@ const MaterialsModule = () => {
         unit_id: currentMaterial.unitId || currentMaterial.unit_id || null,
         supplier_id:
           currentMaterial.supplierId || currentMaterial.supplier_id || null,
-        stock: parseFloat(currentMaterial.stock) || 0,
-        min_stock:
-          parseFloat(currentMaterial.minStock || currentMaterial.min_stock) ||
-          0,
+        stock: derivedStock,
+        min_stock: derivedMinStock,
         price: parseFloat(currentMaterial.price) || 0,
         status: finalStatus,
         sync_status: "pending",
@@ -577,6 +736,7 @@ const MaterialsModule = () => {
 
       console.log("[Materials] Final data:", materialToSave);
 
+      let savedMaterialId = null;
       if (modalMode === "add") {
         let newMaterial;
         if (useApi) {
@@ -586,9 +746,10 @@ const MaterialsModule = () => {
         } else {
           newMaterial = await materialsService.create(materialToSave);
         }
+        savedMaterialId = newMaterial?.id || newMaterial;
         setMaterials((prev) => [
           ...prev,
-          { ...materialToSave, id: newMaterial?.id || newMaterial },
+          { ...materialToSave, id: savedMaterialId },
         ]);
       } else if (modalMode === "edit") {
         if (useApi) {
@@ -597,9 +758,18 @@ const MaterialsModule = () => {
         } else {
           await materialsService.update(currentMaterial.id, materialToSave);
         }
+        savedMaterialId = currentMaterial.id;
         setMaterials((prev) =>
           prev.map((m) => (m.id === currentMaterial.id ? materialToSave : m)),
         );
+      }
+
+      // Persist warehouse stock rows AFTER the material itself was saved so
+      // we always have a valid material_id to attach them to. saveWarehouseStocks
+      // throws on errors (FIX #3) so the catch below shows a real toast and the
+      // user doesn't see "updated successfully" while the DB is empty.
+      if (savedMaterialId && warehouses.length > 0) {
+        await saveWarehouseStocks(savedMaterialId, warehouseStocks);
       }
 
       console.log("[Materials] Save successful!");
@@ -612,6 +782,7 @@ const MaterialsModule = () => {
       });
       setShowModal(false);
       setCurrentMaterial(emptyMaterial);
+      setWarehouseStocks([]);
       // Reload data to get fresh data from server
       await loadData();
     } catch (error) {
@@ -1275,34 +1446,263 @@ const MaterialsModule = () => {
             </select>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Current Stock</label>
-              <input
-                type="number"
-                value={currentMaterial.stock}
-                onChange={(e) =>
-                  handleInputChange("stock", Number(e.target.value))
-                }
-                placeholder="0"
-                min="0"
-                disabled={modalMode === "view"}
-              />
+          {/* Stock by Warehouse — replaces the flat Current/Minimum Stock fields.
+              When no warehouses are configured in Supabase we fall back to the
+              legacy flat inputs so the form is still usable. */}
+          {warehouses.length > 0 ? (
+            <div
+              className="form-section warehouse-stock-section"
+              style={{
+                marginTop: "20px",
+                borderTop: "1px solid rgba(255,255,255,0.1)",
+                paddingTop: "20px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "12px",
+                }}
+              >
+                <label style={{ margin: 0, fontWeight: 600 }}>
+                  <Icon
+                    name="warehouse"
+                    style={{ marginRight: "8px", verticalAlign: "middle" }}
+                  />
+                  Stock by Warehouse
+                </label>
+                {modalMode !== "view" && (
+                  <button
+                    type="button"
+                    onClick={handleAddWarehouseStock}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      padding: "6px 12px",
+                      background: "rgba(99, 102, 241, 0.2)",
+                      border: "1px solid rgba(99, 102, 241, 0.4)",
+                      borderRadius: "6px",
+                      color: "#a5b4fc",
+                      cursor: "pointer",
+                      fontSize: "13px",
+                    }}
+                  >
+                    <Icon name="add" style={{ fontSize: "16px" }} />
+                    Add Warehouse
+                  </button>
+                )}
+              </div>
+
+              {warehouseStocks.length === 0 ? (
+                <div
+                  style={{
+                    padding: "20px",
+                    textAlign: "center",
+                    background: "rgba(255,255,255,0.03)",
+                    borderRadius: "8px",
+                    color: "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  <Icon
+                    name="inventory_2"
+                    style={{
+                      fontSize: "32px",
+                      marginBottom: "8px",
+                      opacity: 0.5,
+                    }}
+                  />
+                  <p style={{ margin: 0 }}>No stock assigned to warehouses</p>
+                  {modalMode !== "view" && (
+                    <p style={{ margin: "8px 0 0", fontSize: "12px" }}>
+                      Click "Add Warehouse" to assign stock
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "10px",
+                  }}
+                >
+                  {warehouseStocks.map((stock, index) => (
+                    <div
+                      key={stock.id || `new-${index}`}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 100px 100px auto",
+                        gap: "10px",
+                        alignItems: "end",
+                        padding: "12px",
+                        background: "rgba(255,255,255,0.03)",
+                        borderRadius: "8px",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      <div className="form-group">
+                        <label>Warehouse *</label>
+                        <select
+                          value={stock.warehouse_id}
+                          onChange={(e) =>
+                            handleWarehouseStockChange(
+                              index,
+                              "warehouse_id",
+                              e.target.value,
+                            )
+                          }
+                          disabled={modalMode === "view"}
+                          style={{
+                            padding: "8px",
+                            borderRadius: "6px",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.15)",
+                            color: "inherit",
+                          }}
+                        >
+                          <option value="">Select warehouse</option>
+                          {warehouses.map((wh) => (
+                            <option key={wh.id} value={wh.id}>
+                              {wh.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Quantity</label>
+                        <input
+                          type="number"
+                          value={stock.quantity}
+                          onChange={(e) =>
+                            handleWarehouseStockChange(
+                              index,
+                              "quantity",
+                              Number(e.target.value),
+                            )
+                          }
+                          placeholder="0"
+                          min="0"
+                          disabled={modalMode === "view"}
+                          style={{
+                            width: "100%",
+                            padding: "8px",
+                            borderRadius: "6px",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.15)",
+                            color: "inherit",
+                          }}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Minimum</label>
+                        <input
+                          type="number"
+                          value={stock.min_stock}
+                          onChange={(e) =>
+                            handleWarehouseStockChange(
+                              index,
+                              "min_stock",
+                              Number(e.target.value),
+                            )
+                          }
+                          placeholder="0"
+                          min="0"
+                          disabled={modalMode === "view"}
+                          style={{
+                            width: "100%",
+                            padding: "8px",
+                            borderRadius: "6px",
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.15)",
+                            color: "inherit",
+                          }}
+                        />
+                      </div>
+                      {modalMode !== "view" && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveWarehouseStock(index)}
+                          style={{
+                            padding: "8px",
+                            background: "rgba(239, 68, 68, 0.2)",
+                            border: "1px solid rgba(239, 68, 68, 0.4)",
+                            borderRadius: "6px",
+                            color: "#fca5a5",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                          title="Remove"
+                        >
+                          <Icon name="delete" style={{ fontSize: "18px" }} />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Total stock summary */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      padding: "12px",
+                      background: "rgba(99, 102, 241, 0.1)",
+                      borderRadius: "8px",
+                      marginTop: "8px",
+                    }}
+                  >
+                    <span style={{ fontWeight: 600 }}>
+                      <Icon
+                        name="inventory"
+                        style={{
+                          marginRight: "8px",
+                          verticalAlign: "middle",
+                        }}
+                      />
+                      Total Stock:{" "}
+                      {warehouseStocks.reduce(
+                        (sum, s) => sum + (parseFloat(s.quantity) || 0),
+                        0,
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="form-group">
-              <label>Minimum Stock</label>
-              <input
-                type="number"
-                value={currentMaterial.minStock}
-                onChange={(e) =>
-                  handleInputChange("minStock", Number(e.target.value))
-                }
-                placeholder="0"
-                min="0"
-                disabled={modalMode === "view"}
-              />
+          ) : (
+            <div className="form-row">
+              <div className="form-group">
+                <label>Current Stock</label>
+                <input
+                  type="number"
+                  value={currentMaterial.stock}
+                  onChange={(e) =>
+                    handleInputChange("stock", Number(e.target.value))
+                  }
+                  placeholder="0"
+                  min="0"
+                  disabled={modalMode === "view"}
+                />
+              </div>
+              <div className="form-group">
+                <label>Minimum Stock</label>
+                <input
+                  type="number"
+                  value={currentMaterial.minStock}
+                  onChange={(e) =>
+                    handleInputChange("minStock", Number(e.target.value))
+                  }
+                  placeholder="0"
+                  min="0"
+                  disabled={modalMode === "view"}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="form-group">
             <label>Unit Price ($)</label>
