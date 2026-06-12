@@ -3779,6 +3779,8 @@ textarea:focus-visible {
     display: flex;
     flex-direction: column;
     position: fixed;
+    top: 0;
+    left: 0;
     height: 100vh;
     z-index: 100;
     transition: transform 0.3s ease;
@@ -5314,17 +5316,9 @@ textarea:focus-visible {
 }
 
 @media (max-width: 900px) {
-    .sidebar {
-        transform: translateX(-100%);
-    }
-
-    .sidebar.open {
-        transform: translateX(0);
-    }
-
-    .main-content {
-        margin-left: 0;
-    }
+    /* [livia 2026-06-10] Reglas .sidebar/.sidebar.open removidas: clase
+       obsoleta .open (el JSX aplica .mobile-open) y creaban zona muerta
+       768-900px. Sidebar movil se gobierna en el bloque ~24390. */
 
     .stats-grid {
         grid-template-columns: 1fr;
@@ -22462,141 +22456,14 @@ label .required {
    SIDEBAR RESPONSIVE
    ============================================ */
 
-@media (max-width: 1024px) {
-    .sidebar {
-        width: 70px;
-        padding: 1rem 0.5rem;
-        overflow: hidden;
-    }
-
-    .sidebar .logo-text,
-    .sidebar .nav-label,
-    .sidebar .nav-badge,
-    .sidebar .user-info,
-    .sidebar .logout-text,
-    .sidebar .nav-section-header {
-        display: none;
-    }
-
-    .sidebar .nav-item {
-        justify-content: center;
-        padding: 0.75rem;
-    }
-
-    .sidebar .nav-icon {
-        margin: 0;
-    }
-
-    .main-content {
-        margin-left: 70px;
-    }
-
-    .sidebar .user-section {
-        padding: 0.5rem;
-    }
-
-    .sidebar .user-avatar {
-        width: 36px;
-        height: 36px;
-    }
-
-    .sidebar .user-dropdown {
-        left: 70px;
-        right: auto;
-        bottom: 20px;
-        min-width: 200px;
-        border-radius: 12px;
-    }
-
-    .sidebar .user-menu-trigger {
-        justify-content: center;
-    }
-
-    .sidebar .user-menu-trigger .nav-icon {
-        display: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        position: fixed;
-        left: -280px;
-        width: 280px;
-        height: 100vh;
-        z-index: 1000;
-        transition: left 0.3s ease;
-    }
-
-    .sidebar.open {
-        left: 0;
-    }
-
-    .sidebar .logo-text,
-    .sidebar .nav-label,
-    .sidebar .nav-badge,
-    .sidebar .user-info,
-    .sidebar .logout-text,
-    .sidebar .nav-section-header {
-        display: block;
-    }
-
-    .sidebar {
-        overflow: visible;
-        overflow-y: auto;
-    }
-
-    .sidebar .nav-item {
-        justify-content: flex-start;
-        padding: 0.875rem 1rem;
-    }
-
-    .sidebar .user-dropdown {
-        left: 16px;
-        right: 16px;
-        bottom: 80px;
-    }
-
-    .sidebar .user-menu-trigger {
-        justify-content: flex-start;
-    }
-
-    .sidebar .user-menu-trigger .nav-icon {
-        display: block;
-    }
-
-    .main-content {
-        margin-left: 0;
-        padding-top: 80px; /* Space for mobile menu button */
-    }
-
-    /* Mobile menu toggle button */
-    .mobile-menu-toggle {
-        display: flex;
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        z-index: 999;
-        background: linear-gradient(135deg, #d35400 0%, #e67e22 100%);
-        border: none;
-        border-radius: 10px;
-        padding: 0.75rem;
-        color: white;
-        cursor: pointer;
-        box-shadow: var(--shadow-md);
-    }
-
-    .sidebar-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-    }
-
-    .sidebar-overlay.active {
-        display: block;
-    }
-}
+/* [livia 2026-06-10] Bloques @media 1024px y 768px del sidebar REMOVIDOS
+   (bug "menu invisible"):
+   - 1024px forzaba sidebar a 70px + display:none en todos los labels en
+     laptops. El colapso ahora es opt-in del usuario (.sidebar.collapsed).
+   - 768px usaba left:-280px + clase obsoleta .sidebar.open; el JSX aplica
+     .mobile-open. Conflicto con el bloque MOBILE BREAKPOINT (~24390) que si
+     usa .mobile-open: el sidebar quedaba doblemente fuera de pantalla.
+   El sidebar responsive se gobierna SOLO en COMPREHENSIVE RESPONSIVE STYLES. */
 
 /* ============================================
    DASHBOARD RESPONSIVE
@@ -24900,4 +24767,66 @@ label .required {
 
 .toast .material-symbols-rounded {
     font-size: 20px;
+}
+
+
+/* ============================================================================
+   Infinite Scroll Sentinel (used by InfiniteScrollSentinel component)
+   Replaces previous "materials-footer / materials-pagination" controls.
+   ============================================================================ */
+.infinite-scroll-sentinel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.25rem 1rem;
+    color: var(--text-muted, #64748b);
+    font-size: 0.8125rem;
+    line-height: 1;
+    user-select: none;
+}
+
+.infinite-scroll-spinner {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    opacity: 0.6;
+    animation: infinite-scroll-spin 0.8s linear infinite;
+}
+
+.infinite-scroll-label {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25rem;
+}
+
+.infinite-scroll-count {
+    font-variant-numeric: tabular-nums;
+    opacity: 0.7;
+}
+
+.infinite-scroll-end {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+    opacity: 0.75;
+    user-select: none;
+}
+
+@keyframes infinite-scroll-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .infinite-scroll-spinner {
+        animation: none;
+        border-top-color: currentColor;
+        opacity: 0.4;
+    }
 }
