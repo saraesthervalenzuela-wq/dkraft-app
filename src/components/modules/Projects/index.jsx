@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Toast } from '../../common';
 import { isApiEnabled, projectsApi } from '../../../services/api';
-import { projectsService } from '../../../lib/supabase';
+import { supabase, projectsService, clientsService } from '../../../lib/supabase';
 
 const initialProjectsData = [
     { id: 1, name: 'ABC Corporate Office', description: 'Corporate office furniture project', status: 'Active', client: 'ABC Corporation', poNumber: 'PO-2024-001', workOrder: 'WO-001', estimateNumber: 'EST-001', terms: 'Net 30', nameAddress: 'ABC Corporation, 123 Main Ave', shipTo: 'North Industrial Zone', contact: 'John Smith - 664 123 4567', salesRep: 'Carlos Mendoza', csr: 'Ana Garcia', subtotal: 45000, tax: 7200, total: 52200 },
@@ -21,7 +21,13 @@ const normalizeProject = (p) => ({
     name: p.name || '',
     description: p.description || '',
     status: p.status || 'Active',
-    client: p.client || p.clientName || '',
+    clientId: p.clientId || p.client_id || '',
+    // clientName desde el join (Supabase), o texto libre (API/cache)
+    client:
+        p.client ||
+        p.clientName ||
+        (p.clients ? p.clients.company_name || p.clients.name : '') ||
+        '',
     poNumber: p.poNumber || p.po_number || '',
     workOrder: p.workOrder || p.work_order || '',
     estimateNumber: p.estimateNumber || p.estimate_number || '',
@@ -38,6 +44,7 @@ const normalizeProject = (p) => ({
 
 const ProjectsModule = () => {
     const [projects, setProjects] = useState(initialProjectsData);
+    const [clients, setClients] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [toast, setToast] = useState(null);
 
@@ -46,11 +53,22 @@ const ProjectsModule = () => {
         const loadProjects = async () => {
             setIsLoading(true);
             try {
-                const data = isApiEnabled()
-                    ? await projectsApi.getAll()
-                    : await projectsService.getAll();
-                if (data?.length > 0) {
-                    setProjects(data.map(normalizeProject));
+                if (isApiEnabled()) {
+                    const data = await projectsApi.getAll();
+                    if (data?.length > 0) setProjects(data.map(normalizeProject));
+                } else {
+                    // Supabase: proyectos con el cliente (join) + lista de clientes para el selector
+                    const [projRes, clientsData] = await Promise.all([
+                        supabase
+                            .from('projects')
+                            .select('*, clients(id, name, company_name)')
+                            .order('created_at', { ascending: false }),
+                        clientsService.getAll(),
+                    ]);
+                    if (projRes.data?.length > 0) {
+                        setProjects(projRes.data.map(normalizeProject));
+                    }
+                    if (clientsData?.length > 0) setClients(clientsData);
                 }
             } catch (error) {
                 console.error('Error loading projects:', error);
@@ -69,7 +87,7 @@ const ProjectsModule = () => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState(null);
     const [newProject, setNewProject] = useState({
-        name: '', description: '', status: 'Active', client: '',
+        name: '', description: '', status: 'Active', client: '', clientId: '',
         poNumber: '', workOrder: '', estimateNumber: '', terms: '',
         nameAddress: '', shipTo: '', contact: '',
         salesRep: '', csr: '',
@@ -120,10 +138,12 @@ const ProjectsModule = () => {
 
         try {
             // Map to Supabase snake_case columns
+            const selectedClient = clients.find((c) => c.id === newProject.clientId);
             const projectData = {
                 name: newProject.name,
                 description: newProject.description || '',
                 status: newProject.status || 'Active',
+                client_id: newProject.clientId || null,
                 po_number: newProject.poNumber || null,
                 subtotal: parseFloat(newProject.subtotal) || 0,
                 tax: parseFloat(newProject.tax) || 0,
@@ -141,6 +161,7 @@ const ProjectsModule = () => {
             const normalizedProject = {
                 id: savedProject.id,
                 ...newProject,
+                client: selectedClient ? selectedClient.company_name || selectedClient.name : '',
                 subtotal: projectData.subtotal,
                 tax: projectData.tax,
                 total: projectData.total,
@@ -161,10 +182,12 @@ const ProjectsModule = () => {
 
         try {
             // Map to Supabase snake_case columns
+            const selectedClient = clients.find((c) => c.id === newProject.clientId);
             const projectData = {
                 name: newProject.name,
                 description: newProject.description || '',
                 status: newProject.status || 'Active',
+                client_id: newProject.clientId || null,
                 po_number: newProject.poNumber || null,
                 subtotal: parseFloat(newProject.subtotal) || 0,
                 tax: parseFloat(newProject.tax) || 0,
@@ -182,6 +205,7 @@ const ProjectsModule = () => {
             setProjects(projects.map(p => p.id === editingProject.id ? {
                 ...p,
                 ...newProject,
+                client: selectedClient ? selectedClient.company_name || selectedClient.name : '',
                 subtotal: projectData.subtotal,
                 tax: projectData.tax,
                 total: projectData.total,
@@ -236,6 +260,7 @@ const ProjectsModule = () => {
             description: project.description || '',
             status: project.status,
             client: project.client || '',
+            clientId: project.clientId || '',
             poNumber: project.poNumber || '',
             workOrder: project.workOrder || '',
             estimateNumber: project.estimateNumber || '',
@@ -255,7 +280,7 @@ const ProjectsModule = () => {
     const resetForm = () => {
         setShowModal(false);
         setNewProject({
-            name: '', description: '', status: 'Active', client: '',
+            name: '', description: '', status: 'Active', client: '', clientId: '',
             poNumber: '', workOrder: '', estimateNumber: '', terms: '',
             nameAddress: '', shipTo: '', contact: '',
             salesRep: '', csr: '',
@@ -557,12 +582,17 @@ const ProjectsModule = () => {
                             <div className="form-row">
                                 <div className="form-group">
                                     <label>Client</label>
-                                    <input
-                                        type="text"
-                                        value={newProject.client}
-                                        onChange={(e) => setNewProject({ ...newProject, client: e.target.value })}
-                                        placeholder="Client name"
-                                    />
+                                    <select
+                                        value={newProject.clientId}
+                                        onChange={(e) => setNewProject({ ...newProject, clientId: e.target.value })}
+                                    >
+                                        <option value="">-- Select Client --</option>
+                                        {clients.map((client) => (
+                                            <option key={client.id} value={client.id}>
+                                                {client.company_name || client.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                             <div className="form-group">
