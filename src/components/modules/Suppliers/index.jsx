@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Icon, SearchBox, Modal, Toast } from '../../common';
 import { suppliersService } from '../../../firebase';
 import { isApiEnabled, suppliersApi } from '../../../services/api';
+import { qbwcApi } from '../../../services/quickbooksConnector';
 
 // Supplier categories
 const SUPPLIER_CATEGORIES = [
@@ -210,13 +211,42 @@ const SuppliersModule = () => {
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            if (isApiEnabled()) {
-                // await quickbooksApi.syncSuppliers();
+            // Push pending suppliers (vendors) to QuickBooks via the QBWC connector
+            const pending = suppliers.filter((s) => s.qbSyncStatus === 'pending');
+            if (pending.length === 0) {
+                setToast({ message: 'No suppliers pending QB sync.', type: 'info' });
+                return;
             }
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            let ok = 0;
+            let failed = 0;
+            for (const s of pending) {
+                try {
+                    await qbwcApi.syncSupplier({
+                        id: s.id,
+                        name: s.name,
+                        contact_name: s.contactName,
+                        email: s.email,
+                        phone: s.phone,
+                        address: s.address,
+                        city: s.city,
+                        state: s.state,
+                        postal_code: s.zipCode,
+                        country: s.country,
+                    });
+                    ok += 1;
+                } catch (err) {
+                    console.error(`[Suppliers] QB sync failed for ${s.name}:`, err.message);
+                    failed += 1;
+                }
+            }
+            setToast({
+                message: `QuickBooks: ${ok} sincronizado(s)${failed ? `, ${failed} con error` : ''}`,
+                type: failed ? 'error' : 'success',
+            });
             await loadData();
         } catch (error) {
             console.error('Error syncing with QB:', error);
+            setToast({ message: 'Error syncing with QB: ' + error.message, type: 'error' });
         } finally {
             setIsSyncing(false);
         }

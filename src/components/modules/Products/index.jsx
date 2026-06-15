@@ -13,6 +13,7 @@ import {
   categoriesApi,
 } from "../../../services/api";
 import { productsService, categoriesService } from "../../../lib/supabase";
+import { qbwcApi } from "../../../services/quickbooksConnector";
 
 // Polling interval for QB sync status (30 seconds)
 const QB_SYNC_POLL_INTERVAL = 30000;
@@ -552,13 +553,36 @@ const ProductsModule = () => {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      if (isApiEnabled()) {
-        // await quickbooksApi.syncProducts();
+      // Push pending products to QuickBooks via the QBWC connector
+      const pending = products.filter((p) => p.qbSyncStatus === "pending");
+      if (pending.length === 0) {
+        setToast({ message: "No products pending QB sync.", type: "info" });
+        return;
       }
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      let ok = 0;
+      let failed = 0;
+      for (const p of pending) {
+        try {
+          await qbwcApi.syncProduct({
+            id: p.id,
+            name: p.name,
+            unit_price: p.price || 0,
+            description: p.description,
+          });
+          ok += 1;
+        } catch (err) {
+          console.error(`[Products] QB sync failed for ${p.name}:`, err.message);
+          failed += 1;
+        }
+      }
+      setToast({
+        message: `QuickBooks: ${ok} sincronizado(s)${failed ? `, ${failed} con error` : ""}`,
+        type: failed ? "error" : "success",
+      });
       await loadData();
     } catch (error) {
       console.error("Error syncing with QB:", error);
+      setToast({ message: "Error syncing with QB: " + error.message, type: "error" });
     } finally {
       setIsSyncing(false);
     }

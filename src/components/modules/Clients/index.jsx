@@ -11,11 +11,13 @@ import {
 } from "../../common";
 import { clientsService } from "../../../firebase";
 import { isApiEnabled, clientsApi } from "../../../services/api";
+import { qbwcApi } from "../../../services/quickbooksConnector";
 import {
   BILLING_ENTITIES,
   DEFAULT_BILLING_ENTITY,
   getBillingEntity,
   normalizeBillingEntity,
+  shouldSyncToQB,
 } from "../../../data/billingEntities";
 import "./styles.css";
 
@@ -260,10 +262,18 @@ const ClientsModule = () => {
    * Determine QB sync status based on listId presence
    */
   const getQBSyncStatusFromData = (client) => {
-    if (client.listId) {
+    // Non-syncing billing entities (e.g. INNOVATIVE) stay local-only
+    if (!shouldSyncToQB(client.billing_entity || client.billingEntity)) {
+      return "local_only";
+    }
+    // An edited record marked pending stays pending even if it has a listId
+    if (client.sync_status === "pending" || client.qbSyncStatus === "pending") {
+      return "pending";
+    }
+    if (client.listId || client.list_id || client.qb_customer_id) {
       return "synced";
     }
-    if (client.qbSyncStatus === "error") {
+    if (client.qbSyncStatus === "error" || client.sync_status === "error") {
       return "error";
     }
     return "pending";
@@ -345,6 +355,8 @@ const ClientsModule = () => {
         return { icon: "schedule", color: "#f59e0b", label: "Pending" };
       case "error":
         return { icon: "error", color: "#ef4444", label: "Error" };
+      case "local_only":
+        return { icon: "cloud_off", color: "#64748b", label: "Local only" };
       default:
         return { icon: "help", color: "#64748b", label: "Unknown" };
     }
@@ -410,13 +422,48 @@ const ClientsModule = () => {
   const handleSync = async () => {
     setIsSyncing(true);
     try {
-      if (isApiEnabled()) {
-        // await quickbooksApi.syncClients();
+      // Push pending clients of syncing billing entities to QuickBooks (QBWC)
+      const pending = clients.filter(
+        (c) => c.qbSyncStatus === "pending" && shouldSyncToQB(c.billingEntity),
+      );
+      if (pending.length === 0) {
+        setToast({ message: "No clients pending QB sync.", type: "info" });
+        return;
       }
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      let ok = 0;
+      let failed = 0;
+      for (const c of pending) {
+        try {
+          // Map the normalized (camelCase) client to the snake_case shape
+          // the QBWC connector expects.
+          await qbwcApi.syncClient({
+            id: c.id,
+            name: c.name,
+            company_name: c.companyName,
+            email: c.email,
+            phone: c.phone,
+            address: c.address,
+            city: c.city,
+            state: c.state,
+            postal_code: c.zipCode,
+            country: c.country,
+          });
+          ok += 1;
+        } catch (err) {
+          console.error(`[Clients] QB sync failed for ${c.name}:`, err.message);
+          failed += 1;
+        }
+      }
+
+      setToast({
+        message: `QuickBooks: ${ok} sincronizado(s)${failed ? `, ${failed} con error` : ""}`,
+        type: failed ? "error" : "success",
+      });
       await loadData();
     } catch (error) {
       console.error("Error syncing with QB:", error);
+      setToast({ message: "Error syncing with QB: " + error.message, type: "error" });
     } finally {
       setIsSyncing(false);
     }
@@ -531,6 +578,10 @@ const ClientsModule = () => {
       clientToSave.billing_entity = normalizeBillingEntity(
         currentClient.billingEntity,
       );
+      // QB pipeline: only syncing entities are marked pending; others local-only
+      clientToSave.sync_status = shouldSyncToQB(currentClient.billingEntity)
+        ? "pending"
+        : "local_only";
 
       console.log("[Clients] Final data:", clientToSave);
 
