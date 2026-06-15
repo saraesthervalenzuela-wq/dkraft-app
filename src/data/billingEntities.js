@@ -35,3 +35,23 @@ export const normalizeBillingEntity = (value) => {
     ? upper
     : DEFAULT_BILLING_ENTITY;
 };
+
+/**
+ * Options ({ value, label }) for billing-entity <select> inputs.
+ */
+export const billingEntityOptions = BILLING_ENTITIES.map((e) => ({
+  value: e.id,
+  label: e.name,
+}));
+
+/**
+ * Whether a billing entity should sync to QuickBooks.
+ * Drives the conditional QB pipeline (today only Dovecreek syncs).
+ * Unknown values default to true (fail-safe toward syncing).
+ * @param {string} billingEntity
+ * @returns {boolean}
+ */
+export const shouldSyncToQB = (billingEntity) => {
+  const entity = BILLING_ENTITIES.find((e) => e.id === billingEntity);
+  return entity?.syncsToQB ?? true;
+};
