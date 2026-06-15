@@ -34,7 +34,7 @@ declare
         'projects', 'quotations', 'quotation_items', 'requisitions',
         'requisition_items', 'operations', 'operation_stages',
         'operation_materials', 'attendance', 'staff_operation_hours',
-        'qa_inspections', 'activity_log'
+        'qa_inspections', 'activity_log', 'departments'
     ];
 begin
     foreach t in array tables loop
