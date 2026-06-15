@@ -12,6 +12,7 @@ export { default as ProjectsModule } from "./Projects";
 export { default as RequisitionsModule } from "./Requisitions";
 export { default as QuotationsModule } from "./Quotations";
 export { default as OperationsModule } from "./Operations";
+export { default as WorkCentersModule } from "./WorkCenters";
 export { default as ReportsModule } from "./Reports";
 export { default as QualityModule } from "./Quality";
 export { default as PerformanceModule } from "./Performance";

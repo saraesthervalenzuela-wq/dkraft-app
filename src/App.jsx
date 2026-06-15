@@ -27,6 +27,7 @@ import {
   RequisitionsModule,
   QuotationsModule,
   OperationsModule,
+  WorkCentersModule,
   ReportsModule,
   QualityModule,
   PerformanceModule,
@@ -104,6 +105,8 @@ const AppContent = () => {
         return <QuotationsModule />;
       case "operations":
         return <OperationsModule />;
+      case "workcenters":
+        return <WorkCentersModule />;
       case "reports":
         return <ReportsModule />;
       case "quality":

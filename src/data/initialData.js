@@ -47,6 +47,7 @@ export const navSections = [
             { id: 'quotations', label: 'Quotes', icon: 'request_quote' },
             { id: 'requisitions', label: 'Sales Orders', icon: 'shopping_cart' },
             { id: 'operations', label: 'Operations', icon: 'engineering' },
+            { id: 'workcenters', label: 'Work Centers', icon: 'precision_manufacturing' },
         ]
     },
     {
