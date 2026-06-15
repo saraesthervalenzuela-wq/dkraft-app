@@ -1142,7 +1142,7 @@ const ProductsModule = () => {
         size="large"
         onSave={modalMode !== "view" ? handleSave : undefined}
         saveText={modalMode === "add" ? "Create Product" : "Save Changes"}
-        saveDisabled={!currentProduct.name || !currentProduct.categoryId}
+        saveDisabled={!currentProduct.name}
         isViewMode={modalMode === "view"}
       >
         <div className="material-form">
