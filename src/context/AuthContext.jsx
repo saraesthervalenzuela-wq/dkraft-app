@@ -1,5 +1,12 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import { supabase, auth } from "../lib/supabase";
+import { isRecovery, onRecovery } from "../lib/recoveryFlag";
 
 const AuthContext = createContext(null);
 
@@ -59,6 +66,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Modo recuperación de contraseña: activo cuando el usuario llega desde el
+  // enlace del correo. Fuerza la pantalla de "nueva contraseña" aunque ya haya
+  // sesión (el token de recovery crea una sesión válida automáticamente).
+  // Se inicializa con la detección capturada en carga (recoveryFlag) — fuente
+  // fiable porque lee la URL antes de que supabase la limpie. Si el evento
+  // PASSWORD_RECOVERY llega después de montar, onRecovery() lo propaga.
+  const [recoveryMode, setRecoveryMode] = useState(() => isRecovery());
 
   // Hidratar estado desde la sesión persistida por supabase-js + suscribirse
   // a cambios de auth (login/logout/refresh) para mantener el estado vivo.
@@ -86,10 +100,24 @@ export const AuthProvider = ({ children }) => {
 
     init();
 
+    // Respaldo: si recoveryFlag detecta el evento PASSWORD_RECOVERY (incluso si
+    // llegó antes de montar este efecto), activa el modo recuperación.
+    const unsubRecovery = onRecovery(() => {
+      if (mounted) setRecoveryMode(true);
+    });
+
     const {
       data: { subscription },
     } = auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
+
+      // El usuario abrió el enlace de recuperación del correo. Marcamos el modo
+      // recovery (set de estado síncrono, sin tocar supabase) para que el
+      // AuthWrapper muestre la pantalla de nueva contraseña en vez del dashboard.
+      if (event === "PASSWORD_RECOVERY") {
+        setRecoveryMode(true);
+      }
+
       // IMPORTANTE: el callback NO debe ser async ni await-ear llamadas a
       // supabase aquí dentro. supabase-js retiene el auth lock (navigator.locks)
       // mientras corre el callback, y cualquier query (que internamente pide el
@@ -117,6 +145,7 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       mounted = false;
+      unsubRecovery();
       subscription?.unsubscribe();
     };
   }, []);
@@ -197,15 +226,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Actualiza la contraseña del usuario actual en Supabase Auth. Requiere una
+  // sesión válida (la que crea el enlace de recuperación cumple ese requisito).
+  const updatePassword = useCallback(async (newPassword) => {
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+    if (updateError) throw updateError;
+  }, []);
+
+  // Sale del flujo de recuperación. Como updateUser deja una sesión activa, al
+  // salir el AuthWrapper renderiza el dashboard directamente.
+  const exitPasswordRecovery = useCallback(() => setRecoveryMode(false), []);
+
   const clearError = () => setError(null);
 
   const value = {
     user,
     loading,
     error,
+    recoveryMode,
     login,
     register,
     logout,
+    updatePassword,
+    exitPasswordRecovery,
     clearError,
     isAuthenticated: !!user,
   };

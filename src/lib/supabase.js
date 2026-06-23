@@ -49,6 +49,17 @@ export const auth = {
         if (error) throw error
     },
 
+    // Envía el correo de recuperación de contraseña. `redirectTo` es la URL a la
+    // que Supabase manda al usuario tras hacer clic en el enlace del correo (debe
+    // estar en la lista de Redirect URLs permitidas del panel de Supabase).
+    resetPassword: async (email, redirectTo) => {
+        const { error } = await supabase.auth.resetPasswordForEmail(
+            email,
+            redirectTo ? { redirectTo } : undefined
+        )
+        if (error) throw error
+    },
+
     getSession: async () => {
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) throw error

@@ -5,7 +5,7 @@ import {
   NavigationGuardProvider,
   useNavigationGuard,
 } from "./context/NavigationGuardContext";
-import { AuthLayout } from "./components/auth";
+import { AuthLayout, ResetPassword } from "./components/auth";
 import { Sidebar } from "./components/layout";
 import {
   KeyboardShortcuts,
@@ -164,10 +164,16 @@ const AppContent = () => {
 
 // Auth wrapper component
 const AuthWrapper = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, recoveryMode } = useAuth();
 
   if (loading) {
     return <LoadingScreen />;
+  }
+
+  // El flujo de recuperación tiene prioridad: aunque el enlace del correo ya
+  // haya creado una sesión, primero el usuario debe fijar su nueva contraseña.
+  if (recoveryMode) {
+    return <ResetPassword />;
   }
 
   if (!isAuthenticated) {
