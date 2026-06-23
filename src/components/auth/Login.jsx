@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-const Login = ({ onSwitchToRegister, onForgotPassword }) => {
+const Login = ({ onForgotPassword }) => {
   const { login, error, clearError } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -111,15 +111,6 @@ const Login = ({ onSwitchToRegister, onForgotPassword }) => {
           )}
         </button>
       </form>
-
-      <div className="auth-footer">
-        <p>
-          ¿No tienes cuenta?{' '}
-          <button type="button" onClick={onSwitchToRegister}>
-            Regístrate
-          </button>
-        </p>
-      </div>
     </div>
   );
 };

@@ -1,38 +1,58 @@
 /**
- * Detección robusta del flujo de recuperación de contraseña.
+ * Detección del flujo de recuperación de contraseña (y de sus errores).
  *
- * Cuando el usuario abre el enlace del correo, aterriza con el token de recovery
- * en la URL. supabase-js procesa la URL, crea la sesión y LIMPIA el hash de forma
- * asíncrona, emitiendo `PASSWORD_RECOVERY` dentro de un setTimeout(0) que puede
- * dispararse antes de que React suscriba su listener (carrera → evento perdido).
+ * Al abrir el enlace del correo, supabase redirige a la app con el resultado en
+ * el hash de la URL:
+ *   - Éxito:  #access_token=...&type=recovery   → mostramos el form de cambio.
+ *   - Error:  #error=access_denied&error_code=otp_expired&error_description=...
+ *             (enlace expirado / ya usado) → mostramos un aviso para pedir otro.
  *
- * Para no depender de esa carrera usamos DOS señales, ambas capturadas lo antes
- * posible (este módulo se importa de primero en main.jsx):
- *   1. Lectura directa de la URL (`type=recovery` en hash o query) al cargar.
- *   2. Suscripción TEMPRANA a onAuthStateChange para atrapar PASSWORD_RECOVERY
- *      aunque se emita antes de que monte React.
- *
- * AuthContext consume `isRecovery()` (estado inicial) y `onRecovery()` (para
- * enterarse si el evento llega después de montar).
+ * supabase procesa y LIMPIA ese hash de forma asíncrona, así que leemos la URL
+ * UNA sola vez al cargar este módulo (importado de primero en main.jsx), antes
+ * de que se borre. Como respaldo extra para la condición de carrera, también nos
+ * suscribimos temprano al evento PASSWORD_RECOVERY.
  */
 import { supabase } from './supabase';
 
-// Snapshot de la URL en el instante de carga, antes de que supabase la limpie.
-const initialHref =
-  typeof window !== 'undefined' ? window.location.href : '';
+const readParams = () => {
+  if (typeof window === 'undefined') {
+    return { isRecovery: false, error: null };
+  }
+  const rawHash = window.location.hash.startsWith('#')
+    ? window.location.hash.slice(1)
+    : window.location.hash;
+  const fromHash = new URLSearchParams(rawHash);
+  const fromSearch = new URLSearchParams(window.location.search);
+  const get = (k) => fromHash.get(k) || fromSearch.get(k);
 
-const hasRecoveryParam = () => {
-  if (typeof window === 'undefined') return false;
-  const { hash, search } = window.location;
-  return /type=recovery/.test(hash) || /type=recovery/.test(search);
+  const isRecovery = get('type') === 'recovery';
+
+  const errorCode = get('error_code');
+  const errorDesc = get('error_description');
+  const errorRaw = get('error');
+  const hasError = Boolean(errorCode || errorDesc || errorRaw);
+  const error = hasError
+    ? {
+        code: errorCode || errorRaw || 'unknown',
+        description: errorDesc
+          ? decodeURIComponent(errorDesc.replace(/\+/g, ' '))
+          : 'El enlace de recuperación no es válido o ya expiró.',
+      }
+    : null;
+
+  return { isRecovery, error };
 };
 
-let recoveryDetected = hasRecoveryParam();
+const initialHref = typeof window !== 'undefined' ? window.location.href : '';
+const parsed = readParams();
+
+let recoveryDetected = parsed.isRecovery;
+export const recoveryError = parsed.error;
+
 const subscribers = new Set();
 
 const markRecovery = (origin) => {
   if (!recoveryDetected) {
-    // eslint-disable-next-line no-console
     console.info('[recovery] detectado vía', origin);
   }
   recoveryDetected = true;
@@ -45,23 +65,28 @@ const markRecovery = (origin) => {
   });
 };
 
-// Diagnóstico: deja ver en consola qué URL llegó y si se detectó recovery.
-// eslint-disable-next-line no-console
+// Diagnóstico: deja ver en consola qué URL llegó y qué se detectó.
 console.info(
   '[recovery] URL inicial:',
   initialHref,
   '| recovery por URL:',
   recoveryDetected,
+  '| error:',
+  parsed.error ? parsed.error.code : 'ninguno',
 );
 
-// Suscripción temprana (carga de módulo) para ganarle al setTimeout(0) de supabase.
+// Suscripción temprana para ganarle al setTimeout(0) con que supabase emite
+// PASSWORD_RECOVERY durante su inicialización.
 if (typeof window !== 'undefined') {
   supabase.auth.onAuthStateChange((event) => {
     if (event === 'PASSWORD_RECOVERY') markRecovery('evento');
   });
 }
 
+// ¿Debemos mostrar la pantalla de recuperación? Sí si hubo éxito (type=recovery)
+// o si llegó un error de enlace (para avisar en vez de caer al dashboard).
 export const isRecovery = () => recoveryDetected;
+export const shouldShowRecovery = () => recoveryDetected || Boolean(recoveryError);
 
 export const onRecovery = (cb) => {
   subscribers.add(cb);
@@ -69,5 +94,13 @@ export const onRecovery = (cb) => {
   return () => subscribers.delete(cb);
 };
 
-// Compat: estado inicial síncrono para quien lo prefiera.
-export const cameFromRecoveryLink = recoveryDetected;
+// Limpia el hash de auth de la URL para que un refresh no reactive el flujo de
+// recuperación. Los tokens/errores del flujo implicit viven en el hash.
+export const clearRecoveryFromUrl = () => {
+  if (typeof window === 'undefined' || !window.location.hash) return;
+  window.history.replaceState(
+    null,
+    '',
+    window.location.pathname + window.location.search,
+  );
+};

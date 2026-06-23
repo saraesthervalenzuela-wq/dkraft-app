@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import './auth.css';
 
 const ResetPassword = () => {
-  const { updatePassword, exitPasswordRecovery } = useAuth();
+  const { updatePassword, exitPasswordRecovery, recoveryError } = useAuth();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -41,6 +41,41 @@ const ResetPassword = () => {
       setLoading(false);
     }
   };
+
+  // El enlace llegó con error (expirado o ya usado). Avisamos y ofrecemos
+  // volver para solicitar uno nuevo, en vez de caer silenciosamente al sistema.
+  if (recoveryError) {
+    return (
+      <div className="auth-layout">
+        <div className="auth-background">
+          <div className="bg-gradient"></div>
+          <div className="bg-pattern"></div>
+        </div>
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="auth-header">
+              <div className="auth-error" style={{ justifyContent: 'center' }}>
+                <span className="material-symbols-rounded">link_off</span>
+              </div>
+              <h1>Enlace no válido</h1>
+              <p>
+                El enlace de recuperación expiró o ya fue usado. Solicita uno
+                nuevo desde "¿Olvidaste tu contraseña?" e intenta de inmediato.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="auth-button primary"
+              onClick={exitPasswordRecovery}
+            >
+              Volver al inicio de sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="auth-layout">

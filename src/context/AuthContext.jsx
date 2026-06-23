@@ -6,7 +6,12 @@ import {
   useCallback,
 } from "react";
 import { supabase, auth } from "../lib/supabase";
-import { isRecovery, onRecovery } from "../lib/recoveryFlag";
+import {
+  shouldShowRecovery,
+  recoveryError,
+  onRecovery,
+  clearRecoveryFromUrl,
+} from "../lib/recoveryFlag";
 
 const AuthContext = createContext(null);
 
@@ -70,9 +75,10 @@ export const AuthProvider = ({ children }) => {
   // enlace del correo. Fuerza la pantalla de "nueva contraseña" aunque ya haya
   // sesión (el token de recovery crea una sesión válida automáticamente).
   // Se inicializa con la detección capturada en carga (recoveryFlag) — fuente
-  // fiable porque lee la URL antes de que supabase la limpie. Si el evento
+  // fiable porque lee la URL antes de que supabase la limpie. Incluye el caso de
+  // enlace expirado/erróneo para avisar en vez de caer al dashboard. Si el evento
   // PASSWORD_RECOVERY llega después de montar, onRecovery() lo propaga.
-  const [recoveryMode, setRecoveryMode] = useState(() => isRecovery());
+  const [recoveryMode, setRecoveryMode] = useState(() => shouldShowRecovery());
 
   // Hidratar estado desde la sesión persistida por supabase-js + suscribirse
   // a cambios de auth (login/logout/refresh) para mantener el estado vivo.
@@ -235,9 +241,13 @@ export const AuthProvider = ({ children }) => {
     if (updateError) throw updateError;
   }, []);
 
-  // Sale del flujo de recuperación. Como updateUser deja una sesión activa, al
-  // salir el AuthWrapper renderiza el dashboard directamente.
-  const exitPasswordRecovery = useCallback(() => setRecoveryMode(false), []);
+  // Sale del flujo de recuperación. Limpia los parámetros de auth de la URL para
+  // que un refresh no reactive el flujo, y luego baja el modo recovery. Si hay
+  // sesión activa el AuthWrapper renderiza el dashboard; si no, el login.
+  const exitPasswordRecovery = useCallback(() => {
+    clearRecoveryFromUrl();
+    setRecoveryMode(false);
+  }, []);
 
   const clearError = () => setError(null);
 
@@ -246,6 +256,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     recoveryMode,
+    recoveryError,
     login,
     register,
     logout,

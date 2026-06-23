@@ -17,7 +17,6 @@ const AuthLayout = () => {
       default:
         return (
           <Login
-            onSwitchToRegister={() => setView('register')}
             onForgotPassword={() => setView('forgot')}
           />
         );
