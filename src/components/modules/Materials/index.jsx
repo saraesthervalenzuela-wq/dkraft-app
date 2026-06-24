@@ -302,24 +302,28 @@ const MaterialsModule = () => {
     // undefined the Save button is permanently disabled and the user "can't
     // save". Expose camelCase aliases (keeping the original fields too) so the
     // selects bind and the button enables.
-    if (m.code_qb !== undefined) {
+    // Supabase rows store the code in `code` and the unit cost in `cost`, but
+    // the form/table read `code_qb`/`price`. Detect already-structured rows by
+    // the presence of `code`/`code_qb` and expose the aliases the UI needs.
+    if (m.code !== undefined || m.code_qb !== undefined) {
       return {
         ...m,
         qbSyncStatus,
+        code_qb: m.code_qb ?? m.code ?? "",
         categoryId: m.categoryId ?? m.category_id ?? "",
         unitId: m.unitId ?? m.unit_id ?? "",
         supplierId: m.supplierId ?? m.supplier_id ?? "",
         minStock: m.minStock ?? m.min_stock ?? 0,
         stock: m.stock ?? 0,
-        price: m.price ?? 0,
-        qbListId: m.qbListId ?? m.qb_list_id ?? null,
+        price: m.price ?? m.cost ?? 0,
+        qbListId: m.qbListId ?? m.qb_list_id ?? m.qb_id ?? null,
       };
     }
 
     // Convert from old Firebase structure to new MySQL structure
     return {
       id: m.id,
-      code_qb: m.codeQB || m.code_qb || "",
+      code_qb: m.codeQB || m.code_qb || m.code || "",
       qbSyncStatus,
       name: m.material || m.name || "",
       description: m.description || "",
@@ -329,7 +333,7 @@ const MaterialsModule = () => {
       status: normalizeStatus(m.status),
       stock: m.stockTotal || m.stock || 0,
       minStock: m.minStock || 0,
-      price: m.unitPrice || m.price || 0,
+      price: m.unitPrice || m.price || m.cost || 0,
       qbListId: m.qbListId || null,
     };
   };
@@ -743,9 +747,13 @@ const MaterialsModule = () => {
         finalStatus = "LOW_STOCK";
       }
 
-      // Map camelCase to snake_case for Supabase
+      // Map camelCase to snake_case for Supabase. NOTE: the materials table
+      // stores the material code in `code` (e.g. MAT-001) and the unit cost in
+      // `cost` — there is no `code_qb`/`price` column. The UI keeps using
+      // code_qb/price; we translate them to the real columns here (and back in
+      // normalizeMaterial when loading).
       const materialToSave = {
-        code_qb: currentMaterial.code_qb || currentMaterial.codeQb || "",
+        code: currentMaterial.code_qb || currentMaterial.codeQb || "",
         name: currentMaterial.name || "",
         description: currentMaterial.description || "",
         category_id:
@@ -755,7 +763,7 @@ const MaterialsModule = () => {
           currentMaterial.supplierId || currentMaterial.supplier_id || null,
         stock: derivedStock,
         min_stock: derivedMinStock,
-        price: parseFloat(currentMaterial.price) || 0,
+        cost: parseFloat(currentMaterial.price) || 0,
         status: finalStatus,
         sync_status: "pending",
       };
