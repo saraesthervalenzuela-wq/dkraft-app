@@ -296,11 +296,23 @@ const MaterialsModule = () => {
     // Determine qbSyncStatus based on qbListId
     const qbSyncStatus = getQBSyncStatusFromData(m);
 
-    // If data already has new field names, just update qbSyncStatus
+    // Supabase rows arrive in snake_case (category_id, unit_id, supplier_id,
+    // min_stock). The Edit/Add form and the table read camelCase, and
+    // `saveDisabled` checks categoryId/unitId/supplierId — if those stay
+    // undefined the Save button is permanently disabled and the user "can't
+    // save". Expose camelCase aliases (keeping the original fields too) so the
+    // selects bind and the button enables.
     if (m.code_qb !== undefined) {
       return {
         ...m,
         qbSyncStatus,
+        categoryId: m.categoryId ?? m.category_id ?? "",
+        unitId: m.unitId ?? m.unit_id ?? "",
+        supplierId: m.supplierId ?? m.supplier_id ?? "",
+        minStock: m.minStock ?? m.min_stock ?? 0,
+        stock: m.stock ?? 0,
+        price: m.price ?? 0,
+        qbListId: m.qbListId ?? m.qb_list_id ?? null,
       };
     }
 
@@ -587,7 +599,6 @@ const MaterialsModule = () => {
     );
   };
 
-
   /**
    * Sync with QuickBooks
    */
@@ -612,7 +623,10 @@ const MaterialsModule = () => {
           });
           ok += 1;
         } catch (err) {
-          console.error(`[Materials] QB sync failed for ${m.name}:`, err.message);
+          console.error(
+            `[Materials] QB sync failed for ${m.name}:`,
+            err.message,
+          );
           failed += 1;
         }
       }
@@ -623,7 +637,10 @@ const MaterialsModule = () => {
       await loadData();
     } catch (error) {
       console.error("Error syncing with QB:", error);
-      setToast({ message: "Error syncing with QB: " + error.message, type: "error" });
+      setToast({
+        message: "Error syncing with QB: " + error.message,
+        type: "error",
+      });
     } finally {
       setIsSyncing(false);
     }
@@ -1327,12 +1344,7 @@ const MaterialsModule = () => {
         size="large"
         onSave={modalMode !== "view" ? handleSave : undefined}
         saveText={modalMode === "add" ? "Add Material" : "Save Changes"}
-        saveDisabled={
-          !currentMaterial.name ||
-          !currentMaterial.categoryId ||
-          !currentMaterial.unitId ||
-          !currentMaterial.supplierId
-        }
+        saveDisabled={!currentMaterial.name}
         isViewMode={modalMode === "view"}
       >
         <div

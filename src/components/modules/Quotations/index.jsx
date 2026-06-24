@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useMemo } from "react";
-import { Icon, SearchBox, Modal } from "../../common";
+import { Icon, SearchBox, Modal, Toast } from "../../common";
 import {
   isApiEnabled,
   clientsApi,
@@ -25,6 +25,7 @@ import {
   BILLING_ENTITIES,
   DEFAULT_BILLING_ENTITY,
   normalizeBillingEntity,
+  getDefaultTaxRate,
 } from "../../../data/billingEntities";
 import { exportQuotationToPDF } from "../../../utils/pdfExport";
 import "./styles.css";
@@ -45,6 +46,9 @@ const emptyQuotation = {
   folio: "",
   clientId: "",
   billingEntity: DEFAULT_BILLING_ENTITY,
+  // Tax rate as a fraction (0.16 = 16%). Defaults to the billing entity's rate
+  // (16% for Mexican entities, 0% for Dovecreek USA — editable per quote).
+  taxRate: getDefaultTaxRate(DEFAULT_BILLING_ENTITY),
   status: "DRAFT",
   createdAt: new Date().toISOString(),
   approvalDate: "",
@@ -387,11 +391,18 @@ const normalizeQuotationRow = (q) => ({
   subtotal: Number(q.subtotal) || 0,
   tax: Number(q.tax) || 0,
   total: Number(q.total) || 0,
+  // Reconstruct the tax rate from the stored amounts (no dedicated column);
+  // fall back to the entity default when there's no subtotal to divide by.
+  taxRate:
+    Number(q.subtotal) > 0
+      ? Number(q.tax) / Number(q.subtotal)
+      : getDefaultTaxRate(q.billing_entity),
   notes: q.notes || "",
   items: (q.quotation_items || []).map((it) => ({
     id: it.id,
     productId: it.product_id || "",
-    productName: it.product_name || "",
+    // No product_name column — derive from the joined products row.
+    productName: it.products?.name || it.product_name || "",
     description: it.description || "",
     quantity: Number(it.quantity) || 0,
     unitPrice: Number(it.unit_price) || 0,
@@ -418,6 +429,12 @@ const QuotationsModule = () => {
   const [currentQuotation, setCurrentQuotation] = useState(emptyQuotation);
   const [currentItem, setCurrentItem] = useState(emptyItem);
   const [editingItemIndex, setEditingItemIndex] = useState(null);
+  // Inline edit of the tax rate right on the totals "Tax (x%)" line.
+  const [editingTax, setEditingTax] = useState(false);
+  // Pretty notifications (Toast) + delete confirmation, replacing the native
+  // browser alert()/confirm() dialogs.
+  const [toast, setToast] = useState(null);
+  const [quotationToDelete, setQuotationToDelete] = useState(null);
 
   // Load data on mount
   useEffect(() => {
@@ -446,7 +463,9 @@ const QuotationsModule = () => {
         try {
           const { data: qData, error: qErr } = await supabase
             .from("quotations")
-            .select("*, clients(name, company_name), quotation_items(*)")
+            .select(
+              "*, clients(name, company_name), quotation_items(*, products(name))",
+            )
             .order("created_at", { ascending: false });
           if (qErr) throw qErr;
           quotationsData = (qData || []).map(normalizeQuotationRow);
@@ -599,13 +618,18 @@ const QuotationsModule = () => {
     return qty * price - discount;
   };
 
-  // Calculate quotation totals
-  const calculateTotals = (items) => {
+  // Calculate quotation totals. taxRate defaults to the quote's current rate so
+  // existing callers keep working; pass an explicit rate when it's changing.
+  const calculateTotals = (
+    items,
+    taxRate = currentQuotation.taxRate ?? 0.16,
+  ) => {
     const subtotal = items.reduce(
       (sum, item) => sum + calculateItemSubtotal(item),
       0,
     );
-    const tax = subtotal * 0.16; // 16% IVA
+    const rate = Number(taxRate) || 0;
+    const tax = subtotal * rate;
     const total = subtotal + tax;
     return { subtotal, tax, total };
   };
@@ -650,15 +674,21 @@ const QuotationsModule = () => {
     } else if (field === "billingEntity") {
       // When billing entity changes, if the currently selected client does
       // NOT belong to the new entity, clear client-derived fields so the
-      // user is forced to pick a valid one from the filtered list.
+      // user is forced to pick a valid one from the filtered list. Also reset
+      // the tax rate to the new entity's default (16% MX / 0% Dovecreek USA)
+      // and recompute totals so the IVA line and total update immediately.
       const normalized = normalizeBillingEntity(value);
+      const newRate = getDefaultTaxRate(normalized);
       setCurrentQuotation((prev) => {
         const selectedClient = clients.find((c) => c.id === prev.clientId);
         const stillValid =
           selectedClient && selectedClient.billingEntity === normalized;
+        const totals = calculateTotals(prev.items, newRate);
         return {
           ...prev,
           billingEntity: normalized,
+          taxRate: newRate,
+          ...totals,
           clientId: stillValid ? prev.clientId : "",
           clientName: stillValid ? prev.clientName : "",
         };
@@ -666,6 +696,16 @@ const QuotationsModule = () => {
     } else {
       setCurrentQuotation((prev) => ({ ...prev, [field]: value }));
     }
+  };
+
+  // Tax rate input is shown as a percentage (e.g. 16) but stored as a fraction
+  // (0.16). Recompute totals whenever the rate changes.
+  const handleTaxRateChange = (percentValue) => {
+    const newRate = (parseFloat(percentValue) || 0) / 100;
+    setCurrentQuotation((prev) => {
+      const totals = calculateTotals(prev.items, newRate);
+      return { ...prev, taxRate: newRate, ...totals };
+    });
   };
 
   const handleItemInputChange = (field, value) => {
@@ -678,7 +718,10 @@ const QuotationsModule = () => {
   // Item handlers
   const handleAddItem = () => {
     if (!currentItem.productId && !currentItem.description) {
-      alert("Select a product or add a description");
+      setToast({
+        message: "Selecciona un producto o escribe una descripción",
+        type: "error",
+      });
       return;
     }
 
@@ -723,7 +766,95 @@ const QuotationsModule = () => {
     }));
   };
 
-  // Save quotation via API
+  // A quotation id is a real Supabase row only when it isn't one of the
+  // in-memory placeholders (demo seed data or optimistic local ids).
+  const isPersistedId = (id) =>
+    id && !String(id).startsWith("demo-") && !String(id).startsWith("local-");
+
+  // Map the camelCase quotation to the snake_case columns of the `quotations`
+  // table (mirrors normalizeQuotationRow, which does the reverse on read).
+  const toQuotationRow = (q) => ({
+    folio: q.folio,
+    client_id: q.clientId || null,
+    billing_entity: q.billingEntity,
+    status: q.status,
+    approval_date: q.approvalDate || null,
+    eta: q.eta || null,
+    deposit: Number(q.deposit) || 0,
+    deposit_paid: !!q.depositPaid,
+    subtotal: Number(q.subtotal) || 0,
+    tax: Number(q.tax) || 0,
+    total: Number(q.total) || 0,
+    notes: q.notes || "",
+  });
+
+  // Map a camelCase item to the snake_case `quotation_items` columns. Note the
+  // table has NO product_name column — the product name is derived from
+  // product_id (joined to products) on read, so we only persist the id here.
+  const toItemRow = (quotationId, it) => ({
+    quotation_id: quotationId,
+    product_id: it.productId || null,
+    description: it.description || "",
+    quantity: Number(it.quantity) || 0,
+    unit_price: Number(it.unitPrice) || 0,
+    total: Number(it.subtotal) || 0,
+  });
+
+  // Persist a quotation (header + items) to Supabase. Inserts a new row or
+  // updates the existing one, then replaces its quotation_items. This is the
+  // path that was missing — saves used to only touch local state when the
+  // phantom API was disabled, so nothing reached the database.
+  const persistQuotationToSupabase = async (data) => {
+    const isNew = !isPersistedId(data.id);
+    let quotationId = isNew ? null : data.id;
+
+    if (isNew) {
+      const { data: inserted, error } = await supabase
+        .from("quotations")
+        .insert(toQuotationRow(data))
+        .select()
+        .single();
+      if (error) throw error;
+      quotationId = inserted.id;
+    } else {
+      const { error } = await supabase
+        .from("quotations")
+        .update({
+          ...toQuotationRow(data),
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", quotationId);
+      if (error) throw error;
+    }
+
+    try {
+      // Replace the line items (delete + insert) so edits stay in sync.
+      const { error: delErr } = await supabase
+        .from("quotation_items")
+        .delete()
+        .eq("quotation_id", quotationId);
+      if (delErr) throw delErr;
+
+      if (data.items?.length) {
+        const rows = data.items.map((it) => toItemRow(quotationId, it));
+        const { error: insErr } = await supabase
+          .from("quotation_items")
+          .insert(rows);
+        if (insErr) throw insErr;
+      }
+    } catch (itemErr) {
+      // Don't leave a brand-new header orphaned (header with zero items) when
+      // its items fail to save — roll it back before surfacing the error.
+      if (isNew) {
+        await supabase.from("quotations").delete().eq("id", quotationId);
+      }
+      throw itemErr;
+    }
+
+    return { ...data, id: quotationId };
+  };
+
+  // Save quotation via API (or Supabase when the API is disabled)
   const handleSave = async () => {
     try {
       // Auto-add current item if there's pending data
@@ -746,12 +877,15 @@ const QuotationsModule = () => {
       }
 
       if (itemsToSave.length === 0) {
-        alert("You must add at least one item to the quotation");
+        setToast({
+          message: "Agrega al menos un producto a la cotización",
+          type: "error",
+        });
         return;
       }
 
       if (!currentQuotation.clientId && !currentQuotation.clientName) {
-        alert("You must select a client");
+        setToast({ message: "Selecciona un cliente", type: "error" });
         return;
       }
 
@@ -795,24 +929,33 @@ const QuotationsModule = () => {
           setQuotations([...quotations, created]);
         }
       } else {
-        // Fallback for when API is not enabled (demo mode)
-        if (currentQuotation.id) {
+        // API disabled → persist directly to Supabase (header + items).
+        const saved = await persistQuotationToSupabase(dataToSave);
+        const existsInList = quotations.some(
+          (q) => q.id === currentQuotation.id,
+        );
+        if (isPersistedId(currentQuotation.id) && existsInList) {
           setQuotations(
-            quotations.map((q) =>
-              q.id === currentQuotation.id ? dataToSave : q,
-            ),
+            quotations.map((q) => (q.id === currentQuotation.id ? saved : q)),
           );
         } else {
-          dataToSave.id = `local-${Date.now()}`;
-          dataToSave.createdAt = new Date().toISOString();
-          setQuotations([...quotations, dataToSave]);
+          setQuotations([...quotations, saved]);
         }
       }
 
       handleCloseModal();
+      setToast({
+        message: currentQuotation.id
+          ? "Cotización actualizada"
+          : "Cotización creada",
+        type: "success",
+      });
     } catch (error) {
       console.error("[Quotations] Error saving:", error);
-      alert("Error saving quotation: " + error.message);
+      setToast({
+        message: "Error al guardar la cotización: " + error.message,
+        type: "error",
+      });
     }
   };
 
@@ -839,8 +982,34 @@ const QuotationsModule = () => {
           ),
         );
       }
+    } else if (isPersistedId(quotationId)) {
+      // API disabled but a real row → persist the status change to Supabase.
+      try {
+        const row = {};
+        if (updates.status !== undefined) row.status = updates.status;
+        if (updates.approvalDate !== undefined)
+          row.approval_date = updates.approvalDate || null;
+        if (updates.depositPaid !== undefined)
+          row.deposit_paid = !!updates.depositPaid;
+        const { error } = await supabase
+          .from("quotations")
+          .update({ ...row, updated_at: new Date().toISOString() })
+          .eq("id", quotationId);
+        if (error) throw error;
+        setQuotations(
+          quotations.map((q) =>
+            q.id === quotationId ? { ...q, ...updatedData } : q,
+          ),
+        );
+      } catch (error) {
+        console.error("[Quotations] Supabase status update failed:", error);
+        setToast({
+          message: "Error al actualizar la cotización: " + error.message,
+          type: "error",
+        });
+      }
     } else {
-      // Demo mode - update locally
+      // In-memory demo/local row — update locally only.
       setQuotations(
         quotations.map((q) =>
           q.id === quotationId ? { ...q, ...updatedData } : q,
@@ -855,7 +1024,7 @@ const QuotationsModule = () => {
       updateQuotationStatus(quotation.id, { status: "SENT" });
     } catch (error) {
       console.error("[Quotations] Error sending:", error);
-      alert("Error sending quotation");
+      setToast({ message: "Error al enviar la cotización", type: "error" });
     }
   };
 
@@ -867,7 +1036,7 @@ const QuotationsModule = () => {
       });
     } catch (error) {
       console.error("[Quotations] Error approving:", error);
-      alert("Error approving quotation");
+      setToast({ message: "Error al aprobar la cotización", type: "error" });
     }
   };
 
@@ -878,29 +1047,62 @@ const QuotationsModule = () => {
         const salesOrder = await quotationsApi.createSalesOrder(quotation.id);
         // Update local state
         await updateQuotationStatus(quotation.id, { status: "CONVERTED" });
-        alert(`Quotation converted to Sales Order: ${salesOrder.folio}`);
+        setToast({
+          message: `Convertida a Sales Order: ${salesOrder.folio}`,
+          type: "success",
+        });
       } else {
         // Demo mode - just update status locally
         await updateQuotationStatus(quotation.id, { status: "CONVERTED" });
         const demoFolio = `SO-${quotation.folio.replace("COT-", "")}`;
-        alert(`Quotation converted to Sales Order: ${demoFolio} (demo mode)`);
+        setToast({
+          message: `Convertida a Sales Order: ${demoFolio}`,
+          type: "success",
+        });
       }
     } catch (error) {
       console.error("[Quotations] Error converting:", error);
-      alert("Error converting quotation: " + error.message);
+      setToast({
+        message: "Error al convertir la cotización: " + error.message,
+        type: "error",
+      });
     }
   };
 
-  const handleDelete = async (quotation) => {
-    if (!confirm(`Delete quotation ${quotation.folio}?`)) return;
+  // Open the pretty confirmation modal instead of the native confirm().
+  const handleDelete = (quotation) => {
+    setQuotationToDelete(quotation);
+  };
+
+  const confirmDeleteQuotation = async () => {
+    const quotation = quotationToDelete;
+    if (!quotation) return;
     try {
       if (isApiEnabled() && !quotation.id.startsWith("demo-")) {
         await quotationsApi.delete(quotation.id);
+      } else if (isPersistedId(quotation.id)) {
+        // API disabled → delete from Supabase. Remove the line items first in
+        // case there's no ON DELETE CASCADE on the FK.
+        await supabase
+          .from("quotation_items")
+          .delete()
+          .eq("quotation_id", quotation.id);
+        const { error } = await supabase
+          .from("quotations")
+          .delete()
+          .eq("id", quotation.id);
+        if (error) throw error;
       }
       setQuotations(quotations.filter((q) => q.id !== quotation.id));
+      setToast({ message: "Cotización eliminada", type: "success" });
     } catch (error) {
       console.error("[Quotations] Error deleting:", error);
-      alert("Error deleting quotation: " + error.message);
+      setToast({
+        message: "Error al eliminar la cotización: " + error.message,
+        type: "error",
+      });
+    } finally {
+      setQuotationToDelete(null);
     }
   };
 
@@ -1477,17 +1679,29 @@ const QuotationsModule = () => {
                       <select
                         value={currentItem.productId}
                         onChange={(e) => {
+                          // Single state update: setting productId + productName +
+                          // unitPrice in three separate calls all read the same
+                          // stale `currentItem`, so the later calls clobbered
+                          // productId and the chosen product never stuck (and the
+                          // PDF then fell back to the typed Description). Batch it.
+                          const productId = e.target.value;
                           const product = products.find(
-                            (p) => p.id === e.target.value,
+                            (p) => p.id === productId,
                           );
-                          handleItemInputChange("productId", e.target.value);
-                          if (product) {
-                            handleItemInputChange("productName", product.name);
-                            handleItemInputChange(
-                              "unitPrice",
-                              product.price || 0,
-                            );
-                          }
+                          setCurrentItem((prev) => {
+                            const next = {
+                              ...prev,
+                              productId,
+                              ...(product
+                                ? {
+                                    productName: product.name,
+                                    unitPrice: product.price || 0,
+                                  }
+                                : {}),
+                            };
+                            next.subtotal = calculateItemSubtotal(next);
+                            return next;
+                          });
                         }}
                       >
                         <option value="">Select product</option>
@@ -1570,6 +1784,14 @@ const QuotationsModule = () => {
                     type="button"
                     className="btn-add-item"
                     onClick={handleAddItem}
+                    disabled={
+                      !currentItem.productId && !currentItem.description
+                    }
+                    title={
+                      !currentItem.productId && !currentItem.description
+                        ? "Selecciona un producto o escribe una descripción"
+                        : undefined
+                    }
                   >
                     <Icon name={editingItemIndex !== null ? "check" : "add"} />
                     {editingItemIndex !== null ? "Update Item" : "Add Item"}
@@ -1629,7 +1851,41 @@ const QuotationsModule = () => {
                   <span>{formatCurrency(currentQuotation.subtotal)}</span>
                 </div>
                 <div className="total-row">
-                  <span>IVA (16%):</span>
+                  <span className="tax-line">
+                    Tax (
+                    {editingTax && modalMode !== "view" ? (
+                      <input
+                        type="number"
+                        className="tax-inline-input"
+                        value={
+                          Math.round((currentQuotation.taxRate ?? 0) * 10000) /
+                          100
+                        }
+                        onChange={(e) => handleTaxRateChange(e.target.value)}
+                        onBlur={() => setEditingTax(false)}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && setEditingTax(false)
+                        }
+                        autoFocus
+                        min="0"
+                        step="0.01"
+                      />
+                    ) : (
+                      Math.round((currentQuotation.taxRate ?? 0) * 10000) / 100
+                    )}
+                    %)
+                    {modalMode !== "view" && !editingTax && (
+                      <button
+                        type="button"
+                        className="tax-edit-btn"
+                        onClick={() => setEditingTax(true)}
+                        title="Editar impuesto"
+                      >
+                        <Icon name="edit" />
+                      </button>
+                    )}
+                    :
+                  </span>
                   <span>{formatCurrency(currentQuotation.tax)}</span>
                 </div>
                 <div className="total-row grand-total">
@@ -1640,6 +1896,35 @@ const QuotationsModule = () => {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Delete confirmation — replaces the native confirm() */}
+      <Modal
+        isOpen={!!quotationToDelete}
+        title="Eliminar cotización"
+        onClose={() => setQuotationToDelete(null)}
+        icon="warning"
+        size="small"
+        variant="danger"
+        onSave={confirmDeleteQuotation}
+        saveText="Eliminar"
+        confirmOnClose={false}
+      >
+        <div className="delete-confirm">
+          <p>
+            ¿Seguro que quieres eliminar la cotización{" "}
+            <strong>{quotationToDelete?.folio}</strong>?
+          </p>
+          <p className="text-muted">Esta acción no se puede deshacer.</p>
+        </div>
+      </Modal>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
       )}
     </div>
   );
