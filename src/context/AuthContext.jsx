@@ -67,6 +67,32 @@ const buildUserFromSession = async (session) => {
   };
 };
 
+// --- Modo Demo (bypass local, sin Supabase) ------------------------------
+// El repo/bundle es PÚBLICO, así que el demo NO usa credenciales reales: es un
+// usuario ficticio en localStorage que abre el shell de la app para calarla.
+// Sin sesión Supabase => las lecturas salen como `anon` (RLS), por eso el demo
+// muestra la interfaz pero no la data real de los clientes.
+const DEMO_KEY = "dkraft_demo";
+
+const makeDemoUser = () => ({
+  id: "demo",
+  email: "demo@dkraft.local",
+  displayName: "Usuario Demo",
+  role: "ADMIN",
+  areaId: null,
+  departmentId: null,
+  isDemo: true,
+});
+
+const getStoredDemoUser = () => {
+  try {
+    const raw = localStorage.getItem(DEMO_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -96,6 +122,10 @@ export const AuthProvider = ({ children }) => {
         if (session) {
           const mapped = await buildUserFromSession(session);
           if (mounted) setUser(mapped);
+        } else {
+          // Sin sesión real: rehidrata el modo demo si estaba activo.
+          const demo = getStoredDemoUser();
+          if (demo && mounted) setUser(demo);
         }
       } catch (err) {
         console.error("[Auth] init error:", err.message);
@@ -137,8 +167,10 @@ export const AuthProvider = ({ children }) => {
             const mapped = await buildUserFromSession(session);
             if (mounted) setUser(mapped);
           } else {
-            // Sin sesión Supabase: limpiar usuario.
-            if (mounted) setUser(null);
+            // Sin sesión Supabase: conserva el modo demo si sigue activo,
+            // si no, limpia el usuario.
+            const demo = getStoredDemoUser();
+            if (mounted) setUser(demo || null);
           }
         } catch (err) {
           console.error("[Auth] onAuthStateChange error:", err.message);
@@ -169,6 +201,9 @@ export const AuthProvider = ({ children }) => {
           password,
         });
       if (signInError) throw signInError;
+
+      // Login real gana sobre el demo: apaga el bypass.
+      localStorage.removeItem(DEMO_KEY);
 
       const userData = await buildUserFromSession(data.session);
       // onAuthStateChange también lo setea, pero lo hacemos aquí para que el
@@ -217,10 +252,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Entra en modo demo: usuario ficticio en localStorage, sin tocar Supabase.
+  // Sirve para calar la interfaz sin credenciales mientras el software se prueba.
+  const loginAsDemo = useCallback(() => {
+    const demoUser = makeDemoUser();
+    localStorage.setItem(DEMO_KEY, JSON.stringify(demoUser));
+    setError(null);
+    setUser(demoUser);
+    setLoading(false);
+    console.log("[Auth] Modo demo activado");
+    return demoUser;
+  }, []);
+
   const logout = async () => {
     try {
       setError(null);
 
+      // Apaga el modo demo (si estaba) y cierra cualquier sesión real.
+      localStorage.removeItem(DEMO_KEY);
       const { error: signOutError } = await supabase.auth.signOut();
       if (signOutError) throw signOutError;
 
@@ -258,6 +307,7 @@ export const AuthProvider = ({ children }) => {
     recoveryMode,
     recoveryError,
     login,
+    loginAsDemo,
     register,
     logout,
     updatePassword,

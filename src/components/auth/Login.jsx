@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = ({ onForgotPassword }) => {
-  const { login, error, clearError } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login, loginAsDemo, error, clearError } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -53,7 +53,10 @@ const Login = ({ onForgotPassword }) => {
               type="email"
               id="email"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); handleInputChange(); }}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                handleInputChange();
+              }}
               placeholder="tu@email.com"
               required
               autoComplete="email"
@@ -66,10 +69,13 @@ const Login = ({ onForgotPassword }) => {
           <div className="input-wrapper">
             <span className="material-symbols-rounded input-icon">lock</span>
             <input
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               id="password"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); handleInputChange(); }}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                handleInputChange();
+              }}
               placeholder="••••••••"
               required
               autoComplete="current-password"
@@ -80,7 +86,7 @@ const Login = ({ onForgotPassword }) => {
               onClick={() => setShowPassword(!showPassword)}
             >
               <span className="material-symbols-rounded">
-                {showPassword ? 'visibility_off' : 'visibility'}
+                {showPassword ? "visibility_off" : "visibility"}
               </span>
             </button>
           </div>
@@ -107,8 +113,22 @@ const Login = ({ onForgotPassword }) => {
               Iniciando sesión...
             </>
           ) : (
-            'Iniciar Sesión'
+            "Iniciar Sesión"
           )}
+        </button>
+
+        <div className="auth-divider">
+          <span>o</span>
+        </div>
+
+        <button
+          type="button"
+          className="auth-button demo"
+          onClick={loginAsDemo}
+          disabled={loading}
+        >
+          <span className="material-symbols-rounded">visibility</span>
+          Entrar como Demo
         </button>
       </form>
     </div>
